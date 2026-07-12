@@ -1,0 +1,79 @@
+---
+description: Break the PRD into sequential implementation RFCs
+---
+
+You are an expert software architect and project manager tasked with breaking down the Product Requirements Document (PRD.md), features list (FEATURES.md), and project rules (RULES.md) — or the documents provided in the conversation — into manageable Request for Comments (RFC) documents for implementation.
+
+Create a set of well-structured RFC documents that divide the project into logical, implementable units of work. Each RFC should represent a cohesive, reasonably-sized portion of the application that can be implemented as a unit.
+
+**IMPORTANT: RFCs will be implemented strictly one by one in sequential order. The ordering is critical.**
+
+If any critical information is missing or unclear, ask specific questions before proceeding.
+
+Generate the RFC files under an RFCs folder, including implementation prompt files, by:
+
+1. IMPLEMENTATION ORDER ANALYSIS:
+   - Analyze the entire project to determine the optimal implementation sequence
+   - Identify foundation components that must be built first
+   - Create a directed graph of feature dependencies (described textually)
+   - Determine critical path items that block other development
+   - Assign sequential numbers (001, 002, 003, etc.) reflecting strict implementation order
+   - **CRITICAL**: Each RFC must be fully implementable after all previous RFCs are completed. No parallel implementation will occur.
+
+2. FEATURE GROUPING:
+   - Group related features that should be implemented together in a single RFC
+   - Ensure each RFC represents a logical, cohesive unit of functionality
+   - Balance RFC size -- not too small (trivial) or too large (unmanageable)
+   - Consider dependencies between features when grouping
+   - Identify shared components that multiple features depend on
+
+3. RFC STRUCTURE:
+   Each RFC should include:
+   - Unique identifier reflecting implementation order (e.g., RFC-001-User-Authentication)
+   - Summary of what the RFC covers
+   - All features/requirements addressed
+   - Technical approach and architecture considerations
+   - Which previous RFCs this builds upon and which future RFCs build on this
+   - Relative complexity estimate (Low, Medium, High)
+   - Acceptance criteria for each feature
+   - API contracts or interfaces exposed
+   - Data models and database schema changes
+   - Implementation details: file structure, key algorithms, UI/UX specs, state management, API integration, error handling, and testing strategy
+
+4. IMPLEMENTATION CONSIDERATIONS:
+   - Technical challenges and potential edge cases
+   - Applicable rules from RULES.md
+   - Testing approaches for the functionality
+   - Performance, security, and accessibility requirements
+   - Third-party dependencies or libraries needed
+   - Error handling strategies and fallback mechanisms
+
+5. IMPLEMENTATION PROMPT CREATION (copy-paste workflow only):
+   - Skip this step when the project has the slash commands installed — `/implement-rfc <id>` already applies the template
+   - Otherwise, for each RFC, create `implementation-prompt-RFC-[ID].md` using `implementation-prompt-template.md` as the base
+   - Replace `[ID]`, `[Title]`, and `[brief description]` placeholders with RFC-specific values
+   - Do not modify any other template content
+
+6. RFCS.MD CREATION:
+   - Create a master RFCS.md listing all RFCs in implementation order
+   - Include a dependency table showing relationships between RFCs
+   - Provide a clear implementation roadmap
+   - For each RFC, indicate predecessors and successors
+
+7. TECHNICAL SPECIFICATIONS:
+   For each RFC, provide:
+   - Component architecture and data flow diagrams (described textually)
+   - Specific algorithms or business logic pseudocode
+   - Error codes and handling mechanisms
+   - Logging and monitoring requirements
+   - Authentication/authorization and caching strategies where applicable
+
+8. IMPLEMENTATION CONSTRAINTS:
+   - Required coding standards and patterns
+   - Performance budgets or requirements
+   - Compatibility requirements (browsers, devices, etc.)
+   - Regulatory or compliance considerations
+
+First, provide a brief overview of your breakdown approach and the sequential implementation order. Then create the RFC documents and implementation prompts.
+
+Each RFC should be specific enough to guide implementation but flexible enough to allow for engineering decisions. The goal is to provide AI implementers with complete, unambiguous specifications that enable high-quality code without additional clarification.
