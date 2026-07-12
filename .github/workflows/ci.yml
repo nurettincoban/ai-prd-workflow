@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: Shellcheck scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck install.sh copy-prompt.sh
+
+  generated-commands:
+    name: Generated commands match source prompts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regenerate commands for all tools
+        run: ./install.sh . --all
+      - name: Check for drift
+        run: |
+          if ! git diff --exit-code; then
+            echo ""
+            echo "::error::Generated command files are out of sync with the source prompts."
+            echo "Run './install.sh . --all' locally and commit the regenerated files."
+            exit 1
+          fi
+
+  install-smoke-test:
+    name: install.sh smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install all tools into a fresh project
+        run: |
+          target="$(mktemp -d)"
+          ./install.sh "$target" --all
+          for dir in .claude/commands .cursor/commands .gemini/commands .windsurf/workflows .opencode/commands; do
+            count="$(find "$target/$dir" -type f | wc -l)"
+            echo "$dir: $count commands"
+            [ "$count" -eq 10 ] || { echo "::error::expected 10 commands in $dir, got $count"; exit 1; }
+          done
+      - name: Generated Gemini TOML is valid
+        run: |
+          target="$(mktemp -d)"
+          ./install.sh "$target" --gemini
+          python3 - "$target" <<'EOF'
+          import glob, sys, tomllib
+          files = glob.glob(sys.argv[1] + "/.gemini/commands/*.toml")
+          assert len(files) == 10, f"expected 10 TOML files, got {len(files)}"
+          for f in files:
+              with open(f, "rb") as fh:
+                  data = tomllib.load(fh)
+              assert data.get("description") and len(data.get("prompt", "")) > 100, f
+          print("all Gemini TOML files parse")
+          EOF
+      - name: Windsurf workflows stay under the 12k character limit
+        run: |
+          target="$(mktemp -d)"
+          ./install.sh "$target" --windsurf
+          for f in "$target"/.windsurf/workflows/*.md; do
+            size="$(wc -c < "$f")"
+            [ "$size" -le 12000 ] || { echo "::error::$f is $size chars (Windsurf limit is 12000)"; exit 1; }
+          done
+      - name: Default install is Claude Code + Cursor only
+        run: |
+          target="$(mktemp -d)"
+          ./install.sh "$target"
+          [ -d "$target/.claude/commands" ] && [ -d "$target/.cursor/commands" ] || exit 1
+          for dir in .gemini .windsurf .opencode; do
+            [ ! -d "$target/$dir" ] || { echo "::error::default install must not create $dir"; exit 1; }
+          done
+      - name: Single-tool install stays single-tool
+        run: |
+          target="$(mktemp -d)"
+          ./install.sh "$target" --claude
+          [ -d "$target/.claude/commands" ] || exit 1
+          [ ! -d "$target/.cursor" ] || { echo "::error::--claude must not create .cursor"; exit 1; }
+
+  plugin-manifests:
+    name: Plugin manifests are valid JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON and cross-check names
+        run: |
+          python3 - <<'EOF'
+          import json
+          plugin = json.load(open(".claude-plugin/plugin.json"))
+          market = json.load(open(".claude-plugin/marketplace.json"))
+          assert plugin["name"] == "prd-workflow"
+          entries = {p["name"] for p in market["plugins"]}
+          assert plugin["name"] in entries, "marketplace must list the plugin"
+          assert plugin["commands"] == "./.claude/commands"
+          print("plugin manifests OK")
+          EOF
