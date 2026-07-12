@@ -44,8 +44,9 @@ Generate the RFC files under an RFCs folder, including implementation prompt fil
    - Third-party dependencies or libraries needed
    - Error handling strategies and fallback mechanisms
 
-5. IMPLEMENTATION PROMPT CREATION:
-   - For each RFC, create `implementation-prompt-RFC-[ID].md` using `implementation-prompt-template.md` as the base
+5. IMPLEMENTATION PROMPT CREATION (copy-paste workflow only):
+   - Skip this step when the project has the slash commands installed — `/implement-rfc <id>` already applies the template
+   - Otherwise, for each RFC, create `implementation-prompt-RFC-[ID].md` using `implementation-prompt-template.md` as the base
    - Replace `[ID]`, `[Title]`, and `[brief description]` placeholders with RFC-specific values
    - Do not modify any other template content
 
