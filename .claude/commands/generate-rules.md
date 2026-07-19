@@ -16,6 +16,10 @@ Apply only the sections and checks that fit that type. For a library/SDK, skip i
 
 State which product type you classified and which checks you skipped. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
 
+## GROUND THE RULES IN EXISTING CODE
+
+If a reference implementation, prototype, or existing codebase is available, READ IT and derive naming, structural, and idiom rules from it. Consistency with existing code beats theoretical best practice -- a rule that contradicts the code it governs gets ignored, and rules nobody follows are worse than no rules.
+
 Generate the RULES.md by:
 
 1. TECHNOLOGY STACK DEFINITION:

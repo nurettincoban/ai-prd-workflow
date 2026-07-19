@@ -41,6 +41,8 @@ Once you feel you have gathered sufficient details, create a structured PRD that
 
 Cover these areas in your questioning: product vision and purpose, user needs and behaviors, feature requirements, business goals, and implementation considerations.
 
+Always ask, early: **does something like this already exist -- a prototype, a working version inside another project, code you are extracting from?** If so, ask for the path and READ IT. Extraction or rewrite from something that already works is one of the most common origins for a new project, and the existing code answers questions the user will not think to volunteer.
+
 ## Final PRD Delivery
 
 After gathering sufficient information, you MUST:
