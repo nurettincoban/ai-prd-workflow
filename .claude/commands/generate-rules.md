@@ -24,7 +24,7 @@ Generate the RULES.md by:
 
 1. TECHNOLOGY STACK DEFINITION:
    - Identify core technologies mentioned or implied in the PRD/features
-   - Specify the latest stable versions for each technology
+   - Specify versions for each technology, and VERIFY every one against the actual registry before writing it down (`npm view <pkg> version`, `pip index versions <pkg>`, or the registry's latest endpoint). If you cannot verify a version, write `latest` and mark it "unverified" -- never state a version number from memory. Your training data is older than the registry, and a hallucinated version propagates into the dependency spec and surfaces as a confusing install or build error several steps later, far from its cause
    - Define required libraries, frameworks, or tools
 
 2. TECHNICAL PREFERENCES:
