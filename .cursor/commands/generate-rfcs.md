@@ -79,6 +79,12 @@ Generate the RFC files under an RFCs folder, including implementation prompt fil
    - Compatibility requirements (browsers, devices, etc.)
    - Regulatory or compliance considerations
 
+## COLD-READ CHECK BEFORE IMPLEMENTATION
+
+Once an RFC is written, hand it to a fresh session -- ideally a different model -- with only PRD.md, FEATURES.md, RULES.md and that one RFC, and ask a single question: **"What would you have to guess to implement this?"** Fix everything on that list before any code gets written.
+
+Do not answer that question from your own memory of what you meant. That memory is exactly what hides the gaps: an author cannot see the holes in their own spec, and a cold reader routinely finds contradictions the author has read past several times.
+
 First, provide a brief overview of your breakdown approach and the sequential implementation order. Then create the RFC documents and implementation prompts.
 
 Each RFC should be specific enough to guide implementation but flexible enough to allow for engineering decisions. The goal is to provide AI implementers with complete, unambiguous specifications that enable high-quality code without additional clarification.
