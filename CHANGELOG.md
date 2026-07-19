@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.2.0] - 2026-07-20
+
+Fixes from a full dogfooding run — all ten commands used end to end to build a real, publishable library from a real PRD. Three structural problems surfaced: nothing in the workflow ever executed anything, decisions were discarded while artifacts were kept, and every prompt assumed a CRUD web application.
+
+### Added
+- Verification step in `/implement-rfc` — run the build, typecheck and tests, paste the actual output, and verify one end-to-end path against the built artifact rather than the source
+- `STEP 0: RUN IT` in `/review-rfc` and a baseline step in `/test-strategy` — both now execute before assessing, and must say so explicitly when they cannot
+- Shared "classify the product type" preamble in six commands — apply only the checks that fit and state which were skipped, so a library no longer gets database, auth and accessibility sections
+- Grounding in existing code: `STEP 0: GROUND THE PRD IN REALITY` in `/verify-prd`, an existing-implementation question in `/create-prd`, and reference-implementation derivation in `/generate-rules`
+- `CONFLICT CHECK` as the first step of `/manage-changes` impact analysis — cites violated rule IDs and reversed decisions before anything else
+- Decision records written to disk: `PRD-REVIEW.md`, `reviews/REVIEW-RFC-[ID].md`, `changes/CHANGE-REQUEST-[NNN].md`
+- Fresh-session requirement in `/review-rfc`, and a cold-read check in `/generate-rfcs` — hand each RFC to a new session and ask what it would have to guess
+- `SELF-CHECK BEFORE FINISHING` in the five generating commands — recount tables from actual content, verify every cross-reference resolves to what the text claims, confirm no two tables disagree
+- Artifact precedence rule (`PRD > FEATURES > RULES > RFCs > generated plans`) in the four downstream consumers
+- Per-RFC implemented/reviewed tracking in `/workflow-status`
+- README: restart-after-install note, the multi-lens evidence table, and the ID-stability property
+
+### Changed
+- `/generate-rfcs` no longer mandates strict sequential implementation — each RFC must be implementable once its **declared predecessors** are complete, so independent branches can be parallelized while the solo path is unchanged
+- `/test-strategy` moved ahead of `/implement-rfc` in the pipeline, so the plan exists before the tests it plans are written
+- `/generate-rules` must verify dependency versions against the actual registry instead of stating them from memory
+- `/test-strategy` no longer hard-codes a 100% coverage target, and takes priorities from the existing MoSCoW ratings in FEATURES.md
+- `/verify-prd` treats an existing PRD as a normal entry point, and warns before overwriting `PRD.md` when the project is not under version control
+- `/manage-changes` documentation updates cover every affected artifact, not just the PRD — all in one commit, or none
+- `/workflow-status` stage table covers all ten commands (was eight)
+
+### Fixed
+- `/generate-rfcs` step 5 referenced `implementation-prompt-template.md`, which `install.sh` never installs into a project — the step was unexecutable as written and duplicated `/implement-rfc`
+- `/workflow-status` expected a "Review report" artifact that no command in the suite ever produced, so stage 7 could never be reported Done
+- RFC acceptance criteria could silently omit files named elsewhere in the same RFC, so those files never got built while the RFC was reported complete
+
 ## [2.1.0] - 2026-07-06
 
 ### Added
