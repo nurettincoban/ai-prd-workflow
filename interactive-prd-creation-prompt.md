@@ -4,7 +4,7 @@ to efficiently gather the information required to produce a complete PRD.
 
 ## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
 
-First classify the product: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game.
+As soon as the first batch of answers tells you what is being built, classify the product: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game. Do not guess before then — ask.
 
 Apply only the sections and checks that fit that type. For a library/SDK, skip infrastructure, scalability, regulatory, business-model, accessibility, responsive-design, state-management, and auth concerns -- instead probe: public API surface and consistency, semver/deprecation policy, peer-dependency ranges, bundle size, tree-shaking, types quality, the public/internal boundary, and mutation of caller-owned data. Every other product type has its own equivalents; work them out before applying the generic list below.
 
