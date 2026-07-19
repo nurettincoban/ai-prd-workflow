@@ -22,6 +22,10 @@ This implementation covers RFC-[ID]: [brief description]. Refer to:
 - RULES.md for project guidelines and standards
 - RFC-[ID].md for the specific requirements being implemented
 
+## When Artifacts Conflict
+
+Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Where this prompt's generic guidance conflicts with RULES.md, RULES.md wins -- it was written for this project and this prompt was not. Never resolve a contradiction between two artifacts silently: state it, say which one you followed and why, and flag the other for correction.
+
 ## Two-Phase Approach
 
 ### Phase 1: Planning (No Code)

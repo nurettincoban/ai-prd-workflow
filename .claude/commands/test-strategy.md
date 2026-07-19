@@ -12,6 +12,10 @@ Create a structured test strategy that ensures thorough coverage of all implemen
 - RULES.md for testing standards
 - Existing codebase (if available)
 
+## WHEN ARTIFACTS CONFLICT
+
+Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Where this prompt's generic guidance conflicts with RULES.md, RULES.md wins -- it was written for this project and this prompt was not. Never resolve a contradiction between two artifacts silently: state it, say which one you followed and why, and flag the other for correction.
+
 ## STEP 0: ESTABLISH THE BASELINE
 
 Before planning anything, run the existing test suite and report the actual baseline: how many tests exist, which files they live in, and what passes or fails. Paste the real output.
@@ -36,7 +40,7 @@ For a library of pure functions, most of sections 2-6 below will not apply; the 
 - Identify key functions and modules requiring unit tests
 - Specify edge cases and boundary conditions for each
 - Define mock/stub strategy for external dependencies
-- List critical business logic that must have 100% coverage
+- Identify logic that requires exhaustive coverage. If RULES.md defines a coverage policy, follow it rather than imposing a percentage of your own
 
 ### 2. INTEGRATION TESTING
 - API endpoint testing (request/response validation, error codes)
@@ -72,7 +76,7 @@ For a library of pure functions, most of sections 2-6 below will not apply; the 
 
 For each RFC/feature, provide:
 - **Test cases** with clear descriptions and steps
-- **Priority** (Must have / Should have / Could have)
+- **Priority** (Must have / Should have / Could have) -- taken from the feature's existing MoSCoW rating in FEATURES.md, not reassigned here
 - **Expected results** and failure criteria
 - **Prerequisites and dependencies**
 
