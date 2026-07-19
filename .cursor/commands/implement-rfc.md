@@ -61,3 +61,4 @@ Only implement features in RFC-[ID].md. If you identify dependencies on other RF
 2. Necessary tests per the project's testing standards
 3. Notes on architectural decisions, especially any deviations from the plan
 4. Potential improvements or scaling considerations for the future
+5. **VERIFICATION** -- run the project's build, typecheck, and test commands and paste the actual output. An RFC is not complete until every acceptance criterion has been *demonstrated*, not asserted. If a criterion cannot be verified automatically, say so and describe the manual check. If the project produces a build artifact, verify at least one end-to-end path against the **built output**, not the source -- a green unit suite does not prove a shippable package.

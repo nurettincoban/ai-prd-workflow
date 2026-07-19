@@ -8,6 +8,14 @@ Create a structured test strategy that ensures thorough coverage of all implemen
 - RULES.md for testing standards
 - Existing codebase (if available)
 
+## STEP 0: ESTABLISH THE BASELINE
+
+Before planning anything, run the existing test suite and report the actual baseline: how many tests exist, which files they live in, and what passes or fails. Paste the real output.
+
+Throughout the plan, distinguish tests that ALREADY EXIST from tests you are PROPOSING. Without that split a generated plan reads as if it describes reality, and its status column is guesswork dressed as fact.
+
+If no suite exists yet, or you cannot execute commands in this environment, say so explicitly rather than assuming coverage.
+
 ## Test Plan Sections
 
 ### 1. UNIT TESTING

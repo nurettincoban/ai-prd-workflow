@@ -8,6 +8,12 @@ Review the implementation of the specified RFC and provide a thorough, actionabl
 - RULES.md for project standards
 - FEATURES.md for requirement traceability
 
+## STEP 0: RUN IT
+
+Before assessing anything, run the project's build, typecheck, and test suite. Paste the actual output. Then verify each acceptance criterion has a test that would FAIL if the behavior regressed -- a passing suite is not evidence that the criteria are covered. Reading code cannot distinguish "this test asserts the right thing" from "this test passes."
+
+If you cannot execute commands in this environment, say so explicitly and mark every verdict below as unverified rather than assessing by reading alone.
+
 ## Review Dimensions
 
 ### 1. RFC ADHERENCE
