@@ -10,6 +10,16 @@ Create a set of well-structured RFC documents that divide the project into logic
 
 If any critical information is missing or unclear, ask specific questions before proceeding.
 
+## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
+
+First classify the product: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game.
+
+Apply only the sections and checks that fit that type. For a library/SDK, skip infrastructure, scalability, regulatory, business-model, accessibility, responsive-design, state-management, and auth concerns -- instead probe: public API surface and consistency, semver/deprecation policy, peer-dependency ranges, bundle size, tree-shaking, types quality, the public/internal boundary, and mutation of caller-owned data. Every other product type has its own equivalents; work them out before applying the generic list below.
+
+State which product type you classified and which checks you skipped. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
+
+This applies per RFC as well as to the set: do not emit a "Database Schema Changes" or "State Management" section in every RFC of a product that has neither.
+
 Generate the RFC files under an RFCs folder, including implementation prompt files, by:
 
 1. IMPLEMENTATION ORDER ANALYSIS:

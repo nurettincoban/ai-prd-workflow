@@ -14,6 +14,16 @@ Before assessing anything, run the project's build, typecheck, and test suite. P
 
 If you cannot execute commands in this environment, say so explicitly and mark every verdict below as unverified rather than assessing by reading alone.
 
+## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
+
+First classify the product: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game.
+
+Apply only the sections and checks that fit that type. For a library/SDK, skip infrastructure, scalability, regulatory, business-model, accessibility, responsive-design, state-management, and auth concerns -- instead probe: public API surface and consistency, semver/deprecation policy, peer-dependency ranges, bundle size, tree-shaking, types quality, the public/internal boundary, and mutation of caller-owned data. Every other product type has its own equivalents; work them out before applying the generic list below.
+
+State which product type you classified and which checks you skipped. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
+
+Mark an inapplicable dimension N/A with one line of reasoning. Do not fill it with reassuring findings.
+
 ## Review Dimensions
 
 ### 1. RFC ADHERENCE
