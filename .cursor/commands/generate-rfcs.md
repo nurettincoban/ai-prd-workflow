@@ -83,12 +83,6 @@ Generate the RFC files under an RFCs folder by:
    - Compatibility requirements (browsers, devices, etc.)
    - Regulatory or compliance considerations
 
-## COLD-READ CHECK BEFORE IMPLEMENTATION
-
-Once an RFC is written, hand it to a fresh session -- ideally a different model -- with only PRD.md, FEATURES.md, RULES.md and that one RFC, and ask a single question: **"What would you have to guess to implement this?"** Fix everything on that list before any code gets written.
-
-Do not answer that question from your own memory of what you meant. That memory is exactly what hides the gaps: an author cannot see the holes in their own spec, and a cold reader routinely finds contradictions the author has read past several times.
-
 First, provide a brief overview of your breakdown approach and the sequential implementation order. Then create the RFC documents.
 
 Each RFC should be specific enough to guide implementation but flexible enough to allow for engineering decisions. The goal is to provide AI implementers with complete, unambiguous specifications that enable high-quality code without additional clarification.
@@ -99,3 +93,9 @@ Each RFC should be specific enough to guide implementation but flexible enough t
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
 - State that you ran this check and what it turned up.
+
+## COLD-READ CHECK BEFORE IMPLEMENTATION
+
+Once the RFCs are written, recommend that the user hand each one to a fresh session -- ideally a different model -- with only PRD.md, FEATURES.md, RULES.md and that single RFC, and ask one question: **"What would you have to guess to implement this?"** Everything on that list should be fixed before any code gets written.
+
+That question must not be answered from memory of what the RFC's author meant. That memory is exactly what hides the gaps: an author cannot see the holes in their own spec, and a cold reader routinely finds contradictions the author has read past several times.
