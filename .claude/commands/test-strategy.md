@@ -77,3 +77,10 @@ For each RFC/feature, provide:
 - **Prerequisites and dependencies**
 
 Provide a test execution order that aligns with the RFC implementation sequence. Highlight any testing gaps where manual testing may be needed.
+
+## SELF-CHECK BEFORE FINISHING
+
+- Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
+- Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
+- Confirm no two tables in the document disagree with each other.
+- State that you ran this check and what it turned up.

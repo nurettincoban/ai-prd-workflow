@@ -87,3 +87,10 @@ Provide specific recommendations in these areas:
    - Write deliverables 1, 2 and 4 to "PRD-REVIEW.md" alongside the improved PRD: the gap list, the recommendations, the scores, and why each change was made
    - Findings that live only in this conversation are gone the moment it ends. The next reader then sees a decision in PRD.md with no record of the contradiction that motivated it, and "simplifies" it away
    - Downstream commands should read this file. Every High-impact finding must stay traceable into FEATURES.md and the RFCs
+
+## SELF-CHECK BEFORE FINISHING
+
+- Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
+- Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
+- Confirm no two tables in the document disagree with each other.
+- State that you ran this check and what it turned up.

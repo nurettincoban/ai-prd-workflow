@@ -52,3 +52,10 @@ Generate the RULES.md by:
    - If the project uses an AI coding agent, recommend wiring RULES.md into its config so the rules stay in context: reference it from CLAUDE.md (Claude Code), AGENTS.md (Codex and others), or .cursor/rules/ (Cursor)
 
 First, provide a brief overview of the project based on the PRD and features list. Then create the RULES.md content. Ensure the rules are specific enough to guide development but flexible enough to allow for creative problem-solving.
+
+## SELF-CHECK BEFORE FINISHING
+
+- Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
+- Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
+- Confirm no two tables in the document disagree with each other.
+- State that you ran this check and what it turned up.

@@ -92,3 +92,10 @@ Do not answer that question from your own memory of what you meant. That memory 
 First, provide a brief overview of your breakdown approach and the sequential implementation order. Then create the RFC documents and implementation prompts.
 
 Each RFC should be specific enough to guide implementation but flexible enough to allow for engineering decisions. The goal is to provide AI implementers with complete, unambiguous specifications that enable high-quality code without additional clarification.
+
+## SELF-CHECK BEFORE FINISHING
+
+- Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
+- Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
+- Confirm no two tables in the document disagree with each other.
+- State that you ran this check and what it turned up.
