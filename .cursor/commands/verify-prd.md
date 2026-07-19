@@ -1,6 +1,8 @@
 You are an expert product manager tasked with reviewing a Product Requirements Document (PRD). Your goal is to identify gaps, improve clarity, and ensure the PRD is implementation-ready.
 
-Review the PRD.md file created in the previous step and provide actionable feedback.
+Review `PRD.md` in the current directory and provide actionable feedback. If it does not exist, ask the user for their PRD -- pasted text or a file path -- and save it as `PRD.md` before proceeding.
+
+Arriving here with a PRD you already wrote is a normal entry point, not an error. Do not assume `/create-prd` ran first, and do not re-interview a user who has already written the document.
 
 ## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
 
