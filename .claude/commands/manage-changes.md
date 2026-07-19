@@ -21,6 +21,11 @@ Assess and integrate the proposed changes by:
    - Assess size (Small, Medium, Large) and priority (Must have / Should have / Could have / Won't have)
 
 2. IMPACT ANALYSIS:
+   - CONFLICT CHECK -- do this before anything else:
+     * Read RULES.md. Does the change violate any rule? Cite the rule IDs.
+     * Read the PRD's resolved decisions and non-goals. Does the change reverse one? If so, state the original rationale and whether it still holds.
+     * Does it contradict a stated product differentiator?
+     * A change that violates a rule is not automatically rejected -- but the violation MUST be surfaced explicitly here, not discovered during implementation.
    - Identify all components, features, and RFCs affected
    - Assess impact on project timeline and resources
    - Evaluate technical dependencies and ripple effects
@@ -37,10 +42,13 @@ Assess and integrate the proposed changes by:
    - Propose testing strategy for validating changes
 
 4. DOCUMENTATION UPDATES:
+   - For EVERY accepted change, list the required edits to each artifact: PRD.md, FEATURES.md, RULES.md, RFCS.md, the affected RFC files, TEST-STRATEGY.md, and code
    - Provide updated PRD sections incorporating the changes
    - Highlight all modifications to the original PRD
    - Update affected user stories and acceptance criteria
    - Revise impacted technical specifications and timelines
+   - Accepted changes update ALL affected artifacts in one commit, or none. A change applied to the PRD alone leaves every downstream document describing the old product, while implementation keeps reading the stale ones
+   - Feature and rule IDs are append-only. Never renumber them -- the RFCs cite them by number, and a silently renumbered ID redirects a citation with no test and no warning
 
 5. STAKEHOLDER IMPACT:
    - Identify stakeholders affected by the changes
@@ -53,3 +61,5 @@ Assess and integrate the proposed changes by:
    - Evaluate business risks of not implementing the changes
 
 Provide a summary of your overall assessment first, then detailed analysis per the structure above, and finally a clear recommendation on how to proceed with each change.
+
+Save the complete assessment to `changes/CHANGE-REQUEST-[NNN].md`, numbering sequentially from the files already in that folder. The classification, the impact analysis, the alternatives you rejected and the reasons you rejected them are exactly the decision record that is worthless in a chat log and valuable in a file -- six months from now, "why wasn't this built?" is answered by that file or by nobody.

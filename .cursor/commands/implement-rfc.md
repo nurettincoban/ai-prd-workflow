@@ -17,6 +17,10 @@ This implementation covers RFC-[ID]: [brief description]. Refer to:
 - RULES.md for project guidelines and standards
 - RFC-[ID].md for the specific requirements being implemented
 
+## When Artifacts Conflict
+
+Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Where this prompt's generic guidance conflicts with RULES.md, RULES.md wins -- it was written for this project and this prompt was not. Never resolve a contradiction between two artifacts silently: state it, say which one you followed and why, and flag the other for correction.
+
 ## Two-Phase Approach
 
 ### Phase 1: Planning (No Code)
@@ -61,3 +65,4 @@ Only implement features in RFC-[ID].md. If you identify dependencies on other RF
 2. Necessary tests per the project's testing standards
 3. Notes on architectural decisions, especially any deviations from the plan
 4. Potential improvements or scaling considerations for the future
+5. **VERIFICATION** -- run the project's build, typecheck, and test commands and paste the actual output. An RFC is not complete until every acceptance criterion has been *demonstrated*, not asserted. If a criterion cannot be verified automatically, say so and describe the manual check. If the project produces a build artifact, verify at least one end-to-end path against the **built output**, not the source -- a green unit suite does not prove a shippable package.
