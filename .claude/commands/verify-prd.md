@@ -78,6 +78,12 @@ Provide specific recommendations in these areas:
 3. IMPROVED PRD
    - Create an enhanced version addressing the issues found
    - Save as "PRD.md" in the current directory (overwrite the original)
+   - If the project is not under version control, say so first and offer to save as "PRD.v2.md" instead -- overwriting a hand-written PRD with no way to recover it destroys the diff the user needs in order to review what you changed
 
 4. QUALITY ASSESSMENT
    - Score the PRD (1-10) on: Completeness, Clarity, Feasibility, and User-Focus
+
+5. PRD-REVIEW.md
+   - Write deliverables 1, 2 and 4 to "PRD-REVIEW.md" alongside the improved PRD: the gap list, the recommendations, the scores, and why each change was made
+   - Findings that live only in this conversation are gone the moment it ends. The next reader then sees a decision in PRD.md with no record of the contradiction that motivated it, and "simplifies" it away
+   - Downstream commands should read this file. Every High-impact finding must stay traceable into FEATURES.md and the RFCs

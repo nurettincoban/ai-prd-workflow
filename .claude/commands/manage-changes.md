@@ -61,3 +61,5 @@ Assess and integrate the proposed changes by:
    - Evaluate business risks of not implementing the changes
 
 Provide a summary of your overall assessment first, then detailed analysis per the structure above, and finally a clear recommendation on how to proceed with each change.
+
+Save the complete assessment to `changes/CHANGE-REQUEST-[NNN].md`, numbering sequentially from the files already in that folder. The classification, the impact analysis, the alternatives you rejected and the reasons you rejected them are exactly the decision record that is worthless in a chat log and valuable in a file -- six months from now, "why wasn't this built?" is answered by that file or by nobody.
