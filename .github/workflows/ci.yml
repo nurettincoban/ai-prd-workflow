@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Regenerate commands for all tools
-        run: ./install.sh . --all
+      - name: Regenerate the committed command folders (Claude Code + Cursor)
+        run: ./install.sh .
       - name: Check for drift
         # `git status --porcelain` also catches generated files that were never
         # committed; `git diff --exit-code` only sees changes to tracked files.
@@ -33,7 +33,7 @@ jobs:
             git diff
             echo ""
             echo "::error::Generated command files are out of sync with the source prompts."
-            echo "Run './install.sh . --all' locally and commit the regenerated files."
+            echo "Run './install.sh .' locally and commit the regenerated files."
             exit 1
           fi
 

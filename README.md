@@ -83,7 +83,7 @@ Then open your project and work through the pipeline:
 ```
 
 > [!TIP]
-> Cloning this repo and opening it in Claude Code, Cursor, Gemini CLI, Windsurf, or OpenCode gives you the commands immediately — try them against the [example project](examples/url-shortener/).
+> Cloning this repo and opening it in Claude Code or Cursor gives you the commands immediately — try them against the [example project](examples/url-shortener/). For Gemini CLI, Windsurf, or OpenCode, run `./install.sh . --gemini --windsurf --opencode` in the clone first.
 
 ### Option 3: Copy-paste into any AI assistant
 
