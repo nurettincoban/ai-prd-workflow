@@ -43,6 +43,9 @@ The commands now ship as **Agent Skills** — one `SKILL.md` format for Claude C
 - RFC status is kept, not re-derived. `RFCS.md` carries a Status column that `/implement-rfc` (In progress → Implemented) and `/review-rfc` (Reviewed / Changes requested) update; `/workflow-status` starts from it and spot-checks it against the code instead of re-reading every RFC's criteria
 - `/review-rfc` appends a new round to `reviews/REVIEW-RFC-[ID].md` instead of overwriting the previous review
 - "Fresh eyes" is enforced instead of requested. `/review-rfc` opened with "run this in a fresh session", which the model only reads after it has been invoked in the current one; it now stops when the conversation contains the implementation it is about to review. `/generate-rfcs` runs the cold-read check itself with clean-context subagents where the tool supports them, and records which RFCs passed
+- `copy-prompt.sh` on Windows (Git Bash, Cygwin, WSL) sends the clipboard UTF-16 with a byte-order mark — `clip.exe` garbled the prompts' em dashes and arrows — and supports Wayland (`wl-copy`)
+- `.gitattributes` pins LF line endings, which the raw `curl | bash` path and the skills' checksums rely on
+- `AGENTS.md` (imported by `CLAUDE.md`) tells AI agents working on this repo what they most often get wrong: edit the root prompts and `shared/`, never the generated `skills/`
 
 ### Removed
 - The committed `.claude/commands/` and `.cursor/commands/` folders, replaced by `skills/`. Cloning the repo no longer installs the commands into the clone itself; install the plugin or run `install.sh`

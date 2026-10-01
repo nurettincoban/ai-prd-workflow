@@ -64,25 +64,30 @@ if [ ! -f "$1" ]; then
     exit 1
 fi
 
+# Windows' clip.exe reads its input in the console code page unless it is UTF-16
+# with a byte-order mark, so the em dashes and arrows in the prompts would arrive
+# garbled. Send it UTF-16LE with a BOM instead.
+copy_windows() {
+    if command -v iconv > /dev/null; then
+        { printf 'ÿþ'; iconv -f UTF-8 -t UTF-16LE < "$1"; } | clip.exe
+    else
+        clip.exe < "$1"
+    fi
+}
+
 # Copy to clipboard based on OS
 if [[ "$OSTYPE" == "darwin"* ]]; then
     pbcopy < "$1"
-    echo "Copied '$1' to clipboard. Paste it into your AI assistant."
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    if command -v xclip > /dev/null; then
-        xclip -selection clipboard < "$1"
-        echo "Copied '$1' to clipboard. Paste it into your AI assistant."
-    elif command -v xsel > /dev/null; then
-        xsel --clipboard < "$1"
-        echo "Copied '$1' to clipboard. Paste it into your AI assistant."
-    else
-        echo "Error: xclip or xsel is not installed. Please install one of them or copy the file contents manually."
-        exit 1
-    fi
-elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-    clip < "$1"
-    echo "Copied '$1' to clipboard. Paste it into your AI assistant."
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] || grep -qi microsoft /proc/version 2> /dev/null; then
+    copy_windows "$1"   # Git Bash, Cygwin, or WSL
+elif [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy > /dev/null; then
+    wl-copy < "$1"
+elif command -v xclip > /dev/null; then
+    xclip -selection clipboard < "$1"
+elif command -v xsel > /dev/null; then
+    xsel --clipboard < "$1"
 else
-    echo "Unsupported operating system. Please copy the file contents manually."
+    echo "Error: no clipboard tool found (pbcopy, clip.exe, wl-copy, xclip or xsel). Copy the file contents manually."
     exit 1
 fi
+echo "Copied '$1' to clipboard. Paste it into your AI assistant."

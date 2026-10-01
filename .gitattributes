@@ -1,0 +1,4 @@
+# LF everywhere: the prompts are fetched raw by `curl | bash`, every SKILL.md
+# carries a checksum of its own bytes, and CI regenerates skills/ on Linux.
+* text=auto eol=lf
+*.png binary
