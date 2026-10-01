@@ -18,7 +18,7 @@ for f in "$ROOT"/skills/*/SKILL.md; do
     head -1 "$f" | grep -qx -- '---' || fail "$f: no frontmatter"
     grep -qx "name: $name" "$f" || fail "$f: name does not match its folder"
     desc="$(sed -n 's/^description: "\(.*\)"$/\1/p' "$f")"
-    [ -n "$desc" ] && [ "${#desc}" -le 1024 ] || fail "$f: description missing or longer than 1024 characters"
+    if [ -z "$desc" ] || [ "${#desc}" -gt 1024 ]; then fail "$f: description missing or longer than 1024 characters"; fi
     keys="$(awk 'NR==1{next} /^---$/{exit} /^[a-z-]+:/{sub(/:.*/,""); print}' "$f" | tr '\n' ' ')"
     for key in $keys; do
         case "$key" in name|description|license|compatibility|metadata|allowed-tools|argument-hint|context|agent) ;;
@@ -76,7 +76,8 @@ out="$("$ROOT/install.sh" "$t")"
 echo "$out" | grep -q "still has v2 command files" || fail "legacy files not reported: $out"
 [ -f "$t/.claude/commands/create-prd.md" ] || fail "legacy file moved without --remove-legacy"
 "$ROOT/install.sh" "$t" --remove-legacy > /dev/null
-[ ! -f "$t/.claude/commands/create-prd.md" ] && [ -f "$t/.claude/commands/.ai-prd-workflow-v2-backup/create-prd.md" ] || fail "--remove-legacy did not back up .claude/commands"
+[ ! -f "$t/.claude/commands/create-prd.md" ] || fail "--remove-legacy left .claude/commands/create-prd.md in place"
+[ -f "$t/.claude/commands/.ai-prd-workflow-v2-backup/create-prd.md" ] || fail "--remove-legacy did not back up .claude/commands"
 [ -f "$t/.cursor/commands/.ai-prd-workflow-v2-backup/review-rfc.md" ] || fail "--remove-legacy did not back up .cursor/commands"
 [ -f "$t/.claude/commands/deploy.md" ] || fail "--remove-legacy touched a command that is not ours"
 ok "v2 command files reported; --remove-legacy backs up ours and leaves others alone"
@@ -89,17 +90,17 @@ t="$(fresh)"
 url="file://$served"
 if command -v cygpath > /dev/null 2>&1; then url="file:///$(cygpath -m "$served")"; fi
 (cd "$t" && AI_PRD_WORKFLOW_RAW="$url" bash -s -- "$t" < "$ROOT/install.sh" > /dev/null)
-[ "$(count_skills "$t/.claude/skills")" -eq "$EXPECTED" ] && [ "$(count_skills "$t/.agents/skills")" -eq "$EXPECTED" ] || fail "curl-path install incomplete"
+if [ "$(count_skills "$t/.claude/skills")" -ne "$EXPECTED" ] || [ "$(count_skills "$t/.agents/skills")" -ne "$EXPECTED" ]; then fail "curl-path install incomplete"; fi
 diff -r "$ROOT/skills" "$t/.agents/skills" > /dev/null || fail "curl-path skills differ from skills/"
 ok "curl | bash path installs the same files"
 
 # --- flags --------------------------------------------------------------------------
 t="$(fresh)"
 "$ROOT/install.sh" "$t" --claude > /dev/null
-[ -d "$t/.claude/skills" ] && [ ! -d "$t/.agents" ] || fail "--claude installed more than Claude Code"
+if [ ! -d "$t/.claude/skills" ] || [ -d "$t/.agents" ]; then fail "--claude installed more than Claude Code"; fi
 t="$(fresh)"
 "$ROOT/install.sh" "$t" --cursor > /dev/null 2>&1
-[ -d "$t/.agents/skills" ] && [ ! -d "$t/.claude" ] || fail "--cursor did not map to .agents/skills"
+if [ ! -d "$t/.agents/skills" ] || [ -d "$t/.claude" ]; then fail "--cursor did not map to .agents/skills"; fi
 if "$ROOT/install.sh" "$t" --clade > /dev/null 2>&1; then fail "unknown flag accepted"; fi
 if "$ROOT/install.sh" "$t/does-not-exist" > /dev/null 2>&1; then fail "missing target accepted"; fi
 ok "--claude, --cursor alias, unknown flags and missing targets behave"

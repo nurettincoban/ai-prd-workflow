@@ -14,8 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Install shellcheck 0.11.0
+        # The runner image ships 0.9.0 (2022), which reports findings later releases fixed.
+        # Pin the version contributors and maintainers check against.
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/shellcheck.tar.xz" https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz
+          echo "8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198  $RUNNER_TEMP/shellcheck.tar.xz" | sha256sum -c -
+          tar -xJf "$RUNNER_TEMP/shellcheck.tar.xz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/shellcheck-v0.11.0" >> "$GITHUB_PATH"
       - name: shellcheck
-        run: shellcheck install.sh copy-prompt.sh scripts/test-install.sh evals/*/scaffold.sh
+        # Findings become annotations on the run, readable without access to the job log.
+        run: |
+          shellcheck --version | sed -n 2p
+          shellcheck -f gcc install.sh copy-prompt.sh scripts/test-install.sh evals/*/scaffold.sh \
+            | sed -E 's/^([^:]+):([0-9]+):([0-9]+): (error|warning|note): (.*)$/::\4 file=\1,line=\2,col=\3::\5/; s/^::note /::notice /'
+          exit "${PIPESTATUS[0]}"
 
   prompt-checks:
     name: Prompt contracts, shared sections, versions
