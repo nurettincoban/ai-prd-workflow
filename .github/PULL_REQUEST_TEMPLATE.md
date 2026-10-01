@@ -5,7 +5,7 @@
 ## Checklist
 
 - [ ] Prompt changes follow the conventions in [CONTRIBUTING.md](CONTRIBUTING.md) (role statement, inputs, numbered steps, output format; 40–70 lines)
-- [ ] Ran `./install.sh .` to regenerate `.claude/commands/` and `.cursor/commands/`, and committed the regenerated files (CI checks for drift)
+- [ ] Ran `./install.sh . --all` to regenerate the command folders, and committed the regenerated files (CI checks for drift)
 - [ ] New prompts are added to `install.sh` (`COMMANDS`), `copy-prompt.sh` (`show_prompts`), and the README table
 - [ ] Tested prompt changes with at least 2 different LLMs (summarize results below)
 

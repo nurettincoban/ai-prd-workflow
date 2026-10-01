@@ -2,7 +2,7 @@
 
 This project is a collection of markdown prompts plus two shell scripts (`install.sh`, `copy-prompt.sh`). There is no server, no dependencies, and nothing that handles user data. The security surface is:
 
-- **`install.sh` via `curl | bash`** — the script only writes markdown files into the target project's `.claude/commands/` and `.cursor/commands/` folders. If you prefer, clone the repo and read the script before running it, or copy the prompts manually.
+- **`install.sh` via `curl | bash`** — the script only writes prompt files into the target project's AI-tool folders (`.claude/`, `.cursor/`, and the others listed in `./install.sh --help`). If you prefer, clone the repo and read the script before running it, or copy the prompts manually.
 - **Prompt content** — prompts are instructions for your AI assistant. Review them (they're short) before installing, as you would any third-party agent instruction.
 
 ## Reporting a Vulnerability

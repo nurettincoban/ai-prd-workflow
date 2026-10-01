@@ -1,6 +1,6 @@
 # RFC Master Index — URL Shortener
 
-All RFCs in strict implementation order. Each RFC must be fully implemented and reviewed before starting the next.
+RFCs are numbered in a valid implementation order. Each RFC can start once its declared predecessors are complete — a solo implementer simply follows the numbers.
 
 ## Implementation Roadmap
 
@@ -18,7 +18,7 @@ RFC-001 (Core URL Shortening)
 └── RFC-003 (Custom Aliases and Expiration)
 ```
 
-RFC-001 is the critical path: it establishes the database schema, API skeleton, and redirect flow that both later RFCs extend. RFC-002 and RFC-003 are independent of each other but are sequenced analytics-first because click tracking touches the redirect hot path built in RFC-001, and it is cheaper to harden that path before layering alias and expiration rules onto it.
+RFC-001 is the critical path: it establishes the database schema, API skeleton, and redirect flow that both later RFCs extend. Known gap: RFC-003's cleanup job also deletes click data, which lives in RFC-002's `clicks` table, so RFC-003 really depends on RFC-002 as well — a predecessor it does not declare.
 
 ## Feature Coverage
 
@@ -28,7 +28,7 @@ RFC-001 is the critical path: it establishes the database schema, API skeleton, 
 | RFC-002 | F3 (Track clicks), F5 (Click count), F6 (Click timeline), F11 (Top referrers), F12 (Geographic breakdown) |
 | RFC-003 | F9 (Custom aliases), F10 (Expiration dates), F13 (URL validation) |
 
-Not yet assigned to an RFC: F7 (REST API polish incl. rate limiting), F14 (OpenAPI docs), and F15 (list URLs) — should/could-have features that would form an RFC-004 if promoted. Won't-have features (F16 user accounts, F17 custom domains, F18 QR codes) are out of scope for v1 — see [FEATURES.md](FEATURES.md).
+Not yet assigned to an RFC: F7 (REST API, including rate limiting) — a **Must Have**, so this is a gap to close before implementation starts — and the Could Have features F14 (OpenAPI docs) and F15 (list URLs). Won't-have features (F16 user accounts, F17 custom domains, F18 QR codes) are out of scope for v1 — see [FEATURES.md](FEATURES.md).
 
 ## Status
 

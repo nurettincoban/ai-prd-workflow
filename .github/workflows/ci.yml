@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   shellcheck:
     name: Shellcheck scripts
@@ -22,8 +25,12 @@ jobs:
       - name: Regenerate commands for all tools
         run: ./install.sh . --all
       - name: Check for drift
+        # `git status --porcelain` also catches generated files that were never
+        # committed; `git diff --exit-code` only sees changes to tracked files.
         run: |
-          if ! git diff --exit-code; then
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
+            git diff
             echo ""
             echo "::error::Generated command files are out of sync with the source prompts."
             echo "Run './install.sh . --all' locally and commit the regenerated files."
