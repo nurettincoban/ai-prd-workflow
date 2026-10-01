@@ -75,24 +75,47 @@ def priority_of(text):
 
 
 # ---------------------------------------------------------------- PRD.md
+def id_definitions(text, pattern):
+    """(defined IDs, IDs defined more than once) for IDs matching `pattern`.
+
+    Bullet definitions (`- **SEC-3**: ...`) win when a document has any.
+    Otherwise each table's first column defines IDs. An ID repeated in a
+    second table -- an index, a coverage table -- is a reference, not a
+    second definition; repeated within one table, or among bullets, it is.
+    """
+    bullets, tables = {}, {}
+    table_no, in_table = -1, False
+    for line in text.splitlines():
+        if line.strip().startswith("|"):
+            if not in_table:
+                table_no, in_table = table_no + 1, True
+            m = re.match(rf"^\s*\|\s*\**({pattern})\**\s*\|", line)
+            if m:
+                per_table = tables.setdefault(m.group(1), {})
+                per_table[table_no] = per_table.get(table_no, 0) + 1
+            continue
+        in_table = False
+        m = re.match(rf"^\s*[-*]\s+\**({pattern})\**\b", line)
+        if m:
+            bullets[m.group(1)] = bullets.get(m.group(1), 0) + 1
+    if bullets:
+        return set(bullets), {i for i, n in bullets.items() if n > 1}
+    return set(tables), {i for i, per in tables.items() if any(n > 1 for n in per.values())}
+
+
 def check_prd(root):
     prd = root / "PRD.md"
     if not prd.exists():
         return set()
     text = read(prd)
-    defined = {}
-    for line in text.splitlines():
-        m = re.match(r"^\s*(?:[-*]|\|)?\s*\**((?:FR|NFR)-\d+)\b", line)
-        if m:
-            defined[m.group(1)] = defined.get(m.group(1), 0) + 1
-    for rid, n in sorted(defined.items()):
-        if n > 1:
-            fail(f"PRD.md: requirement {rid} is defined {n} times")
+    defined, duplicated = id_definitions(text, r"(?:FR|NFR)-\d+")
+    for rid in sorted(duplicated):
+        fail(f"PRD.md: requirement {rid} is defined more than once")
     if not defined:
         warn("PRD.md: no requirement IDs (FR-n / NFR-n), so coverage from PRD to features cannot be checked")
     elif "## Product Type" not in text and "## Product type" not in text:
         warn("PRD.md: no 'Product Type' section; downstream commands will have to re-classify the product")
-    return set(defined)
+    return defined
 
 
 # ---------------------------------------------------------- FEATURES.md
@@ -177,17 +200,12 @@ def check_rules(root):
     path = root / "RULES.md"
     if not path.exists():
         return set()
-    ids = {}
-    for line in read(path).splitlines():
-        m = re.match(r"^\s*(?:[-*]\s*|\|\s*)\**([A-Z][A-Z0-9]*-\d+)\**", line)
-        if m:
-            ids[m.group(1)] = ids.get(m.group(1), 0) + 1
-    for rid, n in sorted(ids.items()):
-        if n > 1:
-            fail(f"RULES.md: rule {rid} is defined {n} times")
+    ids, duplicated = id_definitions(read(path), r"[A-Z][A-Z0-9]*-\d+")
+    for rid in sorted(duplicated):
+        fail(f"RULES.md: rule {rid} is defined more than once")
     if not ids:
         warn("RULES.md: rules have no IDs, so RFCs, reviews and change requests cannot cite them")
-    return set(ids)
+    return ids
 
 
 # ------------------------------------------------------------------ RFCs

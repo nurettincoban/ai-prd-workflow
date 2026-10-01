@@ -96,11 +96,11 @@ class TraceCheckTest(unittest.TestCase):
         code, out = run(project(files))
         self.assertEqual(code, 1, out)
         for expected in [
-            "FAIL  PRD.md: requirement FR-3 is defined 2 times",
+            "FAIL  PRD.md: requirement FR-3 is defined more than once",
             "FAIL  FR-3 (PRD.md) is not covered by any feature",
             "FAIL  FEATURES.md: duplicate feature ID F2",
             "FAIL  FEATURES.md: cites FR-9, which PRD.md does not define",
-            "FAIL  RULES.md: rule ARCH-1 is defined 2 times",
+            "FAIL  RULES.md: rule ARCH-1 is defined more than once",
             "FAIL  RFC-001-Core.md: cites F9, which FEATURES.md does not define",
             "FAIL  RFC-001-Core.md: cites rule SEC-7, which RULES.md does not define",
             "FAIL  RFC-001-Core.md: depends on RFC-002, which is not lower-numbered",
@@ -125,6 +125,27 @@ class TraceCheckTest(unittest.TestCase):
         code, out = run(project(files))
         self.assertEqual(code, 1, out)
         self.assertIn("FAIL  FR-3 (PRD.md) is not covered by any feature", out)
+
+    def test_index_tables_repeating_ids_are_references_not_duplicates(self):
+        files = dict(CLEAN)
+        # Bullet definitions plus an index table that lists the same rule IDs
+        files["RULES.md"] += "\n## Index\n\n| Rule | Topic |\n|---|---|\n| SEC-1 | input |\n| ARCH-1 | layers |\n"
+        # Requirements defined in a table, then repeated in a coverage table
+        files["PRD.md"] = (
+            "## Product Type\nservice/API\n\n"
+            "| ID | Requirement |\n|---|---|\n| FR-1 | Create |\n| FR-2 | Redirect |\n| NFR-1 | p95 |\n| NFR-2 | Validate |\n\n"
+            "## Coverage\n\n| ID | Covered by |\n|---|---|\n| FR-1 | F1 |\n| FR-2 | F2 |\n"
+        )
+        code, out = run(project(files))
+        self.assertEqual(code, 0, out)
+        self.assertIn("4 requirements, 3 features, 2 rules", out)
+
+    def test_an_id_twice_in_one_table_is_a_duplicate(self):
+        files = dict(CLEAN)
+        files["RULES.md"] = "| ID | Rule |\n|---|---|\n| SEC-1 | a |\n| ARCH-1 | b |\n| SEC-1 | c |\n"
+        code, out = run(project(files))
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL  RULES.md: rule SEC-1 is defined more than once", out)
 
     def test_changes_requested_needs_a_review_record(self):
         files = dict(CLEAN)
