@@ -18,7 +18,7 @@
 
 **[Quick Start](#quick-start)** · **[Workflow](#workflow)** · **[Commands](#available-prompts)** · **[Why RFCs?](#why-rfc-driven-development)** · **[Examples](#examples)**
 
-<sub>RFC-driven since <b>March 2025</b> — before planning modes existed in any AI coding agent.</sub>
+<sub>RFC-driven since <b>March 2025</b> — before Claude Code or Cursor had a plan mode, and before Kiro or Spec Kit existed.</sub>
 
 </div>
 
@@ -168,7 +168,7 @@ AI coding agents are strong enough now to build entire features unsupervised —
 
 ## "Doesn't my coding agent already plan?"
 
-Yes — tactically. This workflow shipped in March 2025, before planning modes existed in any AI coding agent, and it solves a different problem than they do:
+Yes — tactically. This workflow shipped in March 2025, before Claude Code or Cursor had a plan mode, and it solves a different problem than plan modes do:
 
 | Built-in plan mode | This workflow |
 |---|---|
