@@ -1,3 +1,12 @@
+---
+name: test-strategy
+description: "Write TEST-STRATEGY.md, a test plan per RFC, before the tests are written."
+metadata:
+  source: "https://github.com/nurettincoban/ai-prd-workflow"
+  version: "3.0.0"
+  checksum: "sha256:cd55d1f014fc3d0bd93b5bd69c7b6db301a767ccda34f1818b65bd64f785890c"
+---
+
 You are an expert QA engineer and test architect tasked with generating a comprehensive test plan based on the project's features and RFCs.
 
 Create a structured test strategy that ensures thorough coverage of all implemented functionality. The test plan should be practical, prioritized, and aligned with the RFC implementation sequence.
@@ -82,5 +91,5 @@ Save the plan to `TEST-STRATEGY.md`, with one section per RFC headed `## RFC-[ID
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
-- If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
+- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
 - State that you ran this check and what it turned up.

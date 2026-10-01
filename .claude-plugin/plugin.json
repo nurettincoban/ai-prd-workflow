@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "prd-workflow",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "RFC-driven development workflow: vague idea → verified PRD → features → rules → sequenced RFCs → reviewed, tested code",
   "author": {
     "name": "Nurettin Coban",
@@ -16,6 +16,5 @@
     "spec-driven",
     "workflow",
     "product-requirements"
-  ],
-  "commands": "./.claude/commands"
+  ]
 }

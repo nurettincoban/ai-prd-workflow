@@ -31,8 +31,8 @@ show_prompts() {
     echo "  prd-change-management-prompt.md            Manage PRD changes mid-development"
     echo "  workflow-status-prompt.md                  Show workflow progress and next step"
     echo ""
-    echo "Tip: prefer native slash commands? Run ./install.sh <your-project> to install"
-    echo "these as /commands for Claude Code, Cursor, Gemini CLI, Windsurf, or OpenCode."
+    echo "Tip: prefer slash commands? Run ./install.sh <your-project> to install these as"
+    echo "Agent Skills for Claude Code, Codex, Copilot, Cursor, Gemini CLI, OpenCode, and Devin."
 }
 
 # Handle flags

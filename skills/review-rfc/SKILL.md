@@ -1,4 +1,16 @@
-Target RFC: the ID provided after this command in my message — substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
+---
+name: review-rfc
+description: "Review an implemented RFC in a fresh context against its acceptance criteria, RULES.md and the test plan, and save the review to reviews/."
+argument-hint: "<rfc-id>"
+context: fork
+agent: general-purpose
+metadata:
+  source: "https://github.com/nurettincoban/ai-prd-workflow"
+  version: "3.0.0"
+  checksum: "sha256:d09031cde2a96a96151860bd2c4f067c7c6b817a2f82e7da193cfd25f5e6a31d"
+---
+
+Target RFC ID: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the RFC ID from my message instead. Substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
 
 **Fresh eyes first.** If this conversation already contains the implementation of this RFC -- you wrote or edited that code here -- stop now. Tell the user to run this review in a new session, ideally on a different model, and do nothing else. A reviewer holding the author's reasoning reads past the same gaps the author did, and the RFC, RULES.md, FEATURES.md and TEST-STRATEGY.md contain everything a reviewer needs -- that is the point of them.
 

@@ -1,5 +1,10 @@
 ---
-description: Document an existing codebase as PRD.md, FEATURES.md and RULES.md, so new work is planned against the code as it is
+name: document-existing
+description: "Document an existing codebase as PRD.md, FEATURES.md and RULES.md, so new work is planned against the code as it is. Use instead of create-prd when the code already exists."
+metadata:
+  source: "https://github.com/nurettincoban/ai-prd-workflow"
+  version: "3.0.0"
+  checksum: "sha256:d01c2b2be8cd9179b45db87a0955a7d6c984e3f2dc2eadc8827963d64dffc1d2"
 ---
 
 You are a senior engineer and product manager onboarding an existing codebase into an RFC-driven workflow. The code already exists. Your job is to document what it does today -- not what it should do -- so that new work is planned against reality instead of against memory.
@@ -47,7 +52,7 @@ Cite a file path for every claim about existing behavior, and mark anything infe
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
-- If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
+- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
 - State that you ran this check and what it turned up.
 
 ## NEXT STEP

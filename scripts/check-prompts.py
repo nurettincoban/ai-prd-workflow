@@ -23,7 +23,11 @@ reads and writes. This script fails when:
 Each of these has shipped as a real bug at least once: a review record no
 command produced, a test plan the implementer never opened, rule IDs that
 were cited everywhere and created nowhere.
+
+Versions -- install.sh's VERSION, .claude-plugin/plugin.json and the
+CHANGELOG must name the same release.
 """
+import json
 import re
 import sys
 from pathlib import Path
@@ -173,10 +177,24 @@ def check_shared_sections(fix):
             errors.append(f"shared/{name} is not used by any prompt")
 
 
+def check_versions():
+    m = re.search(r'^VERSION="([^"]+)"', read(ROOT / "install.sh"), re.M)
+    if not m:
+        errors.append("install.sh has no VERSION=\"x.y.z\" line")
+        return
+    version = m.group(1)
+    plugin = json.loads(read(ROOT / ".claude-plugin" / "plugin.json")).get("version")
+    if plugin != version:
+        errors.append(f"plugin.json says version {plugin}, install.sh says {version}")
+    if f"## [{version}]" not in read(ROOT / "CHANGELOG.md"):
+        errors.append(f"CHANGELOG.md has no '## [{version}]' entry")
+
+
 def main():
     fix = "--fix" in sys.argv[1:]
     check_contracts()
     check_shared_sections(fix)
+    check_versions()
     if errors:
         for e in errors:
             print(f"FAIL  {e}")

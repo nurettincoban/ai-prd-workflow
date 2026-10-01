@@ -15,14 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: shellcheck
-        run: shellcheck install.sh copy-prompt.sh
+        run: shellcheck install.sh copy-prompt.sh scripts/test-install.sh
 
   prompt-checks:
-    name: Prompt contracts
+    name: Prompt contracts, shared sections, versions
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Every artifact a command reads is written by another, and vice versa
+      - name: Contracts hold, shared sections match shared/, version numbers agree
         run: python3 scripts/check-prompts.py
 
   trace-check:
@@ -41,93 +41,41 @@ jobs:
       - name: Unit tests for the traceability checker
         run: python -m unittest discover scripts -v
 
-  generated-commands:
-    name: Generated commands match source prompts
+  skills:
+    name: Generated skills and install.sh
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Regenerate the committed command folders (Claude Code + Cursor)
-        run: ./install.sh .
-      - name: Check for drift
+      - name: skills/ matches the prompt sources
         # `git status --porcelain` also catches generated files that were never
         # committed; `git diff --exit-code` only sees changes to tracked files.
         run: |
+          ./install.sh --build
           if [ -n "$(git status --porcelain)" ]; then
             git status --short
             git diff
             echo ""
-            echo "::error::Generated command files are out of sync with the source prompts."
-            echo "Run './install.sh .' locally and commit the regenerated files."
+            echo "::error::skills/ is out of sync with the source prompts."
+            echo "Run './install.sh --build' locally and commit the result."
             exit 1
           fi
-
-  install-smoke-test:
-    name: install.sh smoke test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install all tools into a fresh project
-        run: |
-          expected="$(sed -n "/^COMMANDS='$/,/^'$/p" install.sh | grep -c '|')"
-          target="$(mktemp -d)"
-          ./install.sh "$target" --all
-          for dir in .claude/commands .cursor/commands .gemini/commands .windsurf/workflows .opencode/commands; do
-            count="$(find "$target/$dir" -type f | wc -l)"
-            echo "$dir: $count commands"
-            [ "$count" -eq "$expected" ] || { echo "::error::expected $expected commands in $dir, got $count"; exit 1; }
-          done
-      - name: Generated Gemini TOML is valid
-        run: |
-          target="$(mktemp -d)"
-          ./install.sh "$target" --gemini
-          expected="$(sed -n "/^COMMANDS='$/,/^'$/p" install.sh | grep -c '|')"
-          python3 - "$target" "$expected" <<'EOF'
-          import glob, sys, tomllib
-          files = glob.glob(sys.argv[1] + "/.gemini/commands/*.toml")
-          assert len(files) == int(sys.argv[2]), f"expected {sys.argv[2]} TOML files, got {len(files)}"
-          for f in files:
-              with open(f, "rb") as fh:
-                  data = tomllib.load(fh)
-              assert data.get("description") and len(data.get("prompt", "")) > 100, f
-          print("all Gemini TOML files parse")
-          EOF
-      - name: Windsurf workflows stay under the 12k character limit
-        run: |
-          target="$(mktemp -d)"
-          ./install.sh "$target" --windsurf
-          for f in "$target"/.windsurf/workflows/*.md; do
-            size="$(wc -c < "$f")"
-            [ "$size" -le 12000 ] || { echo "::error::$f is $size chars (Windsurf limit is 12000)"; exit 1; }
-          done
-      - name: Default install is Claude Code + Cursor only
-        run: |
-          target="$(mktemp -d)"
-          ./install.sh "$target"
-          [ -d "$target/.claude/commands" ] && [ -d "$target/.cursor/commands" ] || exit 1
-          for dir in .gemini .windsurf .opencode; do
-            [ ! -d "$target/$dir" ] || { echo "::error::default install must not create $dir"; exit 1; }
-          done
-      - name: Single-tool install stays single-tool
-        run: |
-          target="$(mktemp -d)"
-          ./install.sh "$target" --claude
-          [ -d "$target/.claude/commands" ] || exit 1
-          [ ! -d "$target/.cursor" ] || { echo "::error::--claude must not create .cursor"; exit 1; }
+      - name: install.sh end-to-end tests
+        run: bash scripts/test-install.sh
 
   plugin-manifests:
-    name: Plugin manifests are valid JSON
+    name: Plugin manifests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Validate JSON and cross-check names
         run: |
           python3 - <<'EOF'
-          import json
+          import json, os
           plugin = json.load(open(".claude-plugin/plugin.json"))
           market = json.load(open(".claude-plugin/marketplace.json"))
-          assert plugin["name"] == "prd-workflow"
-          entries = {p["name"] for p in market["plugins"]}
-          assert plugin["name"] in entries, "marketplace must list the plugin"
-          assert plugin["commands"] == "./.claude/commands"
-          print("plugin manifests OK")
+          assert plugin["name"] in {p["name"] for p in market["plugins"]}, "marketplace must list the plugin"
+          assert "commands" not in plugin, "the plugin ships skills/, not commands"
+          skills = [d for d in os.listdir("skills") if os.path.isfile(os.path.join("skills", d, "SKILL.md"))]
+          assert skills, "skills/ is empty"
+          print(f"plugin manifests OK, {len(skills)} skills")
           EOF

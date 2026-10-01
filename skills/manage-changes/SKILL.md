@@ -1,5 +1,10 @@
 ---
-description: Analyze and integrate PRD changes mid-development
+name: manage-changes
+description: "Assess a requirement change mid-project against the rules and past decisions, then update every affected artifact together."
+metadata:
+  source: "https://github.com/nurettincoban/ai-prd-workflow"
+  version: "3.0.0"
+  checksum: "sha256:34c94396b5cb2b4d5453edcff772df688dc3c34b299b0686c200907b243fbedc"
 ---
 
 You are an expert product manager and change management specialist tasked with analyzing and integrating proposed changes to an existing Product Requirements Document (PRD) while development is already in progress.

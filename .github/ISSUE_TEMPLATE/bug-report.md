@@ -12,4 +12,4 @@ What you ran, what you expected, and what you got instead. Include the exact com
 **Environment**
 - OS:
 - Tool (Claude Code / Cursor / other + version):
-- Install method (curl | bash, cloned repo, manual copy):
+- Install method (Claude Code plugin, curl | bash, cloned repo, manual copy) and version (shown at the end of the install output, or `version:` in any SKILL.md):

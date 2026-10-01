@@ -1,5 +1,10 @@
 ---
-description: Break the PRD into sequential implementation RFCs
+name: generate-rfcs
+description: "Break the PRD into sequenced implementation RFCs under RFCs/ with an RFCS.md index, then cold-read each RFC for gaps."
+metadata:
+  source: "https://github.com/nurettincoban/ai-prd-workflow"
+  version: "3.0.0"
+  checksum: "sha256:70a1396f66e7c8902974d43186f633768db801b0c4efaeed9139fb1179345e7e"
 ---
 
 You are an expert software architect and project manager tasked with breaking down the Product Requirements Document (PRD.md), features list (FEATURES.md), and project rules (RULES.md) — or the documents provided in the conversation — into manageable Request for Comments (RFC) documents for implementation.
@@ -86,7 +91,7 @@ Each RFC should be specific enough to guide implementation but flexible enough t
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
-- If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
+- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
 - State that you ran this check and what it turned up.
 
 ## COLD-READ CHECK BEFORE IMPLEMENTATION

@@ -11,10 +11,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub stars](https://img.shields.io/github/stars/nurettincoban/ai-prd-workflow?style=flat&color=orange)](https://github.com/nurettincoban/ai-prd-workflow/stargazers)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#quick-start)
-[![Cursor](https://img.shields.io/badge/Cursor-slash_commands-111111)](#quick-start)
-[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-slash_commands-4285F4)](#quick-start)
-[![Windsurf](https://img.shields.io/badge/Windsurf-workflows-0EA47F)](#quick-start)
-[![OpenCode](https://img.shields.io/badge/OpenCode-slash_commands-555555)](#quick-start)
+[![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#quick-start)
 
 **[Quick Start](#quick-start)** · **[Workflow](#workflow)** · **[Commands](#available-prompts)** · **[Why RFCs?](#why-rfc-driven-development)** · **[Examples](#examples)**
 
@@ -28,9 +25,9 @@ A lightweight RFC-driven development workflow for AI coding tools. Eleven prompt
 
 Use it three ways:
 
-- **Claude Code plugin** — one-command install, updates with the repo
-- **Native slash commands** in Claude Code, Cursor, Gemini CLI, Windsurf, and OpenCode — `/create-prd`, `/implement-rfc 001`, `/workflow-status`, …
-- **Copy-paste prompts** into any AI assistant or IDE — ChatGPT, Codex CLI, Copilot, anything
+- **Claude Code plugin** — one command, updates with the repo
+- **Agent Skills** for Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode, and Devin — `/create-prd`, `/implement-rfc 001`, `/workflow-status`, …
+- **Copy-paste prompts** into any AI assistant — ChatGPT, Claude.ai, anything
 
 No CLI to learn, no framework to adopt, no lock-in. Just markdown.
 
@@ -45,9 +42,9 @@ Inside Claude Code:
 /plugin install prd-workflow@ai-prd-workflow
 ```
 
-Plugin commands are namespaced — `/prd-workflow:create-prd`, `/prd-workflow:implement-rfc 001`, etc. — and available in every project without touching its files.
+Plugin skills are namespaced — `/prd-workflow:create-prd`, `/prd-workflow:implement-rfc 001` — and available in every project without touching its files.
 
-### Option 2: Install as slash commands (Claude Code, Cursor, Gemini CLI, Windsurf, OpenCode)
+### Option 2: Install the skills into a project (any agent)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project
@@ -58,14 +55,25 @@ Or from a clone:
 ```bash
 git clone https://github.com/nurettincoban/ai-prd-workflow.git
 cd ai-prd-workflow
-./install.sh /path/to/your/project                      # Claude Code + Cursor (default)
-./install.sh /path/to/your/project --all                # every supported tool
-./install.sh /path/to/your/project --gemini --windsurf  # any combination of
-                                                        # --claude --cursor --gemini --windsurf --opencode
+./install.sh /path/to/your/project            # .claude/skills/ and .agents/skills/ (default)
+./install.sh /path/to/your/project --claude   # Claude Code only
+./install.sh /path/to/your/project --agents   # Codex, Copilot, Cursor, Gemini CLI, OpenCode, Devin only
 ```
 
+`install.sh` never overwrites a skill you have edited — it keeps your copy and tells you, and `--force` replaces it after saving a backup. Pin a release with `--ref v3.0.0` (and the matching tag in the curl URL). Upgrading from v2? Add `--remove-legacy` to move the old command files into a backup folder.
+
+| Tool | Reads | Run a command |
+|---|---|---|
+| Claude Code | `.claude/skills/`, or the plugin | `/create-prd`, `/implement-rfc 001` |
+| GitHub Copilot (VS Code, CLI) | `.agents/skills/` | `/create-prd`, `/implement-rfc 001` |
+| Cursor | `.agents/skills/` | `/create-prd` from the `/` menu |
+| Gemini CLI | `.agents/skills/` | `/create-prd` |
+| OpenCode | `.agents/skills/` | `/create-prd`, `/implement-rfc 001` |
+| Devin | `.agents/skills/` | `/create-prd` |
+| Codex | `.agents/skills/` | `$create-prd`, or pick it from `/skills` |
+
 > [!IMPORTANT]
-> **Restart Claude Code or Cursor after installing.** A running session does not pick up newly written command files, so the first command you type fails with `Unknown skill` — which reads like a broken install but is just a stale session. Type `/` after restarting to confirm you see `create-prd`.
+> **Restart your AI tool after installing.** A running session does not pick up new skills, so the first command you type fails with `Unknown skill` — which reads like a broken install but is just a stale session. Type `/` after restarting to confirm you see `create-prd`.
 
 Then open your project and work through the pipeline:
 
@@ -78,13 +86,13 @@ Then open your project and work through the pipeline:
 /generate-rfcs         # → RFCs/ folder, in dependency order
 /test-strategy         # test plan — before the tests get written
 /implement-rfc 001     # plan → your approval → implementation → verification
-/review-rfc 001        # fresh session → reviews/REVIEW-RFC-001.md
+/review-rfc 001        # fresh context → reviews/REVIEW-RFC-001.md
 /manage-changes        # requirements changed mid-build? assess impact first
 /workflow-status       # lost? see what's done and what's next
 ```
 
 > [!TIP]
-> Cloning this repo and opening it in Claude Code or Cursor gives you the commands immediately — try them against the [example project](examples/url-shortener/). For Gemini CLI, Windsurf, or OpenCode, run `./install.sh . --gemini --windsurf --opencode` in the clone first.
+> Want to see what each step produces first? The [url-shortener example](examples/url-shortener/) shows every artifact before and after the workflow.
 
 ### Option 3: Copy-paste into any AI assistant
 
@@ -205,8 +213,8 @@ The prompts are plain markdown and work with any modern LLM:
 Tool support:
 
 - **Plugin**: Claude Code (`/plugin marketplace add nurettincoban/ai-prd-workflow`)
-- **Native slash commands**: Claude Code, Cursor, Gemini CLI, Windsurf, OpenCode (via `install.sh`)
-- **Copy-paste**: GitHub Copilot, Codex CLI, Cline, Aider, or any chat interface (manually or via `./copy-prompt.sh <prompt-file>`); Codex CLI users can also drop the prompts into `~/.codex/prompts/` as custom prompts
+- **Agent Skills** (`SKILL.md`, via `install.sh`): Claude Code, GitHub Copilot, Cursor, Gemini CLI, OpenCode, Devin, Codex — see the table under [Quick Start](#quick-start)
+- **Copy-paste**: Cline, Aider, or any chat interface (manually or via `./copy-prompt.sh <prompt-file>`)
 
 ## Quick Tips
 

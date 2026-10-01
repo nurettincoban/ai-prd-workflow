@@ -1,9 +1,14 @@
 ---
-description: Implement a specific RFC (plan first, then code)
-argument-hint: [rfc-id]
+name: implement-rfc
+description: "Implement one RFC: check its predecessors, present a plan for approval, write the code, then demonstrate every acceptance criterion."
+argument-hint: "<rfc-id>"
+metadata:
+  source: "https://github.com/nurettincoban/ai-prd-workflow"
+  version: "3.0.0"
+  checksum: "sha256:dc0f22ae8eebf9590cb4b8fd781b9583f32d58b34477aefa1bc8bba13fa214f7"
 ---
 
-Target RFC ID: "$ARGUMENTS" — substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
+Target RFC ID: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the RFC ID from my message instead. Substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
 
 # Implement RFC-[ID]
 

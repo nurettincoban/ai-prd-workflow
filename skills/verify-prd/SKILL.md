@@ -1,3 +1,12 @@
+---
+name: verify-prd
+description: "Review PRD.md for gaps, contradictions and unverifiable claims, write an improved PRD.md and record the findings in PRD-REVIEW.md."
+metadata:
+  source: "https://github.com/nurettincoban/ai-prd-workflow"
+  version: "3.0.0"
+  checksum: "sha256:7d3332e5790aaaf1127e84d9d473f32eb8fe286f3f2058ad4a03fd3cb1f5d64f"
+---
+
 You are an expert product manager tasked with reviewing a Product Requirements Document (PRD). Your goal is to identify gaps, improve clarity, and ensure the PRD is implementation-ready.
 
 Review `PRD.md` in the current directory and provide actionable feedback. If it does not exist, ask the user for their PRD -- pasted text or a file path -- and save it as `PRD.md` before proceeding.
@@ -104,5 +113,5 @@ Provide specific recommendations in these areas:
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
-- If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
+- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
 - State that you ran this check and what it turned up.

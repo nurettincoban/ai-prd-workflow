@@ -1,5 +1,10 @@
 ---
-description: Generate development rules and standards into RULES.md
+name: generate-rules
+description: "Write RULES.md, the project standards the AI must follow, with registry-verified dependency versions and permanent rule IDs."
+metadata:
+  source: "https://github.com/nurettincoban/ai-prd-workflow"
+  version: "3.0.0"
+  checksum: "sha256:e73eec431881b67f87a10c9a917bf5d56f886d0d24a06df4263d123e5fcd733f"
 ---
 
 You are an expert software architect and technical lead tasked with creating a comprehensive RULES.md file based on the Product Requirements Document (PRD.md) and features list (FEATURES.md), or the documents provided in the conversation. If PRD-REVIEW.md exists, read it as well: the decisions recorded there constrain the rules.
@@ -63,5 +68,5 @@ First, provide a brief overview of the project based on the PRD and features lis
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
-- If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
+- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
 - State that you ran this check and what it turned up.

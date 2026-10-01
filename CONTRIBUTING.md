@@ -32,13 +32,16 @@ New prompt files should follow these conventions:
 
 ## Source of Truth & Generated Files
 
-The prompt `.md` files at the repo root are the single source of truth. The `.claude/commands/` and `.cursor/commands/` folders are **generated** by `install.sh` and committed — never edit them by hand. The Gemini CLI, Windsurf, and OpenCode formats are generated on demand by `install.sh` and not committed. (`.claude-plugin/` manifests are hand-maintained; the plugin reuses `.claude/commands/`.)
+The prompt `.md` files at the repo root are the single source of truth — they are also what copy-paste users read. `skills/` is **generated** from them by `./install.sh --build` and committed, because the Claude Code plugin, `install.sh` and the skills CLI all ship it as is. Never edit `skills/` by hand. (`.claude-plugin/` manifests are hand-maintained.)
 
 After adding or editing a prompt:
 
-1. If it's a new prompt, add it to the `COMMANDS` mapping in `install.sh` and to the `show_prompts` list in `copy-prompt.sh`
-2. Run `./install.sh .` to regenerate the committed command folders
-3. Commit the regenerated files together with your prompt change — CI fails if they drift from the source prompts
+1. If it's a new prompt, add it to the `COMMANDS` mapping in `install.sh` (name, source file, a description that says when to use it, argument hint, options), to the `show_prompts` list in `copy-prompt.sh`, and to the contracts table below
+2. Run `./install.sh --build` to regenerate `skills/`
+3. Run `python3 scripts/check-prompts.py` and `bash scripts/test-install.sh`
+4. Commit the regenerated files together with your prompt change — CI fails if `skills/` drifts from the source prompts
+
+Releasing: bump `VERSION` in `install.sh` and `version` in `.claude-plugin/plugin.json`, add the CHANGELOG entry, run `./install.sh --build` (every skill carries the version), and tag `vX.Y.Z`. `check-prompts.py` fails if the three disagree.
 
 ## Shared Sections
 

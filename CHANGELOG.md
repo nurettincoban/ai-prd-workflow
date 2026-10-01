@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [3.0.0] - 2026-10-01
+
+The commands now ship as **Agent Skills** — one `SKILL.md` format for Claude Code, Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode and Devin — and the hand-offs between them are checked by machine instead of by the model's self-review.
+
+**Upgrading from 2.x:** rerun `install.sh` with `--remove-legacy`, which installs the skills and moves the old command files into a backup folder. Command names are unchanged. If you edited an installed command, copy your changes into the new `SKILL.md`; `install.sh` will keep your edited skills from then on.
+
 
 ### Fixed
 - Five broken hand-offs between commands, the same class of bug 2.2.0 fixed for the review report:
@@ -19,18 +24,28 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - README no longer claims the workflow predates every AI planning mode — Aider, Roo Code and Cline shipped planning modes before March 2025. It now says what is true: it predates plan mode in Claude Code and Cursor, and both Kiro and Spec Kit
 
 ### Added
+- Agent Skills: `skills/<name>/SKILL.md`, generated from the prompt sources by `./install.sh --build` and shipped unchanged by every channel — the Claude Code plugin, `install.sh`, and anything that reads Agent Skills
+- `install.sh` installs into `.claude/skills/` and `.agents/skills/`, and no longer overwrites silently: every skill carries a version and a checksum, a skill you edited is kept, `--force` replaces it after saving a backup, `--ref vX.Y.Z` pins a release, and `--remove-legacy` moves v2 command files aside
+- `scripts/test-install.sh`, run in CI: fresh install, idempotent re-run, kept edits, `--force` backups, upgrades from an older release, v2 migration, and the `curl | bash` path end to end
+- `check-prompts.py` also fails when `install.sh`, `plugin.json` and this CHANGELOG disagree about the version
 - `/document-existing` — an entry point for codebases that already exist. It reads the code and its tests, asks what the code cannot say (users, intent, what is planned), and writes `PRD.md`, `FEATURES.md` (existing capabilities marked `Implemented`, with their code location) and `RULES.md` (the conventions the code actually follows). `/generate-rfcs` then plans only the new work. The README previously told existing-codebase users the workflow was not for them
 - `scripts/trace-check.py` — a deterministic traceability check (Python 3.8+, standard library only). It fails when a cited ID does not exist, a PRD requirement has no feature, a Must Have feature has no RFC, an RFC depends on a later one, `RFCS.md` disagrees with `RFCs/`, or an RFC is marked reviewed without a review record. The self-checks and `/workflow-status` run it when it is available, because recounting tables and following references is exactly what an LLM self-check is worst at
 - Machine-readable formats the checker relies on: permanent requirement IDs in the PRD (`FR-1`, `NFR-1`), a fixed column layout for `FEATURES.md` with a Source column, four header lines at the top of every RFC (`**Features**`, `**Depends on**`, `**Rules**`, `**Complexity**`), and a Status column in `RFCS.md`
 - Artifact contracts table in `CONTRIBUTING.md`, enforced in CI by `scripts/check-prompts.py`: it fails when a command reads something nothing writes, writes something nothing reads, or does not mention an artifact its row declares
 
 ### Changed
+- One skills format replaces the five per-tool command formats. Cursor moved custom commands to skills; Gemini CLI (0.34+), OpenCode and Devin run skills as slash commands; and Devin Desktop removed Windsurf workflows in September 2026, so 2.3.0's `.windsurf/workflows/` target no longer worked. `--cursor`, `--gemini`, `--opencode` and `--windsurf` still work, as aliases for `--agents`
+- `/review-rfc` runs in a forked context with no conversation history (`context: fork`) in Claude Code and Copilot, so a fresh-eyes review no longer depends on the user opening a new session
+- `trace-check.py` is bundled with the skills that run it
 - The product type is classified once, in `/create-prd` or `/verify-prd`, and recorded in a **Product Type** section of the PRD. The four downstream commands read it instead of re-classifying — six separate classifications could disagree from one step to the next
 - The classification checklist covers all seven product types (web app, mobile app, library/SDK, CLI, service/API, data pipeline, game). Only library/SDK had concrete checks before; the other six were told to "work out their own equivalents"
 - Sections shared word for word across prompts live in `shared/`, and `scripts/check-prompts.py` fails CI when a copy drifts (`--fix` re-syncs them). `/generate-rfcs` also folds its overlapping sections 7 and 8 into 3 and 4: 101 → 93 lines despite new format rules
 - RFC status is kept, not re-derived. `RFCS.md` carries a Status column that `/implement-rfc` (In progress → Implemented) and `/review-rfc` (Reviewed / Changes requested) update; `/workflow-status` starts from it and spot-checks it against the code instead of re-reading every RFC's criteria
 - `/review-rfc` appends a new round to `reviews/REVIEW-RFC-[ID].md` instead of overwriting the previous review
 - "Fresh eyes" is enforced instead of requested. `/review-rfc` opened with "run this in a fresh session", which the model only reads after it has been invoked in the current one; it now stops when the conversation contains the implementation it is about to review. `/generate-rfcs` runs the cold-read check itself with clean-context subagents where the tool supports them, and records which RFCs passed
+
+### Removed
+- The committed `.claude/commands/` and `.cursor/commands/` folders, replaced by `skills/`. Cloning the repo no longer installs the commands into the clone itself; install the plugin or run `install.sh`
 
 ## [2.3.0] - 2026-10-01
 

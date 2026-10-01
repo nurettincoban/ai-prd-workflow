@@ -16,7 +16,7 @@ You are guiding a project through an RFC-driven development workflow with these 
 
 Stage 6 comes before stage 7 deliberately: a test plan written after the code is a coverage audit, not a plan.
 
-Inspect the current project to determine workflow progress. If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` first: it checks IDs, coverage, RFC dependencies and review records mechanically, and its FAIL lines belong in your Inconsistencies section.
+Inspect the current project to determine workflow progress. If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project first (`python3 <path>/trace-check.py .`): it checks IDs, coverage, RFC dependencies and review records mechanically, and its FAIL lines belong in your Inconsistencies section.
 
 1. Which artifacts exist: PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCS.md, RFCs/ folder, TEST-STRATEGY.md, reviews/, changes/?
 2. Which RFCs are implemented? Start from the Status column in RFCS.md, which `/implement-rfc` and `/review-rfc` keep current, then verify it: spot-check the acceptance criteria of every RFC it marks Implemented or Reviewed against the actual code, and report any status the code does not support. Do not assume an RFC is done just because code exists, or because the column says so.
