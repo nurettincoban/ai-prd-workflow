@@ -194,12 +194,7 @@ The two compose rather than compete: `/generate-rfcs` decides **what** the next 
 
 ## Examples
 
-The [examples/url-shortener](examples/url-shortener/) folder contains complete sample outputs for each step of the workflow:
-
-- [PRD](examples/url-shortener/PRD.md) — Product Requirements Document
-- [Features](examples/url-shortener/FEATURES.md) — Extracted features with MoSCoW prioritization
-- [Rules](examples/url-shortener/RULES.md) — Development standards and guidelines
-- [RFCs](examples/url-shortener/RFCs/) — Implementation units (3 RFCs)
+[examples/url-shortener](examples/url-shortener/) runs one small product through the workflow twice: the artifacts the v2.0 prompts produced, and the same PRD taken through 3.0.0. It lists the problems we found in the v2.0 set by hand, and what fresh-context runs of `/workflow-status` and `/verify-prd` found without seeing that list.
 
 ## Compatibility
 
