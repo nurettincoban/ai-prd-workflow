@@ -38,3 +38,12 @@ Extract and organize the features by:
    - Features that may present significant technical challenges
 
 First, provide a brief overview of the product based on the PRD. Then create the FEATURES.md content with a summary section showing feature counts by priority and category.
+
+Feature IDs are permanent. If FEATURES.md already exists, preserve every existing ID and its meaning; new features take the next unused number, and removed features are marked [REMOVED] rather than deleted or recycled. Never renumber -- the RFCs cite these IDs by number.
+
+## SELF-CHECK BEFORE FINISHING
+
+- Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
+- Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
+- Confirm no two tables in the document disagree with each other.
+- State that you ran this check and what it turned up.
