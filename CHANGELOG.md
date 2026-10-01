@@ -37,6 +37,7 @@ The commands now ship as **Agent Skills** — one `SKILL.md` format for Claude C
 - Artifact contracts table in `CONTRIBUTING.md`, enforced in CI by `scripts/check-prompts.py`: it fails when a command reads something nothing writes, writes something nothing reads, or does not mention an artifact its row declares
 
 ### Changed
+- README rewritten to say each thing once: a three-path quick start, one command table (what each command does, what it writes, and its prompt) instead of three overlapping lists, the plan-mode comparison and the evidence condensed, and install details moved below the quick start. 240 → 183 lines. Adds an acknowledgment of Anthropic's support
 - One skills format replaces the five per-tool command formats. Cursor moved custom commands to skills; Gemini CLI (0.34+), OpenCode and Devin run skills as slash commands; and Devin Desktop removed Windsurf workflows in September 2026, so 2.3.0's `.windsurf/workflows/` target no longer worked. `--cursor`, `--gemini`, `--opencode` and `--windsurf` still work, as aliases for `--agents`
 - `/review-rfc` runs in a forked context with no conversation history (`context: fork`) in Claude Code and Copilot, so a fresh-eyes review no longer depends on the user opening a new session
 - `trace-check.py` is bundled with the skills that run it
