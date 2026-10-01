@@ -62,6 +62,33 @@ jobs:
       - name: install.sh end-to-end tests
         run: bash scripts/test-install.sh
 
+  eval-suite:
+    name: Eval suite fixtures and graders (no model calls)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every case's scaffold seeds an empty workspace
+        run: |
+          for scaffold in evals/*/scaffold.sh; do
+            ws="$(mktemp -d)"
+            (cd "$ws" && HOME="$(mktemp -d)" bash "$GITHUB_WORKSPACE/$scaffold")
+            echo "ok  $scaffold: $(git -C "$ws" ls-files | wc -l) fixture files"
+          done
+      - name: Every regex grader compiles as a JavaScript regex
+        run: |
+          node -e '
+            const fs = require("fs"), path = require("path");
+            let n = 0;
+            for (const c of fs.readdirSync("evals")) {
+              const dir = path.join("evals", c, "graders");
+              if (!fs.existsSync(dir)) continue;
+              for (const f of fs.readdirSync(dir)) {
+                const m = fs.readFileSync(path.join(dir, f), "utf8").match(/^pattern: \x27(.*)\x27$/m);
+                if (m) { new RegExp(m[1], "i"); n++; }
+              }
+            }
+            console.log(n + " regex graders compile");'
+
   plugin-manifests:
     name: Plugin manifests
     runs-on: ubuntu-latest

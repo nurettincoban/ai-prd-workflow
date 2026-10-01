@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: extract-features-keeps-ids
+context:
+  scaffold_script: scaffold.sh
