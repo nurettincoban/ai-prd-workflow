@@ -78,6 +78,7 @@ fi
 # command-name|source-prompt-file|description|argument-hint
 COMMANDS='
 create-prd|interactive-prd-creation-prompt.md|Create a PRD through guided step-by-step questioning|
+document-existing|document-existing-prompt.md|Document an existing codebase as PRD.md, FEATURES.md and RULES.md, so new work is planned against the code as it is|
 verify-prd|prd-comprehensive-verification-prompt.md|Verify and improve PRD.md by finding gaps and quality issues|
 extract-features|prd-to-features-prompt.md|Extract prioritized features from PRD.md into FEATURES.md|
 generate-rules|prd-to-rules-prompt.md|Generate development rules and standards into RULES.md|

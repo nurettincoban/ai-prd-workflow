@@ -8,7 +8,7 @@
     {
       "name": "prd-workflow",
       "source": "./",
-      "description": "Ten commands that take a project from vague idea to verified PRD, prioritized features, project rules, and sequenced RFCs — then guide implementation, review, and testing.",
+      "description": "Eleven commands that take a project — new or existing — to a verified PRD, prioritized features, project rules, and sequenced RFCs — then guide implementation, review, and testing.",
       "category": "workflows",
       "tags": ["prd", "rfc", "spec-driven", "planning"]
     }

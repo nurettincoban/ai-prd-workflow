@@ -38,6 +38,7 @@ Generate the RFC files under an RFCs folder by:
    - Balance RFC size -- not too small (trivial) or too large (unmanageable)
    - Consider dependencies between features when grouping
    - Identify shared components that multiple features depend on
+   - Features with Status `Implemented` (written by `/document-existing`) already exist: do not plan them, but reference them where a new RFC builds on them
 
 3. RFC STRUCTURE:
    Name each file `RFCs/RFC-001-Short-Title.md` and put these four lines right under its title, exactly as shown, so tools and later commands can trace it:

@@ -43,6 +43,8 @@ Write every feature as a row in a table with these columns: `| ID | Feature | Pr
 
 First, provide a brief overview of the product based on the PRD. Then create the FEATURES.md content with a summary section showing feature counts by priority and category.
 
+If FEATURES.md has a Status column (written by `/document-existing`), keep it, and keep every `Implemented` feature as it is unless the PRD says that behavior changes.
+
 Feature IDs are permanent. If FEATURES.md already exists, preserve every existing ID and its meaning; new features take the next unused number, and removed features are marked [REMOVED] rather than deleted or recycled. Never renumber -- the RFCs cite these IDs by number.
 
 ## SELF-CHECK BEFORE FINISHING

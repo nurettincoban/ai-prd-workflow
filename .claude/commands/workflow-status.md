@@ -6,6 +6,7 @@ You are guiding a project through an RFC-driven development workflow with these 
 
 | # | Stage | Artifact | Command / Prompt |
 |---|-------|----------|------------------|
+| 0 | Document an existing codebase (instead of stages 1, 3 and 4) | PRD.md, FEATURES.md, RULES.md | `/document-existing` (document-existing-prompt.md) |
 | 1 | Create PRD | PRD.md | `/create-prd` (interactive-prd-creation-prompt.md) |
 | 2 | Verify PRD | PRD.md (improved) + PRD-REVIEW.md | `/verify-prd` (prd-comprehensive-verification-prompt.md) |
 | 3 | Extract features | FEATURES.md | `/extract-features` (prd-to-features-prompt.md) |

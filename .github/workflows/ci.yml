@@ -68,21 +68,23 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install all tools into a fresh project
         run: |
+          expected="$(sed -n "/^COMMANDS='$/,/^'$/p" install.sh | grep -c '|')"
           target="$(mktemp -d)"
           ./install.sh "$target" --all
           for dir in .claude/commands .cursor/commands .gemini/commands .windsurf/workflows .opencode/commands; do
             count="$(find "$target/$dir" -type f | wc -l)"
             echo "$dir: $count commands"
-            [ "$count" -eq 10 ] || { echo "::error::expected 10 commands in $dir, got $count"; exit 1; }
+            [ "$count" -eq "$expected" ] || { echo "::error::expected $expected commands in $dir, got $count"; exit 1; }
           done
       - name: Generated Gemini TOML is valid
         run: |
           target="$(mktemp -d)"
           ./install.sh "$target" --gemini
-          python3 - "$target" <<'EOF'
+          expected="$(sed -n "/^COMMANDS='$/,/^'$/p" install.sh | grep -c '|')"
+          python3 - "$target" "$expected" <<'EOF'
           import glob, sys, tomllib
           files = glob.glob(sys.argv[1] + "/.gemini/commands/*.toml")
-          assert len(files) == 10, f"expected 10 TOML files, got {len(files)}"
+          assert len(files) == int(sys.argv[2]), f"expected {sys.argv[2]} TOML files, got {len(files)}"
           for f in files:
               with open(f, "rb") as fh:
                   data = tomllib.load(fh)

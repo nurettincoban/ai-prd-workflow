@@ -20,6 +20,7 @@ show_prompts() {
     echo "Available prompts (in recommended workflow order):"
     echo ""
     echo "  interactive-prd-creation-prompt.md         Create a PRD through guided Q&A"
+    echo "  document-existing-prompt.md                Or: document an existing codebase"
     echo "  prd-comprehensive-verification-prompt.md   Review and improve your PRD"
     echo "  prd-to-features-prompt.md                  Extract features from your PRD"
     echo "  prd-to-rules-prompt.md                     Generate development rules"

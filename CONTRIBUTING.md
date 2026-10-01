@@ -68,6 +68,7 @@ Every one of those has shipped as a real bug: a review record no command produce
 | Command | Prompt | Reads | Writes |
 |---|---|---|---|
 | `/create-prd` | interactive-prd-creation-prompt.md | code | PRD.md |
+| `/document-existing` | document-existing-prompt.md | code | PRD.md, FEATURES.md, RULES.md |
 | `/verify-prd` | prd-comprehensive-verification-prompt.md | PRD.md, code | PRD.md, PRD-REVIEW.md |
 | `/extract-features` | prd-to-features-prompt.md | PRD.md, PRD-REVIEW.md | FEATURES.md |
 | `/generate-rules` | prd-to-rules-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, code | RULES.md |

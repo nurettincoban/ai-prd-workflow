@@ -24,7 +24,7 @@
 
 ---
 
-A lightweight RFC-driven development workflow for AI coding tools. Ten battle-tested prompts take you from a rough idea to a verified PRD, prioritized features, project rules, and sequenced RFCs — then guide implementation, code review, and testing, one RFC at a time.
+A lightweight RFC-driven development workflow for AI coding tools. Eleven prompts take you from a rough idea — or an existing codebase — to a verified PRD, prioritized features, project rules, and sequenced RFCs — then guide implementation, code review, and testing, one RFC at a time.
 
 Use it three ways:
 
@@ -71,6 +71,7 @@ Then open your project and work through the pipeline:
 
 ```
 /create-prd            # guided interview → PRD.md
+                       #   …or /document-existing for a codebase that already exists
 /verify-prd            # gap analysis → improved PRD.md + PRD-REVIEW.md
 /extract-features      # PRD.md → FEATURES.md (MoSCoW prioritized)
 /generate-rules        # → RULES.md (project standards for the AI)
@@ -96,12 +97,13 @@ Then open your project and work through the pipeline:
 ```mermaid
 flowchart LR
     IDEA([💡 Idea]) --> PRD[Create PRD] --> VERIFY[Verify PRD] --> FEAT[Extract Features] --> RULES[Generate Rules] --> RFCS[Generate RFCs]
+    CODE([🗂️ Existing code]) --> DOC[Document Existing] --> VERIFY
     RFCS --> TEST[Test Strategy] --> IMPL[Implement RFC] --> REVIEW[Code Review]
     REVIEW -.->|next RFC| IMPL
     CHANGE([Change request]) -.-> CM[Change Management] -.-> RFCS
 ```
 
-1. **Create PRD** — Start with a vague idea and develop it into a complete PRD through a guided interview
+1. **Create PRD** — Start with a vague idea and develop it into a complete PRD through a guided interview — or, for an existing codebase, **Document Existing** derives the PRD, features and rules from the code
 2. **Verify PRD** — Identify critical gaps and improve quality before anything gets built
 3. **Extract Features** — Transform the verified PRD into organized features with priorities and acceptance criteria
 4. **Generate Rules** — Establish technical guidelines the AI must follow, wired into your agent config (CLAUDE.md, AGENTS.md, or .cursor/rules/)
@@ -145,6 +147,7 @@ Nobody wrote that rule down. Because the RFCs cite features by ID and `RULES.md`
 | Command | Prompt | Description |
 |---------|--------|-------------|
 | `/create-prd` | [Interactive PRD Creation](interactive-prd-creation-prompt.md) | Create a PRD through a guided step-by-step questioning process |
+| `/document-existing` | [Document Existing Code](document-existing-prompt.md) | Turn an existing codebase into PRD.md, FEATURES.md and RULES.md, so new work is planned against the code as it is |
 | `/verify-prd` | [PRD Comprehensive Verification](prd-comprehensive-verification-prompt.md) | Verify and improve your PRD by identifying gaps and quality issues |
 | `/extract-features` | [PRD to Features](prd-to-features-prompt.md) | Extract and organize features with MoSCoW prioritization |
 | `/generate-rules` | [PRD to Rules](prd-to-rules-prompt.md) | Generate technical guidelines and standards for development |
@@ -179,7 +182,7 @@ Yes — tactically. This workflow shipped in March 2025, before Claude Code or C
 
 The two compose rather than compete: `/generate-rfcs` decides **what** the next unit of work is, and each `/implement-rfc` hands your agent's planner a well-scoped, context-sized task — exactly what plan mode is good at.
 
-**Sweet spot:** greenfield products, multi-week builds, and anyone building something real with AI — where scope creep and forgotten decisions, not code quality, are what kill the project. For a small fix in an existing codebase, your agent alone is fine. For everything bigger, write the spec first.
+**Sweet spot:** multi-week builds and anyone building something real with AI — where scope creep and forgotten decisions, not code quality, are what kill the project. Starting from a codebase that already exists? `/document-existing` writes the PRD, features and rules from the code as it is, marks what is already built, and the rest of the workflow plans only the new work. For a one-line fix, your agent alone is fine.
 
 ## Examples
 
