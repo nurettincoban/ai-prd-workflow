@@ -85,7 +85,7 @@ Every one of those has shipped as a real bug: a review record no command produce
 
 ## README Translations
 
-`README.zh-CN.md` and `README.tr.md` translate `README.md`, and each says the English version wins when they differ. When you change `README.md`, update the translations if you can. If you can't, say so in the pull request so a maintainer or another contributor can; commands, code and file names stay in English in every language.
+The `README.*.md` files (Simplified Chinese, Turkish, Japanese, Korean, Spanish) translate `README.md`, and each says the English version wins when they differ. When you change `README.md`, update the translations if you can. If you can't, say so in the pull request so a maintainer or another contributor can; commands, code and file names stay in English in every language.
 
 ## Modifying Existing Prompts
 

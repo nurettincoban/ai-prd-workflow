@@ -14,7 +14,7 @@
 
 **[Hızlı başlangıç](#hızlı-başlangıç)** · **[Nasıl çalışır](#nasıl-çalışır)** · **[Neden](#neden-bu-iş-akışı)** · **[Kanıtlar](#kanıtlar)** · **[Kurulum seçenekleri](#kurulum-seçenekleri)**
 
-[English](README.md) · [简体中文](README.zh-CN.md) · Türkçe
+[English](README.md) · [简体中文](README.zh-CN.md) · Türkçe · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
 <sub><b>Mart 2025</b>'ten beri RFC odaklı — Claude Code ve Cursor'da henüz plan modu yokken, Kiro ve Spec Kit daha ortada yokken.</sub>
 

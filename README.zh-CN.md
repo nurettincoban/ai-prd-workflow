@@ -14,7 +14,7 @@
 
 **[快速开始](#快速开始)** · **[工作原理](#工作原理)** · **[为什么](#为什么选择这个工作流)** · **[实证](#实证)** · **[安装选项](#安装选项)**
 
-[English](README.md) · 简体中文 · [Türkçe](README.tr.md)
+[English](README.md) · 简体中文 · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
 <sub>自 <b>2025 年 3 月</b>起采用 RFC 驱动 —— 早于 Claude Code 和 Cursor 推出计划模式（plan mode），也早于 Kiro 和 Spec Kit 的出现。</sub>
 

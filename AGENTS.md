@@ -6,7 +6,7 @@ This repository is a set of prompts. The prompt files at the repo root are the p
 - **Shared sections live in `shared/`.** Some sections appear word for word in several prompts. Edit the file in `shared/` and run `python3 scripts/check-prompts.py --fix`; editing one copy fails CI.
 - **Contracts move with the prompts.** If a prompt starts or stops reading or writing an artifact (PRD.md, FEATURES.md, RFCS.md, ...), update the contracts table in CONTRIBUTING.md in the same commit.
 - **The example is real output.** `examples/url-shortener/after/` was produced by running the commands. Do not hand-edit it to match a prompt change; rerun the commands, or leave it and say it predates the change.
-- **README changes reach the translations.** `README.zh-CN.md` and `README.tr.md` follow `README.md`. Update them in the same change, keeping commands, code and file names in English, or tell the user they are now behind.
+- **README changes reach the translations.** The `README.*.md` translations (zh-CN, tr, ja, ko, es) follow `README.md`. Update them in the same change, keeping commands, code and file names in English, or tell the user they are now behind.
 - **Versions move together.** `VERSION` in `install.sh`, `version` in `.claude-plugin/plugin.json`, and the CHANGELOG entry.
 
 Before committing, run:
