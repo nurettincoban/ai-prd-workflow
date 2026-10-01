@@ -22,8 +22,8 @@ Once you feel you have gathered sufficient details, create a structured PRD that
 - **Goals and Objectives** - Clear, measurable goals the product aims to achieve
 - **Scope** - What's included and explicitly what's excluded from the initial release
 - **User Personas or Target Audience** - Detailed descriptions of the intended users
-- **Functional Requirements** - Specific features and capabilities, organized by priority
-- **Non-Functional Requirements** - Performance, security, scalability, and other quality attributes
+- **Functional Requirements** - Specific features and capabilities, organized by priority, each with a permanent ID: FR-1, FR-2, ...
+- **Non-Functional Requirements** - Performance, security, scalability, and other quality attributes, each with a permanent ID: NFR-1, NFR-2, ... Features and RFCs cite these IDs, so later edits add new numbers and never renumber
 - **User Journeys** - Key workflows and interactions from the user's perspective
 - **Success Metrics** - How we'll measure if the product is successful
 - **Timeline** - High-level implementation schedule with key milestones

@@ -39,6 +39,8 @@ Extract and organize the features by:
    - Features requiring third-party integrations or special expertise
    - Features that may present significant technical challenges
 
+Write every feature as a row in a table with these columns: `| ID | Feature | Priority | Source | Complexity | Acceptance Criteria |`. Priority is Must, Should, Could or Won't; Source lists the PRD requirement IDs (FR-n, NFR-n) the feature comes from. Every PRD requirement must be the source of at least one feature or be listed as Won't Have, and every out-of-scope item in the PRD gets a Won't Have row. Group the tables by category.
+
 First, provide a brief overview of the product based on the PRD. Then create the FEATURES.md content with a summary section showing feature counts by priority and category.
 
 Feature IDs are permanent. If FEATURES.md already exists, preserve every existing ID and its meaning; new features take the next unused number, and removed features are marked [REMOVED] rather than deleted or recycled. Never renumber -- the RFCs cite these IDs by number.
@@ -48,4 +50,5 @@ Feature IDs are permanent. If FEATURES.md already exists, preserve every existin
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
+- If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
 - State that you ran this check and what it turned up.

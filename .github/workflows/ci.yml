@@ -25,6 +25,14 @@ jobs:
       - name: Every artifact a command reads is written by another, and vice versa
         run: python3 scripts/check-prompts.py
 
+  trace-check:
+    name: trace-check tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit tests for the traceability checker
+        run: python3 -m unittest discover scripts -v
+
   generated-commands:
     name: Generated commands match source prompts
     runs-on: ubuntu-latest

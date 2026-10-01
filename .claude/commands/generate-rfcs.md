@@ -44,6 +44,13 @@ Generate the RFC files under an RFCs folder by:
    - Identify shared components that multiple features depend on
 
 3. RFC STRUCTURE:
+   Name each file `RFCs/RFC-001-Short-Title.md` and put these four lines right under its title, exactly as shown, so tools and later commands can trace it:
+   ```
+   **Features**: F3, F7
+   **Depends on**: RFC-001, RFC-002   (or: none)
+   **Rules**: ARCH-1, SEC-2
+   **Complexity**: Low | Medium | High
+   ```
    Each RFC should include:
    - Unique identifier reflecting implementation order (e.g., RFC-001-User-Authentication)
    - Summary of what the RFC covers
@@ -70,7 +77,8 @@ Generate the RFC files under an RFCs folder by:
    - Do not generate per-RFC implementation prompt files. They duplicate that command and drift from it as soon as it is improved
 
 6. RFCS.MD CREATION:
-   - Create a master RFCS.md listing all RFCs in implementation order
+   - Create a master RFCS.md in the project root listing all RFCs in implementation order, with a Status column (Not started / In progress / Implemented / Reviewed) that `/implement-rfc` and `/review-rfc` keep current
+   - Every Must Have feature belongs to an RFC. Should and Could Have features either belong to one or are listed in RFCS.md as deferred, with the reason
    - Include a dependency table showing relationships between RFCs
    - Provide a clear implementation roadmap
    - For each RFC, indicate predecessors and successors
@@ -98,6 +106,7 @@ Each RFC should be specific enough to guide implementation but flexible enough t
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
+- If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
 - State that you ran this check and what it turned up.
 
 ## COLD-READ CHECK BEFORE IMPLEMENTATION

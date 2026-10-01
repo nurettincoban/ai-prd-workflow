@@ -75,6 +75,7 @@ Provide specific recommendations in these areas:
 
 3. IMPROVED PRD
    - Create an enhanced version addressing the issues found
+   - Give every functional and non-functional requirement a permanent ID (FR-1, NFR-1, ...) if it has none, and never renumber existing ones -- features and RFCs cite them
    - Keep the PRD's Decisions section, and add every decision made while resolving these findings -- what was decided, why, and what was rejected. Add the section if the PRD has none
    - Save as "PRD.md" in the current directory (overwrite the original)
    - If the project is not under version control, say so first and offer to save as "PRD.v2.md" instead -- overwriting a hand-written PRD with no way to recover it destroys the diff the user needs in order to review what you changed
@@ -92,4 +93,5 @@ Provide specific recommendations in these areas:
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
+- If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
 - State that you ran this check and what it turned up.
