@@ -82,13 +82,27 @@ cd ai-prd-workflow
 ## Nasıl çalışır
 
 ```mermaid
-flowchart LR
-    IDEA([💡 Fikir]) --> PRD[PRD oluştur] --> VERIFY["PRD'yi doğrula"]
-    CODE([🗂️ Mevcut kod]) --> DOC[Mevcut kodu belgele] --> VERIFY
-    VERIFY --> FEAT[Özellikleri çıkar] --> RULES[Kuralları oluştur] --> RFCS["RFC'leri oluştur"] --> TEST[Test stratejisi]
-    TEST --> IMPL["RFC'yi uygula"] --> REVIEW["RFC'yi incele"]
-    REVIEW -.->|sonraki RFC| IMPL
-    CHANGE([Değişiklik talebi]) -.-> CM[Değişiklikleri yönet] -.-> RFCS
+flowchart TB
+    subgraph define ["1 · Ne yapılacağını tanımla"]
+        direction LR
+        idea([💡 Yeni fikir]) --> create["/create-prd"] --> verify["/verify-prd"]
+        code([🗂️ Mevcut kod]) --> document["/document-existing"] --> verify
+    end
+    subgraph plan ["2 · Nasıl yapılacağını planla"]
+        direction LR
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+    end
+    subgraph build ["3 · Her seferinde bir RFC uygula"]
+        direction LR
+        implement["/implement-rfc"] --> review["/review-rfc"]
+        review -.->|sonraki RFC| implement
+    end
+    subgraph anytime ["Gerektiğinde"]
+        direction LR
+        changes["/manage-changes"] ~~~ status["/workflow-status"]
+    end
+    define --> plan --> build
+    build ~~~ anytime
 ```
 
 | Komut | Ne yapar | Yazdığı | Prompt |

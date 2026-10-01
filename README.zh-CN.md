@@ -82,13 +82,27 @@ cd ai-prd-workflow
 ## 工作原理
 
 ```mermaid
-flowchart LR
-    IDEA([💡 想法]) --> PRD[创建 PRD] --> VERIFY[验证 PRD]
-    CODE([🗂️ 现有代码]) --> DOC[记录现有代码] --> VERIFY
-    VERIFY --> FEAT[提取功能] --> RULES[生成规则] --> RFCS[生成 RFC] --> TEST[测试策略]
-    TEST --> IMPL[实现 RFC] --> REVIEW[评审 RFC]
-    REVIEW -.->|下一个 RFC| IMPL
-    CHANGE([变更请求]) -.-> CM[管理变更] -.-> RFCS
+flowchart TB
+    subgraph define ["1 · 定义要做什么"]
+        direction LR
+        idea([💡 新想法]) --> create["/create-prd"] --> verify["/verify-prd"]
+        code([🗂️ 现有代码]) --> document["/document-existing"] --> verify
+    end
+    subgraph plan ["2 · 规划怎么做"]
+        direction LR
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+    end
+    subgraph build ["3 · 逐个 RFC 构建"]
+        direction LR
+        implement["/implement-rfc"] --> review["/review-rfc"]
+        review -.->|下一个 RFC| implement
+    end
+    subgraph anytime ["随时可用"]
+        direction LR
+        changes["/manage-changes"] ~~~ status["/workflow-status"]
+    end
+    define --> plan --> build
+    build ~~~ anytime
 ```
 
 | 命令 | 作用 | 写入 | 提示词 |

@@ -82,13 +82,27 @@ AI ツールで `examples/url-shortener/before` を開き、`/workflow-status` �
 ## 仕組み
 
 ```mermaid
-flowchart LR
-    IDEA([💡 アイデア]) --> PRD[PRD を作成] --> VERIFY[PRD を検証]
-    CODE([🗂️ 既存のコード]) --> DOC[既存コードを文書化] --> VERIFY
-    VERIFY --> FEAT[機能を抽出] --> RULES[ルールを生成] --> RFCS[RFC を生成] --> TEST[テスト戦略]
-    TEST --> IMPL[RFC を実装] --> REVIEW[RFC をレビュー]
-    REVIEW -.->|次の RFC| IMPL
-    CHANGE([変更要求]) -.-> CM[変更を管理] -.-> RFCS
+flowchart TB
+    subgraph define ["1 · 何を作るかを決める"]
+        direction LR
+        idea([💡 新しいアイデア]) --> create["/create-prd"] --> verify["/verify-prd"]
+        code([🗂️ 既存のコード]) --> document["/document-existing"] --> verify
+    end
+    subgraph plan ["2 · どう作るかを計画する"]
+        direction LR
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+    end
+    subgraph build ["3 · RFC を 1 つずつ実装する"]
+        direction LR
+        implement["/implement-rfc"] --> review["/review-rfc"]
+        review -.->|次の RFC| implement
+    end
+    subgraph anytime ["いつでも"]
+        direction LR
+        changes["/manage-changes"] ~~~ status["/workflow-status"]
+    end
+    define --> plan --> build
+    build ~~~ anytime
 ```
 
 | コマンド | 内容 | 書き出すもの | プロンプト |

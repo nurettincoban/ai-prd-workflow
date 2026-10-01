@@ -82,13 +82,27 @@ AI 도구에서 `examples/url-shortener/before`를 열고 `/workflow-status`를 
 ## 작동 방식
 
 ```mermaid
-flowchart LR
-    IDEA([💡 아이디어]) --> PRD[PRD 작성] --> VERIFY[PRD 검증]
-    CODE([🗂️ 기존 코드]) --> DOC[기존 코드 문서화] --> VERIFY
-    VERIFY --> FEAT[기능 추출] --> RULES[규칙 생성] --> RFCS[RFC 생성] --> TEST[테스트 전략]
-    TEST --> IMPL[RFC 구현] --> REVIEW[RFC 리뷰]
-    REVIEW -.->|다음 RFC| IMPL
-    CHANGE([변경 요청]) -.-> CM[변경 관리] -.-> RFCS
+flowchart TB
+    subgraph define ["1 · 무엇을 만들지 정의"]
+        direction LR
+        idea([💡 새 아이디어]) --> create["/create-prd"] --> verify["/verify-prd"]
+        code([🗂️ 기존 코드]) --> document["/document-existing"] --> verify
+    end
+    subgraph plan ["2 · 어떻게 만들지 계획"]
+        direction LR
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+    end
+    subgraph build ["3 · RFC를 하나씩 구현"]
+        direction LR
+        implement["/implement-rfc"] --> review["/review-rfc"]
+        review -.->|다음 RFC| implement
+    end
+    subgraph anytime ["언제든지"]
+        direction LR
+        changes["/manage-changes"] ~~~ status["/workflow-status"]
+    end
+    define --> plan --> build
+    build ~~~ anytime
 ```
 
 | 명령어 | 하는 일 | 작성하는 파일 | 프롬프트 |

@@ -79,13 +79,27 @@ Open `examples/url-shortener/before` in your AI tool, run `/workflow-status`, an
 ## How it works
 
 ```mermaid
-flowchart LR
-    IDEA([💡 Idea]) --> PRD[Create PRD] --> VERIFY[Verify PRD]
-    CODE([🗂️ Existing code]) --> DOC[Document Existing] --> VERIFY
-    VERIFY --> FEAT[Extract Features] --> RULES[Generate Rules] --> RFCS[Generate RFCs] --> TEST[Test Strategy]
-    TEST --> IMPL[Implement RFC] --> REVIEW[Review RFC]
-    REVIEW -.->|next RFC| IMPL
-    CHANGE([Change request]) -.-> CM[Manage Changes] -.-> RFCS
+flowchart TB
+    subgraph define ["1 · Define what to build"]
+        direction LR
+        idea([💡 New idea]) --> create["/create-prd"] --> verify["/verify-prd"]
+        code([🗂️ Existing code]) --> document["/document-existing"] --> verify
+    end
+    subgraph plan ["2 · Plan how to build it"]
+        direction LR
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+    end
+    subgraph build ["3 · Build it, one RFC at a time"]
+        direction LR
+        implement["/implement-rfc"] --> review["/review-rfc"]
+        review -.->|next RFC| implement
+    end
+    subgraph anytime ["Anytime"]
+        direction LR
+        changes["/manage-changes"] ~~~ status["/workflow-status"]
+    end
+    define --> plan --> build
+    build ~~~ anytime
 ```
 
 | Command | What it does | Writes | Prompt |
