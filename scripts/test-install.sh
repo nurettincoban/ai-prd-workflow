@@ -52,7 +52,8 @@ echo "$out" | grep -q "kept .*create-prd/SKILL.md" || fail "edited skill was not
 grep -q "my own note" "$t/.claude/skills/create-prd/SKILL.md" || fail "edited skill was overwritten"
 out="$("$ROOT/install.sh" "$t" --claude --force)"
 echo "$out" | grep -q "replaced .*create-prd/SKILL.md" || fail "--force did not replace: $out"
-ls "$t/.claude/skills/create-prd/" | grep -q "SKILL.md.backup-" || fail "--force saved no backup"
+backups=("$t"/.claude/skills/create-prd/SKILL.md.backup-*)
+[ -e "${backups[0]}" ] || fail "--force saved no backup"
 ok "edited skill kept without --force; replaced with a backup with --force"
 
 # --- an unedited file from an older release is updated ---------------------------
