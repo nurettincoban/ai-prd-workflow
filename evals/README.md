@@ -24,7 +24,15 @@ claude plugin eval . --scaffold --allow-tools Write Edit
 
 ## How the graders work
 
-All graders except `skill-fired` are regular expressions. They cost nothing, and they read a long file the same way every run. Each one was checked against real output: it must match the report a fresh-context run of the command produced, and it must **not** match the fixture documents themselves. A grader that matched the fixture would give credit to an agent that merely quoted the problem without noticing it.
+All graders except `skill-fired` are regular expressions. They cost nothing, and they read a long file the same way every run. Each was checked two ways before it was committed:
+
+| Case | Real fresh-context run of the command | The fixture itself |
+|---|---|---|
+| `verify-prd-finds-planted-problems` | 10 of 10 graders match | 0 of 10 match |
+| `workflow-status-finds-planted-gaps` | 6 of 7 match — the miss is real: the run did not flag the stale Node and React versions | 0 of 7 match |
+| `extract-features-keeps-ids` | 7 of 7 match (new features became F19 and F20; F1–F18 unchanged) | on a copy with F7 renumbered, the F7 grader fails |
+
+A grader that matched the fixture would give credit to an agent that merely quoted a problem without noticing it; four early patterns did exactly that and were tightened.
 
 `skill-fired` checks that the skill was actually invoked. In a two-arm run it is reported but not scored, since it can never pass without the plugin.
 
