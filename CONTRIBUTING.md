@@ -83,6 +83,10 @@ Every one of those has shipped as a real bug: a review record no command produce
 | `/workflow-status` | workflow-status-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, changes/, code | — |
 <!-- contracts:end -->
 
+## README Translations
+
+`README.zh-CN.md` and `README.tr.md` translate `README.md`, and each says the English version wins when they differ. When you change `README.md`, update the translations if you can. If you can't, say so in the pull request so a maintainer or another contributor can; commands, code and file names stay in English in every language.
+
 ## Modifying Existing Prompts
 
 - Explain the rationale for your changes in the PR description

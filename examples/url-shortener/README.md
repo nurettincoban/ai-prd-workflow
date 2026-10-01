@@ -42,7 +42,7 @@ Before running anything, we read `before/` closely and listed every problem we c
 
 ## /workflow-status on before/: 12 of 13
 
-[before/STATUS-REPORT.md](before/STATUS-REPORT.md) is the report a fresh `/workflow-status` wrote. It found every cross-document problem above except the stale versions (9), and recommended `/verify-prd` as the next step.
+[workflow-status-on-before.md](workflow-status-on-before.md) is the report a fresh `/workflow-status` wrote. It found every cross-document problem above except the stale versions (9), and recommended `/verify-prd` as the next step.
 
 It also found problems we had missed:
 

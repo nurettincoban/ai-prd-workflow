@@ -1,10 +1,10 @@
 .claude/settings.local.json
 .DS_Store
 
-# Created by running ./install.sh inside this repo for local testing.
-# The committed, generated output is skills/ (see CONTRIBUTING.md).
-.claude/skills/
-.agents/skills/
+# Created by running ./install.sh inside this repo -- at the root, or in the
+# example folder to try the workflow. The committed output is skills/.
+**/.claude/skills/
+**/.agents/skills/
 
 # claude plugin eval results
 evals/results/

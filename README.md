@@ -14,6 +14,8 @@
 
 **[Quick start](#quick-start)** · **[How it works](#how-it-works)** · **[Why](#why-this-workflow)** · **[Evidence](#evidence)** · **[Install options](#install-options)**
 
+English · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md)
+
 <sub>RFC-driven since <b>March 2025</b> — before Claude Code or Cursor had a plan mode, and before Kiro or Spec Kit existed.</sub>
 
 </div>
@@ -23,6 +25,11 @@
 AI coding agents write code well. They are worse at deciding what to build, remembering yesterday's decisions, and noticing when two documents disagree. This workflow handles that part. It takes an idea — or a codebase that already exists — to a reviewed PRD, prioritized features, project rules, and small RFCs in dependency order. Then it implements and reviews them one at a time.
 
 Every step writes a markdown file that the next step reads, so decisions outlive the chat session. A script checks that the files still agree with each other. No CLI to learn, no framework to adopt, no lock-in.
+
+<p align="center">
+  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status auditing the v2.0 example: the traceability check fails because F7 has no RFC and RFCS.md is missing, then reading the documents against each other finds 20 inconsistencies, such as no RFC building the UI and HTTP 301 caching breaking click counts">
+</p>
+<p align="center"><sub>A real <code>/workflow-status</code> run on the repo's own v2.0 example, condensed. <a href="examples/url-shortener/workflow-status-on-before.md">Full report</a> · <a href="examples/url-shortener/README.md">what it was checked against</a></sub></p>
 
 ## Quick start
 
@@ -58,6 +65,16 @@ Then run the commands in order:
 ```
 
 Run `/workflow-status` whenever you are unsure what comes next, and `/manage-changes` when requirements change. In Codex, type `$create-prd` instead of `/create-prd`. With the Claude Code plugin, commands carry the plugin's name: `/prd-workflow:create-prd`.
+
+**Try it on the example first.** The repo's v2.0 example looks complete, and it is not:
+
+```bash
+git clone https://github.com/nurettincoban/ai-prd-workflow.git
+cd ai-prd-workflow
+./install.sh examples/url-shortener/before
+```
+
+Open `examples/url-shortener/before` in your AI tool, run `/workflow-status`, and compare its report with [the problems we found by hand](examples/url-shortener/README.md).
 
 ## How it works
 
