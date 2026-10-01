@@ -19,7 +19,7 @@ New prompt files should follow these conventions:
   - Input description (what documents/context the AI needs)
   - Numbered steps or sections for the task
   - An output format section (what the deliverable looks like)
-- **Length**: Aim for 40-70 lines. If your prompt exceeds 80 lines, look for redundancy to cut.
+- **Length**: Aim for 40-70 lines of command-specific instructions; the shared sections described below don't count. If yours exceeds 80, look for redundancy to cut.
 - **Terminology**: Use MoSCoW (Must/Should/Could/Won't have) for any prioritization language.
 - **Tool-agnostic**: Do not use tool-specific syntax (e.g., Cursor's `@file` references). Reference files by name.
 
@@ -40,6 +40,19 @@ After adding or editing a prompt:
 2. Run `./install.sh .` to regenerate the committed command folders
 3. Commit the regenerated files together with your prompt change — CI fails if they drift from the source prompts
 
+## Shared Sections
+
+A few sections appear word for word in several prompts, because every prompt must still work on its own when pasted into a chat. Their canonical text lives in `shared/`:
+
+| File | Used by |
+|---|---|
+| `shared/classify-product-type.md` | prompts that write the PRD and classify the product |
+| `shared/product-type.md` | prompts that read the classification from PRD.md |
+| `shared/self-check.md` | prompts that generate an artifact |
+| `shared/when-artifacts-conflict.md` | prompts that read several artifacts |
+
+Edit the file in `shared/`, then run `python3 scripts/check-prompts.py --fix` to copy it into every prompt that has that section. CI fails when a copy differs. `--fix` refuses to overwrite a section that holds more than the shared text — content after a shared section needs its own `## ` heading.
+
 ## Artifact Contracts
 
 The commands talk to each other only through files. Each row below says what a command reads and what it writes, and `scripts/check-prompts.py` (run in CI) fails when:
@@ -59,9 +72,9 @@ Every one of those has shipped as a real bug: a review record no command produce
 | `/extract-features` | prd-to-features-prompt.md | PRD.md, PRD-REVIEW.md | FEATURES.md |
 | `/generate-rules` | prd-to-rules-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, code | RULES.md |
 | `/generate-rfcs` | prd-to-rfcs-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md | RFCs/, RFCS.md |
-| `/test-strategy` | testing-strategy-prompt.md | FEATURES.md, RULES.md, RFCs/, code | TEST-STRATEGY.md |
+| `/test-strategy` | testing-strategy-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, code | TEST-STRATEGY.md |
 | `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/ | code, RFCs/ |
-| `/review-rfc` | code-review-prompt.md | FEATURES.md, RULES.md, RFCs/, TEST-STRATEGY.md, code | reviews/ |
+| `/review-rfc` | code-review-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, TEST-STRATEGY.md, code | reviews/ |
 | `/manage-changes` | prd-change-management-prompt.md | PRD.md, PRD-REVIEW.md, RULES.md, changes/, code | changes/, PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md |
 | `/workflow-status` | workflow-status-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, changes/, code | — |
 <!-- contracts:end -->

@@ -8,13 +8,23 @@ Review `PRD.md` in the current directory and provide actionable feedback. If it 
 
 Arriving here with a PRD you already wrote is a normal entry point, not an error. Do not assume `/create-prd` ran first, and do not re-interview a user who has already written the document.
 
-## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
+## CLASSIFY THE PRODUCT TYPE
 
-First classify the product: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game.
+Classify the product as one of: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game. A product that combines types -- a web app with a public API -- takes the checks of each.
 
-Apply only the sections and checks that fit that type. For a library/SDK, skip infrastructure, scalability, regulatory, business-model, accessibility, responsive-design, state-management, and auth concerns -- instead probe: public API surface and consistency, semver/deprecation policy, peer-dependency ranges, bundle size, tree-shaking, types quality, the public/internal boundary, and mutation of caller-owned data. Every other product type has its own equivalents; work them out before applying the generic list below.
+Then apply only the checks that fit. What each type needs probed, and what usually does not apply:
 
-State which product type you classified and which checks you skipped. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
+| Type | Probe | Usually skip |
+|---|---|---|
+| web app | auth and sessions, authorization per resource, data model and migrations, accessibility, responsive layout, browser support, page-load budget, SEO for public pages | binary size, offline sync |
+| mobile app | offline behavior and sync conflicts, OS permissions, app-store review rules, OS-version and device support, battery and data use, push notifications, update strategy | SEO, browser support |
+| library/SDK | public API surface and consistency, semver and deprecation policy, peer-dependency ranges, bundle size and tree-shaking, type quality, the public/internal boundary, mutation of caller-owned data | infrastructure, scalability, regulatory, business model, accessibility, responsive design, state management, auth |
+| CLI | command and flag design, exit codes, stdout vs stderr, piping and scripting, config and environment precedence, cross-platform paths and shells, install and upgrade | UI design, accessibility, SEO, sessions |
+| service/API | API contracts and versioning, authentication and authorization, rate limiting and abuse, idempotency and retries, observability, data retention and privacy, SLOs and scaling | UI, responsive design, accessibility |
+| data pipeline | schemas and schema evolution, data-quality checks, idempotent re-runs and backfills, late or duplicate data, lineage, PII handling, cost and scheduling | UI, sessions, responsive design |
+| game | core loop, frame budget and target hardware, input devices, save/load and save versioning, progression and difficulty, platform certification | SEO, CRUD business logic, responsive design |
+
+Record the result in PRD.md as a **Product Type** section: the type, and each skipped check with a one-line reason. Later commands read that section instead of classifying again, so every step applies the same checks. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
 
 ## STEP 0: GROUND THE PRD IN REALITY
 
@@ -79,6 +89,7 @@ Provide specific recommendations in these areas:
 
 3. IMPROVED PRD
    - Create an enhanced version addressing the issues found
+   - Include the Product Type section (see CLASSIFY THE PRODUCT TYPE)
    - Give every functional and non-functional requirement a permanent ID (FR-1, NFR-1, ...) if it has none, and never renumber existing ones -- features and RFCs cite them
    - Keep the PRD's Decisions section, and add every decision made while resolving these findings -- what was decided, why, and what was rejected. Add the section if the PRD has none
    - Save as "PRD.md" in the current directory (overwrite the original)

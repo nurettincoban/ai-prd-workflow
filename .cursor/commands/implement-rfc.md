@@ -20,7 +20,7 @@ This implementation covers RFC-[ID]. Refer to:
 - `reviews/REVIEW-RFC-[ID].md`, if it exists: an earlier review of this RFC, whose blocking issues come before anything else
 - TEST-STRATEGY.md for the tests planned for this RFC -- write those tests; if one turns out to be wrong, say why and record it as a deviation rather than quietly testing something else
 
-## When Artifacts Conflict
+## WHEN ARTIFACTS CONFLICT
 
 Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Where this prompt's generic guidance conflicts with RULES.md, RULES.md wins -- it was written for this project and this prompt was not. Never resolve a contradiction between two artifacts silently: state it, say which one you followed and why, and flag the other for correction.
 

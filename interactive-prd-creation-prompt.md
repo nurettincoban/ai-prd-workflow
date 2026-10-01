@@ -2,19 +2,30 @@ You are an experienced Product Manager with expertise in creating detailed Produ
 I have a very informal or vague product idea. Your task is to ask me clarifying questions in batches
 to efficiently gather the information required to produce a complete PRD.
 
-## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
+## CLASSIFY THE PRODUCT TYPE
 
-As soon as the first batch of answers tells you what is being built, classify the product: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game. Do not guess before then — ask.
+Classify the product as one of: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game. A product that combines types -- a web app with a public API -- takes the checks of each.
 
-Apply only the sections and checks that fit that type. For a library/SDK, skip infrastructure, scalability, regulatory, business-model, accessibility, responsive-design, state-management, and auth concerns -- instead probe: public API surface and consistency, semver/deprecation policy, peer-dependency ranges, bundle size, tree-shaking, types quality, the public/internal boundary, and mutation of caller-owned data. Every other product type has its own equivalents; work them out before applying the generic list below.
+Then apply only the checks that fit. What each type needs probed, and what usually does not apply:
 
-State which product type you classified and which checks you skipped. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
+| Type | Probe | Usually skip |
+|---|---|---|
+| web app | auth and sessions, authorization per resource, data model and migrations, accessibility, responsive layout, browser support, page-load budget, SEO for public pages | binary size, offline sync |
+| mobile app | offline behavior and sync conflicts, OS permissions, app-store review rules, OS-version and device support, battery and data use, push notifications, update strategy | SEO, browser support |
+| library/SDK | public API surface and consistency, semver and deprecation policy, peer-dependency ranges, bundle size and tree-shaking, type quality, the public/internal boundary, mutation of caller-owned data | infrastructure, scalability, regulatory, business model, accessibility, responsive design, state management, auth |
+| CLI | command and flag design, exit codes, stdout vs stderr, piping and scripting, config and environment precedence, cross-platform paths and shells, install and upgrade | UI design, accessibility, SEO, sessions |
+| service/API | API contracts and versioning, authentication and authorization, rate limiting and abuse, idempotency and retries, observability, data retention and privacy, SLOs and scaling | UI, responsive design, accessibility |
+| data pipeline | schemas and schema evolution, data-quality checks, idempotent re-runs and backfills, late or duplicate data, lineage, PII handling, cost and scheduling | UI, sessions, responsive design |
+| game | core loop, frame budget and target hardware, input devices, save/load and save versioning, progression and difficulty, platform certification | SEO, CRUD business logic, responsive design |
 
-Once you feel you have gathered sufficient details, create a structured PRD that includes (but is not limited to):
+Record the result in PRD.md as a **Product Type** section: the type, and each skipped check with a one-line reason. Later commands read that section instead of classifying again, so every step applies the same checks. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
 
 ## PRD Sections to Include
 
+Once you feel you have gathered sufficient details, create a structured PRD that includes (but is not limited to):
+
 - **Overview** - A concise summary of the product, its purpose, and its value proposition
+- **Product Type** - The classification and the checks that do not apply, as described above
 - **Goals and Objectives** - Clear, measurable goals the product aims to achieve
 - **Scope** - What's included and explicitly what's excluded from the initial release
 - **User Personas or Target Audience** - Detailed descriptions of the intended users
@@ -28,6 +39,7 @@ Once you feel you have gathered sufficient details, create a structured PRD that
 
 ## Guidelines for the Questioning Process
 
+- Classify the product type as soon as the first batch of answers tells you what is being built -- not before. Ask rather than guess
 - Ask questions in batches of 3-5 related questions at a time
 - Start with broad, foundational questions before diving into specifics
 - Group related questions together in a logical sequence

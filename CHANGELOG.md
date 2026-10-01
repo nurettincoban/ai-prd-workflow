@@ -24,6 +24,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Artifact contracts table in `CONTRIBUTING.md`, enforced in CI by `scripts/check-prompts.py`: it fails when a command reads something nothing writes, writes something nothing reads, or does not mention an artifact its row declares
 
 ### Changed
+- The product type is classified once, in `/create-prd` or `/verify-prd`, and recorded in a **Product Type** section of the PRD. The four downstream commands read it instead of re-classifying — six separate classifications could disagree from one step to the next
+- The classification checklist covers all seven product types (web app, mobile app, library/SDK, CLI, service/API, data pipeline, game). Only library/SDK had concrete checks before; the other six were told to "work out their own equivalents"
+- Sections shared word for word across prompts live in `shared/`, and `scripts/check-prompts.py` fails CI when a copy drifts (`--fix` re-syncs them). `/generate-rfcs` also folds its overlapping sections 7 and 8 into 3 and 4: 101 → 93 lines despite new format rules
 - "Fresh eyes" is enforced instead of requested. `/review-rfc` opened with "run this in a fresh session", which the model only reads after it has been invoked in the current one; it now stops when the conversation contains the implementation it is about to review. `/generate-rfcs` runs the cold-read check itself with clean-context subagents where the tool supports them, and records which RFCs passed
 
 ## [2.3.0] - 2026-10-01

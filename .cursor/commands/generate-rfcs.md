@@ -8,19 +8,15 @@ If PRD-REVIEW.md exists, read it as well: every High-impact finding in it must b
 
 If any critical information is missing or unclear, ask specific questions before proceeding.
 
-## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
+## PRODUCT TYPE
 
-First classify the product: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game.
-
-Apply only the sections and checks that fit that type. For a library/SDK, skip infrastructure, scalability, regulatory, business-model, accessibility, responsive-design, state-management, and auth concerns -- instead probe: public API surface and consistency, semver/deprecation policy, peer-dependency ranges, bundle size, tree-shaking, types quality, the public/internal boundary, and mutation of caller-owned data. Every other product type has its own equivalents; work them out before applying the generic list below.
-
-State which product type you classified and which checks you skipped. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
-
-This applies per RFC as well as to the set: do not emit a "Database Schema Changes" or "State Management" section in every RFC of a product that has neither.
+Read the **Product Type** section of PRD.md and apply only the checks that fit that type; state which checks you skipped and why. Skipping must be visible, never silent. If PRD.md has no such section, classify the product yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
 
 ## WHEN ARTIFACTS CONFLICT
 
 Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Where this prompt's generic guidance conflicts with RULES.md, RULES.md wins -- it was written for this project and this prompt was not. Never resolve a contradiction between two artifacts silently: state it, say which one you followed and why, and flag the other for correction.
+
+## GENERATE THE RFCS
 
 Generate the RFC files under an RFCs folder by:
 
@@ -47,24 +43,21 @@ Generate the RFC files under an RFCs folder by:
    **Rules**: ARCH-1, SEC-2
    **Complexity**: Low | Medium | High
    ```
-   Each RFC should include:
-   - Unique identifier reflecting implementation order (e.g., RFC-001-User-Authentication)
+   Then include:
    - Summary of what the RFC covers
-   - All features/requirements addressed
-   - Technical approach and architecture considerations
-   - Which previous RFCs this builds upon and which future RFCs build on this
-   - Relative complexity estimate (Low, Medium, High)
+   - Technical approach: component architecture and data flow (described textually), key algorithms as pseudocode
+   - API contracts or interfaces exposed, and data models or schema changes
+   - Implementation details: file structure, error codes and handling, logging and monitoring, and -- where they apply -- UI/UX, state management, authentication/authorization and caching
    - Acceptance criteria for each feature
-   - API contracts or interfaces exposed
-   - Data models and database schema changes
-   - Implementation details: file structure, key algorithms, UI/UX specs, state management, API integration, error handling, and testing strategy
+   - Only the sections that apply to this product type and this RFC: no "Database Schema Changes" or "State Management" section in an RFC, or a product, that has neither
    - Every file, behavior and constraint mentioned anywhere in the RFC MUST also appear in the acceptance criteria. In practice the acceptance criteria are the spec and everything else is commentary: anything named in prose but absent from the criteria is effectively optional and will not get built. Cross-check the file-structure section against the criteria before finishing
 
 4. IMPLEMENTATION CONSIDERATIONS:
    - Technical challenges and potential edge cases
-   - Applicable rules from RULES.md
-   - Testing approaches for the functionality
-   - Performance, security, and accessibility requirements
+   - The rules from RULES.md that apply, by ID
+   - Testing approach for the functionality
+   - Performance budgets, and security, accessibility and compatibility requirements (browsers, devices, platforms) where they apply
+   - Regulatory or compliance considerations
    - Third-party dependencies or libraries needed
    - Error handling strategies and fallback mechanisms
 
@@ -78,20 +71,6 @@ Generate the RFC files under an RFCs folder by:
    - Include a dependency table showing relationships between RFCs
    - Provide a clear implementation roadmap
    - For each RFC, indicate predecessors and successors
-
-7. TECHNICAL SPECIFICATIONS:
-   For each RFC, provide:
-   - Component architecture and data flow diagrams (described textually)
-   - Specific algorithms or business logic pseudocode
-   - Error codes and handling mechanisms
-   - Logging and monitoring requirements
-   - Authentication/authorization and caching strategies where applicable
-
-8. IMPLEMENTATION CONSTRAINTS:
-   - Required coding standards and patterns
-   - Performance budgets or requirements
-   - Compatibility requirements (browsers, devices, etc.)
-   - Regulatory or compliance considerations
 
 First, provide a brief overview of your breakdown approach and the sequential implementation order. Then create the RFC documents.
 

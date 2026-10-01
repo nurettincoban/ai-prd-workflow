@@ -7,6 +7,7 @@ You are an expert QA engineer and test architect tasked with generating a compre
 Create a structured test strategy that ensures thorough coverage of all implemented functionality. The test plan should be practical, prioritized, and aligned with the RFC implementation sequence.
 
 ## Inputs
+- PRD.md for the Product Type section
 - FEATURES.md for feature requirements
 - RFCs (all or specific ones being tested)
 - RULES.md for testing standards
@@ -24,17 +25,13 @@ Throughout the plan, distinguish tests that ALREADY EXIST from tests you are PRO
 
 If no suite exists yet, or you cannot execute commands in this environment, say so explicitly rather than assuming coverage.
 
-## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
+## PRODUCT TYPE
 
-First classify the product: web app · mobile app · library/SDK · CLI · service/API · data pipeline · game.
-
-Apply only the sections and checks that fit that type. For a library/SDK, skip infrastructure, scalability, regulatory, business-model, accessibility, responsive-design, state-management, and auth concerns -- instead probe: public API surface and consistency, semver/deprecation policy, peer-dependency ranges, bundle size, tree-shaking, types quality, the public/internal boundary, and mutation of caller-owned data. Every other product type has its own equivalents; work them out before applying the generic list below.
-
-State which product type you classified and which checks you skipped. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
-
-For a library of pure functions, most of sections 2-6 below will not apply; the useful equivalents are numeric correctness, immutability of caller-owned data, determinism, API surface, bundle size, and supply chain. Replace inapplicable sections rather than padding them.
+Read the **Product Type** section of PRD.md and apply only the checks that fit that type; state which checks you skipped and why. Skipping must be visible, never silent. If PRD.md has no such section, classify the product yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
 
 ## Test Plan Sections
+
+Replace sections that do not fit the product type rather than padding them. For a library of pure functions, most of sections 2-6 do not apply; the useful equivalents are numeric correctness, immutability of caller-owned data, determinism, API surface, bundle size, and supply chain.
 
 ### 1. UNIT TESTING
 - Identify key functions and modules requiring unit tests
