@@ -1,7 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "prd-workflow",
-  "displayName": "AI PRD Workflow",
   "version": "2.3.0",
   "description": "RFC-driven development workflow: vague idea → verified PRD → features → rules → sequenced RFCs → reviewed, tested code",
   "author": {
@@ -11,6 +10,12 @@
   "homepage": "https://github.com/nurettincoban/ai-prd-workflow",
   "repository": "https://github.com/nurettincoban/ai-prd-workflow",
   "license": "MIT",
-  "keywords": ["prd", "rfc", "spec-driven", "workflow", "product-requirements"],
+  "keywords": [
+    "prd",
+    "rfc",
+    "spec-driven",
+    "workflow",
+    "product-requirements"
+  ],
   "commands": "./.claude/commands"
 }
