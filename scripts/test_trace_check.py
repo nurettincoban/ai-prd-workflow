@@ -113,6 +113,19 @@ class TraceCheckTest(unittest.TestCase):
         ]:
             self.assertIn(expected, out)
 
+    def test_coverage_counts_feature_rows_not_summary_tables(self):
+        files = dict(CLEAN)
+        files["PRD.md"] += "- **FR-3**: List links\n"
+        # FR-3 appears in a coverage summary and on a removed feature, but no live feature cites it.
+        files["FEATURES.md"] += (
+            "| F4 | Old list view [REMOVED] | Should | FR-3 | Low | -- |\n"
+            "\n## Requirement Coverage\n\n| Requirement | Features |\n|---|---|\n"
+            "| FR-1 | F1 |\n| FR-2 | F2 |\n| FR-3 | F1 |\n"
+        )
+        code, out = run(project(files))
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL  FR-3 (PRD.md) is not covered by any feature", out)
+
     def test_changes_requested_needs_a_review_record(self):
         files = dict(CLEAN)
         files["RFCS.md"] = CLEAN["RFCS.md"].replace("| RFC-002 | Redirect | RFC-001 | Not started |",

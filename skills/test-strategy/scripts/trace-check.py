@@ -127,6 +127,7 @@ def parse_features(text):
                 "priority": prio,
                 "status": "removed" if removed else status.lower(),
                 "source": cell("source"),
+                "row": " | ".join(row),
             }
     # Old-style files group features under '## Must Have' headings; tables() already
     # carries the nearest heading, but a category heading can sit in between.
@@ -153,9 +154,15 @@ def check_features(root, prd_ids):
     for fid, f in sorted(features.items(), key=lambda kv: int(kv[0][1:])):
         if f["priority"] is None and f["status"] != "removed":
             fail(f"FEATURES.md: {fid} has no MoSCoW priority")
-    cited = set(re.findall(r"\b(?:FR|NFR)-\d+\b", text))
-    for rid in sorted(cited - prd_ids) if prd_ids else []:
+    mentioned = set(re.findall(r"\b(?:FR|NFR)-\d+\b", text))
+    for rid in sorted(mentioned - prd_ids) if prd_ids else []:
         fail(f"FEATURES.md: cites {rid}, which PRD.md does not define")
+    # Coverage counts feature rows only. A summary table listing every requirement
+    # would otherwise make each one look covered, and a removed feature covers nothing.
+    cited = set()
+    for f in features.values():
+        if f["status"] != "removed":
+            cited |= set(re.findall(r"\b(?:FR|NFR)-\d+\b", f["row"]))
     if prd_ids:
         rules_text = read(root / "RULES.md") if (root / "RULES.md").exists() else ""
         for rid in sorted(prd_ids - cited, key=lambda r: (r.split("-")[0], int(r.split("-")[1]))):
