@@ -17,6 +17,14 @@ jobs:
       - name: shellcheck
         run: shellcheck install.sh copy-prompt.sh
 
+  prompt-checks:
+    name: Prompt contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every artifact a command reads is written by another, and vice versa
+        run: python3 scripts/check-prompts.py
+
   generated-commands:
     name: Generated commands match source prompts
     runs-on: ubuntu-latest

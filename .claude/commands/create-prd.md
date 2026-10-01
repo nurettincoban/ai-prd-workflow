@@ -27,6 +27,7 @@ Once you feel you have gathered sufficient details, create a structured PRD that
 - **User Journeys** - Key workflows and interactions from the user's perspective
 - **Success Metrics** - How we'll measure if the product is successful
 - **Timeline** - High-level implementation schedule with key milestones
+- **Decisions** - Choices made during this interview, each with its reason and the alternatives rejected. `/manage-changes` checks future changes against this list, so a decision recorded here cannot be reversed by accident
 - **Open Questions/Assumptions** - Areas that need further clarification or investigation
 
 ## Guidelines for the Questioning Process

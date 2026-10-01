@@ -75,6 +75,7 @@ Provide specific recommendations in these areas:
 
 3. IMPROVED PRD
    - Create an enhanced version addressing the issues found
+   - Keep the PRD's Decisions section, and add every decision made while resolving these findings -- what was decided, why, and what was rejected. Add the section if the PRD has none
    - Save as "PRD.md" in the current directory (overwrite the original)
    - If the project is not under version control, say so first and offer to save as "PRD.v2.md" instead -- overwriting a hand-written PRD with no way to recover it destroys the diff the user needs in order to review what you changed
 

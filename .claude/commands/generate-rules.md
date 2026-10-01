@@ -2,7 +2,7 @@
 description: Generate development rules and standards into RULES.md
 ---
 
-You are an expert software architect and technical lead tasked with creating a comprehensive RULES.md file based on the Product Requirements Document (PRD.md) and features list (FEATURES.md), or the documents provided in the conversation.
+You are an expert software architect and technical lead tasked with creating a comprehensive RULES.md file based on the Product Requirements Document (PRD.md) and features list (FEATURES.md), or the documents provided in the conversation. If PRD-REVIEW.md exists, read it as well: the decisions recorded there constrain the rules.
 
 Create a clear, structured RULES.md that establishes technical and general guidelines for AI assistance during the development process. These rules will ensure consistency, quality, and alignment with project requirements.
 
@@ -52,7 +52,12 @@ Generate the RULES.md by:
    - Standards for completeness (no TODOs or placeholders)
    - How to handle uncertainty or ambiguity
 
-6. AGENT CONFIGURATION:
+6. RULE IDS:
+   - Give every rule a permanent ID with a short category prefix, written as `- **SEC-3**: rule text` (ARCH-1, API-2, SEC-3, TEST-1, ...)
+   - IDs are append-only, like feature IDs. If RULES.md already exists, keep every existing ID and its meaning, give new rules the next unused number in their category, and mark retired rules [REMOVED] instead of deleting or reusing them
+   - RFCs, reviews and change requests cite rules by these IDs -- a rule without an ID cannot be cited, so it cannot be checked
+
+7. AGENT CONFIGURATION:
    - If the project uses an AI coding agent, recommend wiring RULES.md into its config so the rules stay in context: reference it from CLAUDE.md (Claude Code), AGENTS.md (Codex and others), or .cursor/rules/ (Cursor)
 
 First, provide a brief overview of the project based on the PRD and features list. Then create the RULES.md content. Ensure the rules are specific enough to guide development but flexible enough to allow for creative problem-solving.

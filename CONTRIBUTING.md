@@ -40,6 +40,32 @@ After adding or editing a prompt:
 2. Run `./install.sh .` to regenerate the committed command folders
 3. Commit the regenerated files together with your prompt change — CI fails if they drift from the source prompts
 
+## Artifact Contracts
+
+The commands talk to each other only through files. Each row below says what a command reads and what it writes, and `scripts/check-prompts.py` (run in CI) fails when:
+
+- a command reads an artifact no command writes,
+- a command writes an artifact nothing reads — `/workflow-status` reads everything to report status, which does not count,
+- a prompt never mentions an artifact its row declares, or
+- this table and `install.sh` disagree about which commands exist.
+
+Every one of those has shipped as a real bug: a review record no command produced, a test plan the implementer never opened, rule IDs cited everywhere and created nowhere. When you change what a prompt reads or writes, change its row in the same commit.
+
+<!-- contracts:start -->
+| Command | Prompt | Reads | Writes |
+|---|---|---|---|
+| `/create-prd` | interactive-prd-creation-prompt.md | code | PRD.md |
+| `/verify-prd` | prd-comprehensive-verification-prompt.md | PRD.md, code | PRD.md, PRD-REVIEW.md |
+| `/extract-features` | prd-to-features-prompt.md | PRD.md, PRD-REVIEW.md | FEATURES.md |
+| `/generate-rules` | prd-to-rules-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, code | RULES.md |
+| `/generate-rfcs` | prd-to-rfcs-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md | RFCs/, RFCS.md |
+| `/test-strategy` | testing-strategy-prompt.md | FEATURES.md, RULES.md, RFCs/, code | TEST-STRATEGY.md |
+| `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/ | code, RFCs/ |
+| `/review-rfc` | code-review-prompt.md | FEATURES.md, RULES.md, RFCs/, TEST-STRATEGY.md, code | reviews/ |
+| `/manage-changes` | prd-change-management-prompt.md | PRD.md, PRD-REVIEW.md, RULES.md, changes/, code | changes/, PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md |
+| `/workflow-status` | workflow-status-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, changes/, code | — |
+<!-- contracts:end -->
+
 ## Modifying Existing Prompts
 
 - Explain the rationale for your changes in the PR description

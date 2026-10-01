@@ -2,6 +2,8 @@ You are an expert product manager and technical lead tasked with extracting and 
 
 Create a comprehensive FEATURES.md file that clearly outlines all features, organized by priority and category. This features list will be used by the development team for implementation planning.
 
+If PRD-REVIEW.md exists, read it too. Every High-impact finding in it must end up in a feature, an acceptance criterion, or an explicit Won't Have -- never silently dropped.
+
 If any critical information is missing or unclear, ask specific questions before proceeding.
 
 Extract and organize the features by:

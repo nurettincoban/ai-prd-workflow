@@ -23,7 +23,7 @@ Assess and integrate the proposed changes by:
 2. IMPACT ANALYSIS:
    - CONFLICT CHECK -- do this before anything else:
      * Read RULES.md. Does the change violate any rule? Cite the rule IDs.
-     * Read the PRD's resolved decisions and non-goals. Does the change reverse one? If so, state the original rationale and whether it still holds.
+     * Read the Decisions section and the out-of-scope list in PRD.md, PRD-REVIEW.md, and the earlier change requests in `changes/`. Does the change reverse a decision? If so, state the original rationale and whether it still holds.
      * Does it contradict a stated product differentiator?
      * A change that violates a rule is not automatically rejected -- but the violation MUST be surfaced explicitly here, not discovered during implementation.
    - Identify all components, features, and RFCs affected

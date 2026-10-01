@@ -78,6 +78,8 @@ For each RFC/feature, provide:
 
 Provide a test execution order that aligns with the RFC implementation sequence. Highlight any testing gaps where manual testing may be needed.
 
+Save the plan to `TEST-STRATEGY.md`, with one section per RFC headed `## RFC-[ID]: [title]`, so `/implement-rfc` and `/review-rfc` can find the tests planned for the RFC in front of them. If `TEST-STRATEGY.md` already exists, update it in place: keep the sections of RFCs that are already implemented, and mark changed plans rather than silently rewriting them.
+
 ## SELF-CHECK BEFORE FINISHING
 
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.

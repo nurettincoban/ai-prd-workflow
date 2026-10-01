@@ -5,7 +5,7 @@ argument-hint: [rfc-id]
 
 Target RFC ID: "$ARGUMENTS" — substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
 
-# Implementation Prompt for RFC-[ID]: [Title]
+# Implement RFC-[ID]
 
 ## Role and Mindset
 You are a senior software developer. Approach this implementation with:
@@ -16,11 +16,14 @@ You are a senior software developer. Approach this implementation with:
 4. **Defensive Programming**: Anticipate edge cases and potential failures
 
 ## Context
-This implementation covers RFC-[ID]: [brief description]. Refer to:
+This implementation covers RFC-[ID]. Refer to:
 - PRD.md for overall product requirements
 - FEATURES.md for detailed feature specifications
 - RULES.md for project guidelines and standards
-- RFC-[ID].md for the specific requirements being implemented
+- The RFC itself, `RFCs/RFC-[ID]-*.md`, for the specific requirements being implemented
+- RFCS.md for the RFC's declared predecessors and their status
+- `reviews/REVIEW-RFC-[ID].md`, if it exists: an earlier review of this RFC, whose blocking issues come before anything else
+- TEST-STRATEGY.md for the tests planned for this RFC -- write those tests; if one turns out to be wrong, say why and record it as a deviation rather than quietly testing something else
 
 ## When Artifacts Conflict
 
@@ -29,18 +32,19 @@ Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Wh
 ## Two-Phase Approach
 
 ### Phase 1: Planning (No Code)
-1. Analyze the requirements and existing codebase
-2. Present a comprehensive implementation plan covering:
+1. Check the RFC's declared predecessors. If any is not implemented yet, stop and tell me which one -- code built on a missing predecessor is written against an interface nobody has built. Continue only if I explicitly tell you to
+2. Analyze the requirements and existing codebase
+3. Present a comprehensive implementation plan covering:
    - Files to create or modify
    - Key components, data structures, and APIs
    - Proposed implementation sequence
    - Technical decisions and trade-offs
    - Potential impacts on existing functionality
-3. Wait for explicit user approval before proceeding
-4. Address any feedback or modifications from the user
+4. Wait for explicit user approval before proceeding
+5. Address any feedback or modifications from the user
 
 ### Phase 2: Implementation (After Approval Only)
-1. Follow the approved plan, noting any necessary deviations
+1. Follow the approved plan. Record every deviation from the RFC or the plan in the RFC file itself, under a final `## Implementation Notes` section: what changed, why, and whether I approved it. The reviewer works in a fresh session from the files alone -- a deviation explained only in chat is indistinguishable from a bug
 2. Implement in logical segments as outlined
 3. Explain your approach for complex sections
 4. Self-review before finalizing
@@ -63,7 +67,7 @@ When making design decisions on complex problems:
 3. Consider edge cases, failure modes, and long-term maintenance implications
 
 ## Scope Limitation
-Only implement features in RFC-[ID].md. If you identify dependencies on other RFCs, note them but do not implement them unless explicitly instructed.
+Only implement features in this RFC. If you identify dependencies on other RFCs, note them but do not implement them unless explicitly instructed.
 
 ## Final Deliverables
 1. All code changes necessary to implement the RFC

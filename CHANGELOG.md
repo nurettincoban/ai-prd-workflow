@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- Five broken hand-offs between commands, the same class of bug 2.2.0 fixed for the review report:
+  - `/generate-rules` now gives every rule a permanent, append-only ID (`SEC-3`) — `/manage-changes` and the self-checks cited rule IDs that nothing created
+  - `/test-strategy` now saves `TEST-STRATEGY.md` with a section per RFC, and `/implement-rfc` and `/review-rfc` read it — the plan was moved before implementation in 2.2.0, but the implementer never saw it
+  - `PRD-REVIEW.md` is now read by `/extract-features`, `/generate-rules`, `/generate-rfcs` and `/manage-changes` — it said "downstream commands should read this file" and none did
+  - The PRD gains a **Decisions** section (written by `/create-prd` and `/verify-prd`), which `/manage-changes` checks changes against — it previously checked against "resolved decisions" no PRD contained
+  - `/implement-rfc` records deviations in the RFC under `## Implementation Notes`, and `/review-rfc` reads them — the reviewer runs in a fresh session by design, so a deviation explained only in chat looked like a bug
+- `/implement-rfc` stops when a declared predecessor is not implemented yet, reads any earlier review of the RFC, and finds the RFC at its real path (`RFCs/RFC-[ID]-*.md`) instead of `RFC-[ID].md`; the never-filled `[Title]` placeholders are gone
+- `/workflow-status` no longer reports parallel RFCs as drift (2.2.0 replaced strict ordering with declared predecessors) and checks for `TEST-STRATEGY.md`
+
+### Added
+- Artifact contracts table in `CONTRIBUTING.md`, enforced in CI by `scripts/check-prompts.py`: it fails when a command reads something nothing writes, writes something nothing reads, or does not mention an artifact its row declares
+
 ## [2.3.0] - 2026-10-01
 
 ### Added

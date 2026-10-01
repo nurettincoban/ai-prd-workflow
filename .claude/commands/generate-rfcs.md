@@ -8,6 +8,8 @@ Create a set of well-structured RFC documents that divide the project into logic
 
 **IMPORTANT: RFCs are numbered in a valid implementation order, and the ordering is critical. Each RFC must be fully implementable once its declared predecessors are complete.**
 
+If PRD-REVIEW.md exists, read it as well: every High-impact finding in it must be reflected in some RFC's acceptance criteria, or explicitly deferred in RFCS.md.
+
 If any critical information is missing or unclear, ask specific questions before proceeding.
 
 ## SCOPE THE CHECKLIST TO THE PRODUCT TYPE
