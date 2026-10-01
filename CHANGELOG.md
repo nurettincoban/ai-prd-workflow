@@ -27,6 +27,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The product type is classified once, in `/create-prd` or `/verify-prd`, and recorded in a **Product Type** section of the PRD. The four downstream commands read it instead of re-classifying — six separate classifications could disagree from one step to the next
 - The classification checklist covers all seven product types (web app, mobile app, library/SDK, CLI, service/API, data pipeline, game). Only library/SDK had concrete checks before; the other six were told to "work out their own equivalents"
 - Sections shared word for word across prompts live in `shared/`, and `scripts/check-prompts.py` fails CI when a copy drifts (`--fix` re-syncs them). `/generate-rfcs` also folds its overlapping sections 7 and 8 into 3 and 4: 101 → 93 lines despite new format rules
+- RFC status is kept, not re-derived. `RFCS.md` carries a Status column that `/implement-rfc` (In progress → Implemented) and `/review-rfc` (Reviewed / Changes requested) update; `/workflow-status` starts from it and spot-checks it against the code instead of re-reading every RFC's criteria
+- `/review-rfc` appends a new round to `reviews/REVIEW-RFC-[ID].md` instead of overwriting the previous review
 - "Fresh eyes" is enforced instead of requested. `/review-rfc` opened with "run this in a fresh session", which the model only reads after it has been invoked in the current one; it now stops when the conversation contains the implementation it is about to review. `/generate-rfcs` runs the cold-read check itself with clean-context subagents where the tool supports them, and records which RFCs passed
 
 ## [2.3.0] - 2026-10-01

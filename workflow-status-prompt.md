@@ -18,7 +18,7 @@ Stage 6 comes before stage 7 deliberately: a test plan written after the code is
 Inspect the current project to determine workflow progress. If `trace-check.py` is available -- next to these instructions, or in the project's `scripts/` folder -- run `python3 trace-check.py .` first: it checks IDs, coverage, RFC dependencies and review records mechanically, and its FAIL lines belong in your Inconsistencies section.
 
 1. Which artifacts exist: PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCS.md, RFCs/ folder, TEST-STRATEGY.md, reviews/, changes/?
-2. Which RFCs appear implemented in the codebase versus not yet started? Compare each RFC's acceptance criteria against the actual code — do not assume an RFC is done just because code exists.
+2. Which RFCs are implemented? Start from the Status column in RFCS.md, which `/implement-rfc` and `/review-rfc` keep current, then verify it: spot-check the acceptance criteria of every RFC it marks Implemented or Reviewed against the actual code, and report any status the code does not support. Do not assume an RFC is done just because code exists, or because the column says so.
 3. Which RFCs have been reviewed? Check `reviews/` for a report per implemented RFC — an implemented RFC with no review is the most common real-world gap, and reviews are exactly what gets skipped under deadline.
 4. Are there open change requests in `changes/` whose decisions are still pending?
 5. Any signs of drift: code that contradicts the PRD or RULES.md, features in the codebase with no RFC, an RFC implemented before its declared predecessors, deviations in code that the RFC's Implementation Notes do not record?

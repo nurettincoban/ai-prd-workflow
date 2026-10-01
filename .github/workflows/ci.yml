@@ -26,12 +26,20 @@ jobs:
         run: python3 scripts/check-prompts.py
 
   trace-check:
-    name: trace-check tests
+    name: trace-check tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # The scripts promise Python 3.8+; an older interpreter is the reliable
+        # way to catch syntax that only newer versions accept.
+        python: ["3.10", "3.12"]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
       - name: Unit tests for the traceability checker
-        run: python3 -m unittest discover scripts -v
+        run: python -m unittest discover scripts -v
 
   generated-commands:
     name: Generated commands match source prompts

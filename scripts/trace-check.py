@@ -275,8 +275,8 @@ def check_index(root, rfcs):
                 continue
             status = row[cols["status"]].lower()
             review = root / "reviews" / f"REVIEW-RFC-{m.group(1)}.md"
-            if "review" in status and not review.exists():
-                fail(f"RFCS.md marks RFC-{m.group(1)} reviewed, but {review.relative_to(root).as_posix()} does not exist")
+            if ("review" in status or "changes requested" in status) and not review.exists():
+                fail(f"RFCS.md marks RFC-{m.group(1)} as {row[cols['status']]}, but {review.relative_to(root).as_posix()} does not exist")
             elif "implemented" in status and not review.exists():
                 warn(f"RFC-{m.group(1)} is implemented but not reviewed -- run /review-rfc {m.group(1)}")
     if (root / "FEATURES.md").exists() and not (root / "PRD-REVIEW.md").exists():

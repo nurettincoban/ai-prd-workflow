@@ -108,10 +108,24 @@ class TraceCheckTest(unittest.TestCase):
             "FAIL  F4 (Must have) is not assigned to any RFC",
             "FAIL  RFCS.md does not list RFC-003",
             "FAIL  RFCS.md lists RFC-004, which has no file in RFCs/",
-            "FAIL  RFCS.md marks RFC-001 reviewed, but reviews/REVIEW-RFC-001.md does not exist",
+            "FAIL  RFCS.md marks RFC-001 as Reviewed, but reviews/REVIEW-RFC-001.md does not exist",
             "WARN  RFC-002 is implemented but not reviewed",
         ]:
             self.assertIn(expected, out)
+
+    def test_changes_requested_needs_a_review_record(self):
+        files = dict(CLEAN)
+        files["RFCS.md"] = CLEAN["RFCS.md"].replace("| RFC-002 | Redirect | RFC-001 | Not started |",
+                                                    "| RFC-002 | Redirect | RFC-001 | Changes requested |")
+        code, out = run(project(files))
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL  RFCS.md marks RFC-002 as Changes requested, but reviews/REVIEW-RFC-002.md does not exist", out)
+
+    def test_scripts_parse_on_the_oldest_supported_python(self):
+        import ast
+        for name in ("trace-check.py", "check-prompts.py"):
+            source = (SCRIPT.parent / name).read_text(encoding="utf-8")
+            ast.parse(source, filename=name, feature_version=(3, 8))
 
     def test_removed_wont_and_implemented_features_need_no_rfc(self):
         files = dict(CLEAN)

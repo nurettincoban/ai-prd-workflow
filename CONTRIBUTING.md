@@ -73,8 +73,8 @@ Every one of those has shipped as a real bug: a review record no command produce
 | `/generate-rules` | prd-to-rules-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, code | RULES.md |
 | `/generate-rfcs` | prd-to-rfcs-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md | RFCs/, RFCS.md |
 | `/test-strategy` | testing-strategy-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, code | TEST-STRATEGY.md |
-| `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/ | code, RFCs/ |
-| `/review-rfc` | code-review-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, TEST-STRATEGY.md, code | reviews/ |
+| `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/ | code, RFCs/, RFCS.md |
+| `/review-rfc` | code-review-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, code | reviews/, RFCS.md |
 | `/manage-changes` | prd-change-management-prompt.md | PRD.md, PRD-REVIEW.md, RULES.md, changes/, code | changes/, PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md |
 | `/workflow-status` | workflow-status-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, changes/, code | — |
 <!-- contracts:end -->

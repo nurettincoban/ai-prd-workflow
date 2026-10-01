@@ -39,6 +39,7 @@ Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Wh
 5. Address any feedback or modifications from the user
 
 ### Phase 2: Implementation (After Approval Only)
+Set this RFC's Status in RFCS.md to In progress when you start.
 1. Follow the approved plan. Record every deviation from the RFC or the plan in the RFC file itself, under a final `## Implementation Notes` section: what changed, why, and whether I approved it. The reviewer works in a fresh session from the files alone -- a deviation explained only in chat is indistinguishable from a bug
 2. Implement in logical segments as outlined
 3. Explain your approach for complex sections
@@ -69,4 +70,5 @@ Only implement features in this RFC. If you identify dependencies on other RFCs,
 2. Necessary tests per the project's testing standards
 3. Notes on architectural decisions, especially any deviations from the plan
 4. Potential improvements or scaling considerations for the future
-5. **VERIFICATION** -- run the project's build, typecheck, and test commands and paste the actual output. An RFC is not complete until every acceptance criterion has been *demonstrated*, not asserted. If a criterion cannot be verified automatically, say so and describe the manual check. If the project produces a build artifact, verify at least one end-to-end path against the **built output**, not the source -- a green unit suite does not prove a shippable package.
+5. **STATUS** -- set this RFC's Status in RFCS.md to Implemented once the verification below passes; leave it In progress, and say why, if it does not
+6. **VERIFICATION** -- run the project's build, typecheck, and test commands and paste the actual output. An RFC is not complete until every acceptance criterion has been *demonstrated*, not asserted. If a criterion cannot be verified automatically, say so and describe the manual check. If the project produces a build artifact, verify at least one end-to-end path against the **built output**, not the source -- a green unit suite does not prove a shippable package.

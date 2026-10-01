@@ -66,7 +66,7 @@ Generate the RFC files under an RFCs folder by:
    - Do not generate per-RFC implementation prompt files. They duplicate that command and drift from it as soon as it is improved
 
 6. RFCS.MD CREATION:
-   - Create a master RFCS.md in the project root listing all RFCs in implementation order, with a Status column (Not started / In progress / Implemented / Reviewed) that `/implement-rfc` and `/review-rfc` keep current
+   - Create a master RFCS.md in the project root listing all RFCs in implementation order, with a Status column (Not started / In progress / Implemented / Changes requested / Reviewed) that `/implement-rfc` and `/review-rfc` keep current
    - Every Must Have feature belongs to an RFC. Should and Could Have features either belong to one or are listed in RFCS.md as deferred, with the reason
    - Include a dependency table showing relationships between RFCs
    - Provide a clear implementation roadmap
