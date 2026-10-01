@@ -31,7 +31,7 @@ show_prompts() {
     echo "  workflow-status-prompt.md                  Show workflow progress and next step"
     echo ""
     echo "Tip: prefer native slash commands? Run ./install.sh <your-project> to install"
-    echo "these as /commands for Claude Code and Cursor."
+    echo "these as /commands for Claude Code, Cursor, Gemini CLI, Windsurf, or OpenCode."
 }
 
 # Handle flags
@@ -65,21 +65,21 @@ fi
 
 # Copy to clipboard based on OS
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    cat "$1" | pbcopy
+    pbcopy < "$1"
     echo "Copied '$1' to clipboard. Paste it into your AI assistant."
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if command -v xclip > /dev/null; then
-        cat "$1" | xclip -selection clipboard
+        xclip -selection clipboard < "$1"
         echo "Copied '$1' to clipboard. Paste it into your AI assistant."
     elif command -v xsel > /dev/null; then
-        cat "$1" | xsel --clipboard
+        xsel --clipboard < "$1"
         echo "Copied '$1' to clipboard. Paste it into your AI assistant."
     else
         echo "Error: xclip or xsel is not installed. Please install one of them or copy the file contents manually."
         exit 1
     fi
 elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-    cat "$1" | clip
+    clip < "$1"
     echo "Copied '$1' to clipboard. Paste it into your AI assistant."
 else
     echo "Unsupported operating system. Please copy the file contents manually."

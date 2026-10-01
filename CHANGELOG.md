@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.3.0] - 2026-10-01
+
+### Added
+- Claude Code plugin — the repo is now its own plugin marketplace (`.claude-plugin/`); install with `/plugin marketplace add nurettincoban/ai-prd-workflow` then `/plugin install prd-workflow@ai-prd-workflow`
+- Native slash-command support for three more tools via `install.sh`: Gemini CLI (`--gemini` → `.gemini/commands/*.toml`), Windsurf (`--windsurf` → `.windsurf/workflows/`), and OpenCode (`--opencode` → `.opencode/commands/`); flags combine, `--all` installs everything
+- CI (GitHub Actions): shellcheck, a drift check that fails when the committed command folders differ from the source prompts, install smoke tests for every tool (file counts, TOML validity, Windsurf 12k size limit, flag isolation), and plugin manifest validation
+- `RFCS.md` master index in the url-shortener example, including the coverage gaps it exposes (F7, a Must Have, has no RFC)
+- Issue templates, pull request template, and `SECURITY.md`
+
+### Changed
+- README: plugin quick start, expanded tool support matrix, CI badge
+- Shell scripts cleaned up to pass shellcheck (dead code removed, `cat |` pipelines replaced with redirects)
+- `install.sh` rejects unknown flags instead of treating them as the target directory
+- Only the Claude Code and Cursor command folders are committed; the Gemini CLI, Windsurf, and OpenCode formats are generated on demand
+
 ## [2.2.0] - 2026-07-20
 
 Fixes from a full dogfooding run — all ten commands used end to end to build a real, publishable library from a real PRD. Three structural problems surfaced: nothing in the workflow ever executed anything, decisions were discarded while artifacts were kept, and every prompt assumed a CRUD web application.

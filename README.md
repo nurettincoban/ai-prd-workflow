@@ -6,11 +6,15 @@
 
 **Vague idea → verified PRD → features → rules → sequenced RFCs → reviewed, tested code**
 
+[![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub stars](https://img.shields.io/github/stars/nurettincoban/ai-prd-workflow?style=flat&color=orange)](https://github.com/nurettincoban/ai-prd-workflow/stargazers)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-slash_commands-d97757)](#quick-start)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#quick-start)
 [![Cursor](https://img.shields.io/badge/Cursor-slash_commands-111111)](#quick-start)
+[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-slash_commands-4285F4)](#quick-start)
+[![Windsurf](https://img.shields.io/badge/Windsurf-workflows-0EA47F)](#quick-start)
+[![OpenCode](https://img.shields.io/badge/OpenCode-slash_commands-555555)](#quick-start)
 
 **[Quick Start](#quick-start)** · **[Workflow](#workflow)** · **[Commands](#available-prompts)** · **[Why RFCs?](#why-rfc-driven-development)** · **[Examples](#examples)**
 
@@ -22,16 +26,28 @@
 
 A lightweight RFC-driven development workflow for AI coding tools. Ten battle-tested prompts take you from a rough idea to a verified PRD, prioritized features, project rules, and sequenced RFCs — then guide implementation, code review, and testing, one RFC at a time.
 
-Use it two ways:
+Use it three ways:
 
-- **Native slash commands** in Claude Code and Cursor — `/create-prd`, `/implement-rfc 001`, `/workflow-status`, …
-- **Copy-paste prompts** into any AI assistant or IDE — ChatGPT, Gemini, Windsurf, Copilot, anything
+- **Claude Code plugin** — one-command install, updates with the repo
+- **Native slash commands** in Claude Code, Cursor, Gemini CLI, Windsurf, and OpenCode — `/create-prd`, `/implement-rfc 001`, `/workflow-status`, …
+- **Copy-paste prompts** into any AI assistant or IDE — ChatGPT, Codex CLI, Copilot, anything
 
 No CLI to learn, no framework to adopt, no lock-in. Just markdown.
 
 ## Quick Start
 
-### Option 1: Install as slash commands (Claude Code & Cursor)
+### Option 1: Claude Code plugin
+
+Inside Claude Code:
+
+```
+/plugin marketplace add nurettincoban/ai-prd-workflow
+/plugin install prd-workflow@ai-prd-workflow
+```
+
+Plugin commands are namespaced — `/prd-workflow:create-prd`, `/prd-workflow:implement-rfc 001`, etc. — and available in every project without touching its files.
+
+### Option 2: Install as slash commands (Claude Code, Cursor, Gemini CLI, Windsurf, OpenCode)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project
@@ -42,9 +58,10 @@ Or from a clone:
 ```bash
 git clone https://github.com/nurettincoban/ai-prd-workflow.git
 cd ai-prd-workflow
-./install.sh /path/to/your/project            # both tools
-./install.sh /path/to/your/project --claude   # Claude Code only
-./install.sh /path/to/your/project --cursor   # Cursor only
+./install.sh /path/to/your/project                      # Claude Code + Cursor (default)
+./install.sh /path/to/your/project --all                # every supported tool
+./install.sh /path/to/your/project --gemini --windsurf  # any combination of
+                                                        # --claude --cursor --gemini --windsurf --opencode
 ```
 
 > [!IMPORTANT]
@@ -66,9 +83,9 @@ Then open your project and work through the pipeline:
 ```
 
 > [!TIP]
-> Cloning this repo and opening it in Claude Code or Cursor gives you the commands immediately — try them against the [example project](examples/url-shortener/).
+> Cloning this repo and opening it in Claude Code or Cursor gives you the commands immediately — try them against the [example project](examples/url-shortener/). For Gemini CLI, Windsurf, or OpenCode, run `./install.sh . --gemini --windsurf --opencode` in the clone first.
 
-### Option 2: Copy-paste into any AI assistant
+### Option 3: Copy-paste into any AI assistant
 
 1. Pick a prompt from [Available Prompts](#available-prompts) below
 2. Copy its contents (or use `./copy-prompt.sh --list` to browse)
@@ -184,8 +201,9 @@ The prompts are plain markdown and work with any modern LLM:
 
 Tool support:
 
-- **Native slash commands**: Claude Code, Cursor (via `install.sh`)
-- **Copy-paste**: Windsurf, GitHub Copilot, Codex CLI, Cline, Aider, or any chat interface (manually or via `./copy-prompt.sh <prompt-file>`)
+- **Plugin**: Claude Code (`/plugin marketplace add nurettincoban/ai-prd-workflow`)
+- **Native slash commands**: Claude Code, Cursor, Gemini CLI, Windsurf, OpenCode (via `install.sh`)
+- **Copy-paste**: GitHub Copilot, Codex CLI, Cline, Aider, or any chat interface (manually or via `./copy-prompt.sh <prompt-file>`); Codex CLI users can also drop the prompts into `~/.codex/prompts/` as custom prompts
 
 ## Quick Tips
 

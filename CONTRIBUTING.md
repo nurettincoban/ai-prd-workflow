@@ -32,13 +32,13 @@ New prompt files should follow these conventions:
 
 ## Source of Truth & Generated Files
 
-The prompt `.md` files at the repo root are the single source of truth. The `.claude/commands/` and `.cursor/commands/` folders are **generated** by `install.sh` — never edit them by hand.
+The prompt `.md` files at the repo root are the single source of truth. The `.claude/commands/` and `.cursor/commands/` folders are **generated** by `install.sh` and committed — never edit them by hand. The Gemini CLI, Windsurf, and OpenCode formats are generated on demand by `install.sh` and not committed. (`.claude-plugin/` manifests are hand-maintained; the plugin reuses `.claude/commands/`.)
 
 After adding or editing a prompt:
 
 1. If it's a new prompt, add it to the `COMMANDS` mapping in `install.sh` and to the `show_prompts` list in `copy-prompt.sh`
-2. Run `./install.sh .` to regenerate the command folders
-3. Commit the regenerated files together with your prompt change
+2. Run `./install.sh .` to regenerate the committed command folders
+3. Commit the regenerated files together with your prompt change — CI fails if they drift from the source prompts
 
 ## Modifying Existing Prompts
 
