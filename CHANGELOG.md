@@ -23,6 +23,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Machine-readable formats the checker relies on: permanent requirement IDs in the PRD (`FR-1`, `NFR-1`), a fixed column layout for `FEATURES.md` with a Source column, four header lines at the top of every RFC (`**Features**`, `**Depends on**`, `**Rules**`, `**Complexity**`), and a Status column in `RFCS.md`
 - Artifact contracts table in `CONTRIBUTING.md`, enforced in CI by `scripts/check-prompts.py`: it fails when a command reads something nothing writes, writes something nothing reads, or does not mention an artifact its row declares
 
+### Changed
+- "Fresh eyes" is enforced instead of requested. `/review-rfc` opened with "run this in a fresh session", which the model only reads after it has been invoked in the current one; it now stops when the conversation contains the implementation it is about to review. `/generate-rfcs` runs the cold-read check itself with clean-context subagents where the tool supports them, and records which RFCs passed
+
 ## [2.3.0] - 2026-10-01
 
 ### Added

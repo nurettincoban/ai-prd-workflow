@@ -111,6 +111,8 @@ Each RFC should be specific enough to guide implementation but flexible enough t
 
 ## COLD-READ CHECK BEFORE IMPLEMENTATION
 
-Once the RFCs are written, recommend that the user hand each one to a fresh session -- ideally a different model -- with only PRD.md, FEATURES.md, RULES.md and that single RFC, and ask one question: **"What would you have to guess to implement this?"** Everything on that list should be fixed before any code gets written.
+Once the RFCs are written, each one gets a cold read: a reader with only PRD.md, FEATURES.md, RULES.md and that single RFC -- not this conversation -- answers one question: **"What would you have to guess to implement this?"** Everything on that list gets fixed before any code is written.
+
+If you can start a subagent with a clean context, run the cold reads yourself now, one subagent per RFC, fix what they report, and note in RFCS.md which RFCs passed a cold read. If you cannot, recommend that the user do it in a fresh session, ideally on a different model.
 
 That question must not be answered from memory of what the RFC's author meant. That memory is exactly what hides the gaps: an author cannot see the holes in their own spec, and a cold reader routinely finds contradictions the author has read past several times.

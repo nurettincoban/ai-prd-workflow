@@ -5,7 +5,7 @@ argument-hint: [rfc-id]
 
 Target RFC ID: "$ARGUMENTS" — substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
 
-**Run this in a fresh session, ideally with a different model than the one that wrote the code.** The RFC, RULES.md and FEATURES.md contain everything needed -- that is the point of them. A reviewer holding the author's reasoning is not a reviewer.
+**Fresh eyes first.** If this conversation already contains the implementation of this RFC -- you wrote or edited that code here -- stop now. Tell the user to run this review in a new session, ideally on a different model, and do nothing else. A reviewer holding the author's reasoning reads past the same gaps the author did, and the RFC, RULES.md, FEATURES.md and TEST-STRATEGY.md contain everything a reviewer needs -- that is the point of them.
 
 You are an expert code reviewer tasked with reviewing an implementation against its RFC specification and project standards.
 
