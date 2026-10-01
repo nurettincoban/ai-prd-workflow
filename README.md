@@ -142,6 +142,13 @@ That was measured, not assumed — by running all ten commands end to end to bui
 
 The most striking single result: **the workflow predicted a real build failure three steps before the build existed.** `RULES.md` pinned TypeScript 7. The RFC's edge-case section, written before any code, said that if a toolchain plugin lagged TS 7 the fallback was 5.9.x, recorded as a deviation rather than downgraded silently. That is exactly what happened — and `tsc --noEmit` passed clean throughout, so only *running the build* ever revealed it.
 
+### Check it yourself
+
+That library is not part of this repository, so here is evidence you can reproduce:
+
+- **[examples/url-shortener](examples/url-shortener/)** — the v2.0 artifacts, the problems we found in them by hand, and what fresh-context runs found *without seeing that list*: `/workflow-status` 12 of 13, plus six we had missed; `/verify-prd` 10 of 10, plus a server-side request forgery hole hiding in the PRD's own open questions.
+- **[evals/](evals/)** — the same checks as a `claude plugin eval` suite that runs each case with and without the workflow, so the difference is measured rather than asserted.
+
 ### Cross-referenced artifacts constrain future edits on their own
 
 A prediction going into that run was that re-running `/extract-features` after a PRD change would silently renumber feature IDs and break every RFC citation. It was tested: a cold agent with no session history, no mention of IDs, and two new features deliberately inserted into the *earliest* category — the placement most likely to force renumbering.

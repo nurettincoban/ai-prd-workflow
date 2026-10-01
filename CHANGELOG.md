@@ -21,6 +21,7 @@ The commands now ship as **Agent Skills** — one `SKILL.md` format for Claude C
 - `/implement-rfc` stops when a declared predecessor is not implemented yet, reads any earlier review of the RFC, and finds the RFC at its real path (`RFCs/RFC-[ID]-*.md`) instead of `RFC-[ID].md`; the never-filled `[Title]` placeholders are gone
 - `/workflow-status` no longer reports parallel RFCs as drift (2.2.0 replaced strict ordering with declared predecessors) and checks for `TEST-STRATEGY.md`
 
+- README: the "each step is a different lens" evidence came from a run nobody could inspect; it now links to evidence anyone can reproduce — the before/after example and the eval suite
 - README no longer claims the workflow predates every AI planning mode — Aider, Roo Code and Cline shipped planning modes before March 2025. It now says what is true: it predates plan mode in Claude Code and Cursor, and both Kiro and Spec Kit
 
 ### Added
