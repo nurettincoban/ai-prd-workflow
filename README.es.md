@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#inicio-rápido)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#opciones-de-instalación)
 
-**[Inicio rápido](#inicio-rápido)** · **[Cómo funciona](#cómo-funciona)** · **[Por qué](#por-qué-este-flujo-de-trabajo)** · **[Evidencia](#evidencia)** · **[Opciones de instalación](#opciones-de-instalación)**
+**[🌐 Sitio web](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Inicio rápido](#inicio-rápido)** · **[Cómo funciona](#cómo-funciona)** · **[Por qué](#por-qué-este-flujo-de-trabajo)** · **[Evidencia](#evidencia)** · **[Opciones de instalación](#opciones-de-instalación)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · Español
 

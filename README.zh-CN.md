@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#快速开始)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#安装选项)
 
-**[快速开始](#快速开始)** · **[工作原理](#工作原理)** · **[为什么](#为什么选择这个工作流)** · **[实证](#实证)** · **[安装选项](#安装选项)**
+**[🌐 网站](https://nurettincoban.github.io/ai-prd-workflow/)** · **[快速开始](#快速开始)** · **[工作原理](#工作原理)** · **[为什么](#为什么选择这个工作流)** · **[实证](#实证)** · **[安装选项](#安装选项)**
 
 [English](README.md) · 简体中文 · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 

@@ -12,7 +12,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#hızlı-başlangıç)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#kurulum-seçenekleri)
 
-**[Hızlı başlangıç](#hızlı-başlangıç)** · **[Nasıl çalışır](#nasıl-çalışır)** · **[Neden](#neden-bu-iş-akışı)** · **[Kanıtlar](#kanıtlar)** · **[Kurulum seçenekleri](#kurulum-seçenekleri)**
+**[🌐 Web sitesi](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Hızlı başlangıç](#hızlı-başlangıç)** · **[Nasıl çalışır](#nasıl-çalışır)** · **[Neden](#neden-bu-iş-akışı)** · **[Kanıtlar](#kanıtlar)** · **[Kurulum seçenekleri](#kurulum-seçenekleri)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · Türkçe · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
