@@ -41,6 +41,8 @@ After adding or editing a prompt:
 3. Run `python3 scripts/check-prompts.py` and `bash scripts/test-install.sh`
 4. Commit the regenerated files together with your prompt change — CI fails if `skills/` drifts from the source prompts
 
+`site/` is the landing page at https://nurettincoban.github.io/ai-prd-workflow/, hand-written and deployed by `.github/workflows/pages.yml` on every push to `main` that touches it. It restates the README in shorter form, so when the README's commands, install steps or evidence change, change `site/index.html` too. Its images are copied from `.github/` at deploy time; do not add copies to `site/`.
+
 Releasing: bump `VERSION` in `install.sh` and `version` in `.claude-plugin/plugin.json`, add the CHANGELOG entry, run `./install.sh --build` (every skill carries the version), and tag `vX.Y.Z`. `check-prompts.py` fails if the three disagree.
 
 ## Shared Sections

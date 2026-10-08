@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI PRD Workflow — RFC-driven development for AI coding agents</title>
+<meta name="description" content="Idea or existing code → verified PRD → features → rules → sequenced RFCs → reviewed, tested code. Agent Skills for Claude Code, Codex, Copilot, Cursor, Gemini CLI, OpenCode and Devin.">
+<link rel="canonical" href="https://nurettincoban.github.io/ai-prd-workflow/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AI PRD Workflow">
+<meta property="og:description" content="RFC-driven development for AI coding agents. Idea or existing code → verified PRD → features → rules → sequenced RFCs → reviewed, tested code.">
+<meta property="og:url" content="https://nurettincoban.github.io/ai-prd-workflow/">
+<meta property="og:image" content="https://nurettincoban.github.io/ai-prd-workflow/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+<style>
+:root {
+  --bg: #fbfaf8;
+  --bg-alt: #f3f1ec;
+  --surface: #ffffff;
+  --text: #1c1b19;
+  --muted: #5f5c55;
+  --border: #e3dfd6;
+  --accent: #c2603f;
+  --accent-soft: #f7e6de;
+  --code-bg: #1e1d1b;
+  --code-text: #f2efe9;
+  --ok: #3d7a4f;
+  --shadow: 0 1px 2px rgba(28,27,25,.05), 0 8px 24px rgba(28,27,25,.06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161514;
+    --bg-alt: #1d1c1a;
+    --surface: #22211f;
+    --text: #eeebe5;
+    --muted: #a8a399;
+    --border: #36342f;
+    --accent: #e3876a;
+    --accent-soft: #3a2721;
+    --code-bg: #0f0f0e;
+    --code-text: #eeebe5;
+    --ok: #7cc193;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161514; --bg-alt: #1d1c1a; --surface: #22211f; --text: #eeebe5; --muted: #a8a399;
+  --border: #36342f; --accent: #e3876a; --accent-soft: #3a2721; --code-bg: #0f0f0e;
+  --code-text: #eeebe5; --ok: #7cc193; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+code, pre, .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 720px) { .wrap { padding: 0 32px; } }
+
+/* nav */
+header.nav {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+header.nav .wrap { display: flex; align-items: center; gap: 24px; height: 56px; }
+.brand { font-weight: 700; color: var(--text); white-space: nowrap; }
+.brand:hover { text-decoration: none; }
+.nav-links { display: none; gap: 20px; font-size: 14px; }
+.nav-links a { color: var(--muted); }
+.nav-links a:hover { color: var(--text); text-decoration: none; }
+@media (min-width: 820px) { .nav-links { display: flex; } }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 15px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  cursor: pointer; white-space: nowrap;
+}
+.btn:hover { text-decoration: none; border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.small { padding: 6px 12px; font-size: 13px; }
+.btn svg { width: 16px; height: 16px; fill: currentColor; }
+.stars { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 500; }
+.stars:empty { display: none; }
+
+/* hero */
+.hero { padding: 72px 0 48px; }
+.eyebrow { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .02em; margin: 0 0 16px; }
+h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.08; letter-spacing: -.025em; margin: 0 0 20px; max-width: 16ch; }
+.pipeline-line {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px; color: var(--muted); margin: 0 0 24px;
+  display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center;
+}
+.pipeline-line span.step { background: var(--bg-alt); border: 1px solid var(--border); padding: 2px 8px; border-radius: 6px; color: var(--text); }
+.lede { font-size: 18px; color: var(--muted); max-width: 62ch; margin: 0 0 32px; }
+.hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+.since { margin-top: 20px; font-size: 13px; color: var(--muted); }
+
+/* install card */
+.install {
+  margin-top: 48px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;
+}
+.tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.tab {
+  appearance: none; background: none; border: 0; border-bottom: 2px solid transparent;
+  padding: 12px 18px; font: inherit; font-size: 14px; font-weight: 600; color: var(--muted);
+  cursor: pointer; white-space: nowrap;
+}
+.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.panel { padding: 20px; }
+.panel[hidden] { display: none; }
+.panel p { margin: 0 0 12px; color: var(--muted); font-size: 15px; }
+.panel p:last-child { margin-bottom: 0; }
+.code {
+  position: relative; background: var(--code-bg); color: var(--code-text);
+  border-radius: 8px; padding: 14px 52px 14px 16px; margin: 0 0 12px;
+  font-size: 14px; line-height: 1.6; overflow-x: auto; white-space: pre;
+}
+.code .c { color: #8f8a80; }
+.copy {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(255,255,255,.08); color: var(--code-text); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 6px; font: 600 12px/1 ui-sans-serif, system-ui, sans-serif; padding: 6px 8px; cursor: pointer;
+}
+.copy:hover { background: rgba(255,255,255,.16); }
+.note {
+  border-left: 3px solid var(--accent); background: var(--accent-soft);
+  padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 14px; color: var(--text);
+}
+
+/* sections */
+section { padding: 72px 0; }
+section.alt { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+h2 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -.02em; line-height: 1.15; margin: 0 0 12px; }
+.section-lede { color: var(--muted); font-size: 17px; max-width: 64ch; margin: 0 0 40px; }
+h3 { font-size: 17px; margin: 0 0 6px; }
+
+/* demo */
+figure.demo { margin: 0; }
+figure.demo img {
+  width: 100%; height: auto; display: block; border-radius: 12px;
+  border: 1px solid var(--border); box-shadow: var(--shadow); background: #fff;
+}
+figure.demo figcaption { font-size: 14px; color: var(--muted); margin-top: 12px; text-align: center; }
+
+/* phases */
+.phases { display: grid; gap: 20px; }
+.phase { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.phase-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+.phase-num {
+  flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; transform: translateY(4px);
+}
+.phase-head h3 { font-size: 20px; margin: 0; }
+.phase-head p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.cmds { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.cmd { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--bg); position: relative; }
+.cmd code.name { font-size: 15px; font-weight: 700; color: var(--accent); }
+.cmd p { margin: 6px 0 10px; font-size: 14px; color: var(--muted); }
+.cmd .writes { font-size: 12px; color: var(--muted); }
+.cmd .writes code { font-size: 12px; background: var(--bg-alt); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; color: var(--text); }
+.cmd a.view { position: absolute; top: 14px; right: 16px; font-size: 12px; }
+.loop-note { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+.rules { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: 40px; }
+.rule { padding: 18px 20px; border-top: 3px solid var(--accent); background: var(--surface); border-radius: 0 0 10px 10px; border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.rule p { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* comparison */
+.compare { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; font-size: 15px; }
+.compare th, .compare td { text-align: left; padding: 14px 18px; vertical-align: top; border-bottom: 1px solid var(--border); }
+.compare tr:last-child td { border-bottom: 0; }
+.compare th { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--bg-alt); }
+.compare td:first-child { color: var(--muted); width: 45%; }
+.compare td:last-child { font-weight: 500; }
+@media (max-width: 600px) {
+  .compare, .compare tbody, .compare tr, .compare td { display: block; width: 100% !important; }
+  .compare thead { display: none; }
+  .compare tr { border-bottom: 1px solid var(--border); padding: 12px 0; }
+  .compare tr:last-child { border-bottom: 0; }
+  .compare td { border: 0; padding: 4px 16px; }
+  .compare td:first-child::before { content: "Plan mode: "; font-weight: 600; }
+  .compare td:last-child::before { content: "This workflow: "; font-weight: 600; color: var(--accent); }
+}
+.use-skip { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 24px; }
+.use-skip div { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; font-size: 15px; }
+.use-skip strong { display: block; margin-bottom: 4px; }
+
+/* evidence */
+.stats { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 40px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.stat .big { font-size: 44px; font-weight: 800; letter-spacing: -.03em; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.stat p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+.catches { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.catch { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+.catch code { font-weight: 700; color: var(--accent); font-size: 14px; }
+.catch p { margin: 6px 0 0; font-size: 14px; }
+.catch .why { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.quote {
+  margin: 40px 0 0; padding: 24px 28px; border-radius: 12px; background: var(--accent-soft);
+  font-size: 17px; line-height: 1.55;
+}
+.quote strong { color: var(--accent); }
+
+/* tools table */
+.tools { width: 100%; border-collapse: collapse; font-size: 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.tools th, .tools td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.tools th { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--bg-alt); }
+.tools tr:last-child td { border-bottom: 0; }
+.tools code { font-size: 13px; }
+.table-scroll { overflow-x: auto; border-radius: 12px; }
+
+/* cta + footer */
+.cta { text-align: center; padding: 88px 0; }
+.cta h2 { margin-bottom: 12px; }
+.cta p { color: var(--muted); margin: 0 auto 28px; max-width: 52ch; }
+.cta .hero-ctas { justify-content: center; }
+footer { border-top: 1px solid var(--border); padding: 32px 0 48px; font-size: 14px; color: var(--muted); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between; }
+footer .langs a { margin-right: 10px; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#">📋 AI PRD Workflow</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#why">Why</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#install">Install</a>
+    </nav>
+    <div class="nav-right">
+      <a class="btn small" href="https://github.com/nurettincoban/ai-prd-workflow">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>
+        Star <span class="stars" data-stars></span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <p class="eyebrow">RFC-driven development for AI coding agents</p>
+    <h1>Decide what to build before your agent builds it.</h1>
+    <p class="pipeline-line" aria-label="Idea or existing code, then verified PRD, features, rules, sequenced RFCs, and reviewed, tested code">
+      <span class="step">idea or existing code</span>→<span class="step">verified PRD</span>→<span class="step">features</span>→<span class="step">rules</span>→<span class="step">sequenced RFCs</span>→<span class="step">reviewed, tested code</span>
+    </p>
+    <p class="lede">AI coding agents write code well. They are worse at deciding what to build, remembering yesterday's decisions, and noticing when two documents disagree. Every step here writes a markdown file the next step reads, so decisions outlive the chat session — and a script checks the files still agree. No CLI to learn, no framework, no lock-in.</p>
+    <div class="hero-ctas">
+      <a class="btn primary" href="#install">Get started</a>
+      <a class="btn" href="https://github.com/nurettincoban/ai-prd-workflow">View on GitHub</a>
+    </div>
+    <p class="since">RFC-driven since <strong>March 2025</strong> — before Claude Code or Cursor had a plan mode, and before Kiro or Spec Kit existed.</p>
+
+    <div class="install" id="install">
+      <div class="tabs" role="tablist" aria-label="Install for">
+        <button class="tab" role="tab" aria-selected="true" aria-controls="p-claude" id="t-claude">Claude Code</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="p-agents" id="t-agents" tabindex="-1">Codex · Copilot · Cursor · Gemini · OpenCode · Devin</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="p-chat" id="t-chat" tabindex="-1">Any chat assistant</button>
+      </div>
+      <div class="panel" role="tabpanel" id="p-claude" aria-labelledby="t-claude">
+        <p>Install the plugin from inside Claude Code:</p>
+<pre class="code">/plugin marketplace add nurettincoban/ai-prd-workflow
+/plugin install prd-workflow@ai-prd-workflow</pre>
+        <p>Plugin commands carry the plugin's name: <code>/prd-workflow:create-prd</code>.</p>
+      </div>
+      <div class="panel" role="tabpanel" id="p-agents" aria-labelledby="t-agents" hidden>
+        <p>Install the skills into your project:</p>
+<pre class="code">curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project</pre>
+        <p>In Codex, type <code>$create-prd</code> instead of <code>/create-prd</code>.</p>
+      </div>
+      <div class="panel" role="tabpanel" id="p-chat" aria-labelledby="t-chat" hidden>
+        <p>ChatGPT, Claude.ai, or anything else that takes a prompt: open a prompt from the <a href="#how">commands below</a>, copy it, and paste it in. Each prompt works on its own.</p>
+      </div>
+      <div class="panel" style="padding-top:0">
+        <p class="note"><strong>Restart your AI tool after installing.</strong> A running session does not see new skills, so the first command fails with <code>Unknown skill</code> — which looks like a broken install but is only a stale session.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="alt">
+    <div class="wrap">
+      <figure class="demo">
+        <img src="demo-workflow-status.svg" width="860" alt="/workflow-status auditing the v2.0 example: the traceability check fails because F7 has no RFC and RFCS.md is missing, then reading the documents against each other finds 20 inconsistencies" loading="lazy">
+        <figcaption>A real <code>/workflow-status</code> run on the repo's own v2.0 example, condensed. <a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/examples/url-shortener/workflow-status-on-before.md">Full report</a></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <p class="section-lede">Run the commands in order. Each one reads the files the previous ones wrote. Not sure what comes next? <code>/workflow-status</code> tells you.</p>
+
+      <div class="phases">
+        <div class="phase">
+          <div class="phase-head"><span class="phase-num">1</span><div><h3>Define what to build</h3><p>Start from an idea, or from code that already exists.</p></div></div>
+          <div class="cmds">
+            <div class="cmd"><code class="name">/create-prd</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/interactive-prd-creation-prompt.md">prompt</a><p>Interviews you about the idea, a few questions at a time.</p><div class="writes">writes <code>PRD.md</code></div></div>
+            <div class="cmd"><code class="name">/document-existing</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/document-existing-prompt.md">prompt</a><p>Reads an existing codebase, then asks what the code cannot tell it.</p><div class="writes">writes <code>PRD.md</code> <code>FEATURES.md</code> <code>RULES.md</code></div></div>
+            <div class="cmd"><code class="name">/verify-prd</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/prd-comprehensive-verification-prompt.md">prompt</a><p>Finds gaps, contradictions, and claims that cannot be built as written.</p><div class="writes">writes <code>PRD.md</code> <code>PRD-REVIEW.md</code></div></div>
+          </div>
+        </div>
+
+        <div class="phase">
+          <div class="phase-head"><span class="phase-num">2</span><div><h3>Plan how to build it</h3><p>Small units of work, in dependency order, with tests planned up front.</p></div></div>
+          <div class="cmds">
+            <div class="cmd"><code class="name">/extract-features</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/prd-to-features-prompt.md">prompt</a><p>Turns requirements into features with permanent IDs and MoSCoW priorities.</p><div class="writes">writes <code>FEATURES.md</code></div></div>
+            <div class="cmd"><code class="name">/generate-rules</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/prd-to-rules-prompt.md">prompt</a><p>Sets the standards the agent must follow, with dependency versions checked against the registry.</p><div class="writes">writes <code>RULES.md</code></div></div>
+            <div class="cmd"><code class="name">/generate-rfcs</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/prd-to-rfcs-prompt.md">prompt</a><p>Splits the work into small RFCs in dependency order, then checks each one with a fresh reader.</p><div class="writes">writes <code>RFCs/</code> <code>RFCS.md</code></div></div>
+            <div class="cmd"><code class="name">/test-strategy</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/testing-strategy-prompt.md">prompt</a><p>Plans the tests for each RFC before they are written.</p><div class="writes">writes <code>TEST-STRATEGY.md</code></div></div>
+          </div>
+        </div>
+
+        <div class="phase">
+          <div class="phase-head"><span class="phase-num">3</span><div><h3>Build it, one RFC at a time</h3><p>Plan, approve, code, prove — then review in a fresh context.</p></div></div>
+          <div class="cmds">
+            <div class="cmd"><code class="name">/implement-rfc &lt;id&gt;</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/implementation-prompt-template.md">prompt</a><p>Plans, waits for your approval, writes the code, then runs the build and tests to prove each criterion.</p><div class="writes">writes code, RFC status</div></div>
+            <div class="cmd"><code class="name">/review-rfc &lt;id&gt;</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/code-review-prompt.md">prompt</a><p>Reviews the code against the RFC, the rules, and the test plan, in a fresh context.</p><div class="writes">writes <code>reviews/</code></div></div>
+          </div>
+          <p class="loop-note">↻ Then the next RFC.</p>
+        </div>
+
+        <div class="phase">
+          <div class="phase-head"><span class="phase-num">∗</span><div><h3>Anytime</h3><p>When requirements change, or when you lose track.</p></div></div>
+          <div class="cmds">
+            <div class="cmd"><code class="name">/manage-changes</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/prd-change-management-prompt.md">prompt</a><p>Checks a change against past decisions and rules, then updates every affected file together.</p><div class="writes">writes <code>changes/</code></div></div>
+            <div class="cmd"><code class="name">/workflow-status</code><a class="view" href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/workflow-status-prompt.md">prompt</a><p>Reports what is done, what has drifted, and what to do next.</p><div class="writes">read-only</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rules">
+        <div class="rule"><h3>Plan, approve, then code</h3><p><code>/implement-rfc</code> stops after the plan and waits for you.</p></div>
+        <div class="rule"><h3>Review with fresh eyes</h3><p><code>/review-rfc</code> will not review code written in the same conversation. In Claude Code it runs in a separate context automatically.</p></div>
+        <div class="rule"><h3>IDs never change</h3><p>Requirements, features, rules and RFCs cite each other by ID. <code>trace-check.py</code> fails when a citation breaks or a Must-have feature has no RFC.</p></div>
+        <div class="rule"><h3>One file wins</h3><p>When files disagree, <code>PRD.md</code> wins over <code>FEATURES.md</code>, then <code>RULES.md</code>, then the RFCs — and the other file is flagged for correction.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt" id="why">
+    <div class="wrap">
+      <h2>Your agent has a plan mode. It plans one task.</h2>
+      <p class="section-lede">This workflow plans the product. The two work together: <code>/generate-rfcs</code> decides what the next piece of work is, and <code>/implement-rfc</code> hands your agent's planner a small, well-defined task.</p>
+      <div class="table-scroll">
+        <table class="compare">
+          <thead><tr><th>Built-in plan mode</th><th>This workflow</th></tr></thead>
+          <tbody>
+            <tr><td>Plans one task: "how do I build this?"</td><td>Plans the product: what are we building, for whom, and what is out of scope?</td></tr>
+            <tr><td>The plan disappears with the session</td><td>PRD, features, rules and RFCs stay — across sessions, models, tools and teammates</td></tr>
+            <tr><td>Takes your request at face value</td><td>Interviews you first, so decisions are written down before any code exists</td></tr>
+            <tr><td>Reviews code by "looks right"</td><td>Reviews against written acceptance criteria, and checks the files against each other</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="use-skip">
+        <div><strong>Use it for</strong>multi-week builds, and anything real you build with AI, where scope creep and forgotten decisions hurt more than code quality.</div>
+        <div><strong>Skip it for</strong>a one-line fix.</div>
+        <div><strong>Know Spec Kit or Kiro?</strong>Same idea — spec-driven development — with RFCs as the unit of work and no CLI or framework to adopt. It predates both.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="evidence">
+    <div class="wrap">
+      <h2>Each step catches what the others cannot</h2>
+      <p class="section-lede">Measured by building a real TypeScript library end to end with the workflow, from a real PRD — and checkable by you on the example in this repository.</p>
+
+      <div class="stats">
+        <div class="stat"><div class="big">12 / 13</div><p>cross-document problems found by <code>/workflow-status</code> in a fresh context that never saw our list. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener">See the example</a></p></div>
+        <div class="stat"><div class="big">10 / 10</div><p>PRD problems found by <code>/verify-prd</code> on the same example — plus several we had missed.</p></div>
+        <div class="stat"><div class="big">A/B</div><p>The <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/evals">eval suite</a> runs the same checks with and without the workflow, so the difference is measured, not claimed.</p></div>
+      </div>
+
+      <div class="catches">
+        <div class="catch"><code>/verify-prd</code><p>A function contradicting the PRD's own convention; an unspecified color space; a hidden rendering dependency.</p><p class="why">It compared the spec with the reference implementation.</p></div>
+        <div class="catch"><code>RFC edge cases</code><p>That the pinned TypeScript version would break the build; a clone-aliasing bug.</p><p class="why">It reasoned about code that did not exist yet.</p></div>
+        <div class="catch"><code>/review-rfc</code><p>A geometry leak on an error path; unvalidated <code>NaN</code> inputs.</p><p class="why">All 17 acceptance criteria had already passed.</p></div>
+        <div class="catch"><code>/test-strategy</code><p>Normals never checked for being finite, so degenerate geometry rendered black while every test passed.</p><p class="why">It asks which tests should exist, not which do.</p></div>
+        <div class="catch"><code>/workflow-status</code><p>Two required files never created, while their RFC was reported complete.</p><p class="why">It checked claims against the files on disk.</p></div>
+        <div class="catch"><code>Fresh-reader check</code><p>An RFC that contradicted itself; a criterion that could only pass by luck.</p><p class="why">The author had read past both, repeatedly.</p></div>
+      </div>
+
+      <p class="quote">Before any code existed, an RFC's edge-case section <strong>predicted that a build plugin would not support TypeScript 7 yet</strong>, and named the fallback version. That is exactly what happened. Type-checking passed throughout, so only running the build revealed it.</p>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2>Works where you work</h2>
+      <p class="section-lede"><code>install.sh</code> puts the skills where each tool looks for them, and never overwrites a skill you have edited.</p>
+      <div class="table-scroll">
+        <table class="tools">
+          <thead><tr><th>Tool</th><th>Folder</th><th>Run a command</th></tr></thead>
+          <tbody>
+            <tr><td>Claude Code</td><td><code>.claude/skills/</code>, or the plugin</td><td><code>/create-prd</code></td></tr>
+            <tr><td>GitHub Copilot (VS Code, CLI)</td><td><code>.agents/skills/</code></td><td><code>/create-prd</code></td></tr>
+            <tr><td>Cursor</td><td><code>.agents/skills/</code></td><td><code>/create-prd</code>, from the <code>/</code> menu</td></tr>
+            <tr><td>Gemini CLI</td><td><code>.agents/skills/</code></td><td><code>/create-prd</code></td></tr>
+            <tr><td>OpenCode</td><td><code>.agents/skills/</code></td><td><code>/create-prd</code></td></tr>
+            <tr><td>Devin</td><td><code>.agents/skills/</code></td><td><code>/create-prd</code></td></tr>
+            <tr><td>Codex</td><td><code>.agents/skills/</code></td><td><code>$create-prd</code>, or pick it from <code>/skills</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <h2>Try it on the example first</h2>
+      <p>The repo's v2.0 example looks complete, and it is not. Run <code>/workflow-status</code> on it and compare the report with the problems we found by hand.</p>
+<pre class="code" style="text-align:left;max-width:640px;margin:0 auto 28px">git clone https://github.com/nurettincoban/ai-prd-workflow.git
+cd ai-prd-workflow
+./install.sh examples/url-shortener/before</pre>
+      <div class="hero-ctas">
+        <a class="btn primary" href="https://github.com/nurettincoban/ai-prd-workflow">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>
+          Star on GitHub <span class="stars" data-stars style="color:inherit;opacity:.85"></span>
+        </a>
+        <a class="btn" href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener">Read the example</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>MIT licensed · Thank you to <a href="https://www.anthropic.com">Anthropic</a> for supporting this project and welcoming it into its open source program.</div>
+    <div class="langs">
+      <a href="https://github.com/nurettincoban/ai-prd-workflow#readme">English</a><a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/README.zh-CN.md">简体中文</a><a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/README.tr.md">Türkçe</a><a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/README.ja.md">日本語</a><a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/README.ko.md">한국어</a><a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/README.es.md">Español</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Tabs: arrow keys move between tabs, as the WAI-ARIA tabs pattern expects.
+(function () {
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  function select(tab) {
+    tabs.forEach(function (t) {
+      var on = t === tab;
+      t.setAttribute('aria-selected', on);
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener('click', function () { select(tab); });
+    tab.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      var next = tabs[(i + d + tabs.length) % tabs.length];
+      select(next); next.focus();
+    });
+  });
+})();
+
+// Copy buttons on every code block.
+document.querySelectorAll('pre.code').forEach(function (pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy'; btn.type = 'button'; btn.textContent = 'Copy';
+  btn.addEventListener('click', function () {
+    var text = pre.firstChild.textContent;
+    navigator.clipboard.writeText(text.trim()).then(function () {
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+    });
+  });
+  pre.appendChild(btn);
+});
+
+// Live star count. The page reads fine without it (rate limit, offline), so failures are silent.
+fetch('https://api.github.com/repos/nurettincoban/ai-prd-workflow')
+  .then(function (r) { return r.ok ? r.json() : null; })
+  .then(function (repo) {
+    if (!repo || typeof repo.stargazers_count !== 'number') return;
+    var n = repo.stargazers_count;
+    var label = n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n);
+    document.querySelectorAll('[data-stars]').forEach(function (el) { el.textContent = label; });
+  })
+  .catch(function () {});
+</script>
+</body>
+</html>

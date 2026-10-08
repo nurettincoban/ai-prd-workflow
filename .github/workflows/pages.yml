@@ -1,0 +1,44 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - .github/demo-workflow-status.svg
+      - .github/social-preview.png
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push replaces a queued one, never a running one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy site/ to GitHub Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Assemble the site
+        # The images live in .github/ because the README uses them too.
+        # Copying them at deploy time keeps one copy in the repository.
+        run: |
+          mkdir -p "$RUNNER_TEMP/site"
+          cp -r site/. "$RUNNER_TEMP/site/"
+          cp .github/demo-workflow-status.svg .github/social-preview.png "$RUNNER_TEMP/site/"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/site
+      - id: deployment
+        uses: actions/deploy-pages@v4
