@@ -1,5 +1,7 @@
 <div align="center">
 
+<a href="https://nurettincoban.github.io/ai-prd-workflow/"><img src=".github/social-preview.png" width="820" alt="AI PRD Workflow: 에이전트가 만들기 전에 무엇을 만들지 먼저 정하세요"></a>
+
 # 📋 AI PRD Workflow
 
 ### AI 코딩 에이전트를 위한 RFC 주도 개발

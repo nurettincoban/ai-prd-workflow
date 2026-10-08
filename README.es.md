@@ -1,5 +1,7 @@
 <div align="center">
 
+<a href="https://nurettincoban.github.io/ai-prd-workflow/"><img src=".github/social-preview.png" width="820" alt="AI PRD Workflow: decide qué construir antes de que tu agente lo construya"></a>
+
 # 📋 AI PRD Workflow
 
 ### Desarrollo guiado por RFC para agentes de programación con IA

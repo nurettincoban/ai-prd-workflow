@@ -1,5 +1,7 @@
 <div align="center">
 
+<a href="https://nurettincoban.github.io/ai-prd-workflow/"><img src=".github/social-preview.png" width="820" alt="AI PRD Workflow：在代理动手之前，先决定要构建什么"></a>
+
 # 📋 AI PRD Workflow
 
 ### 面向 AI 编程代理的 RFC 驱动开发

@@ -1,5 +1,7 @@
 <div align="center">
 
+<a href="https://nurettincoban.github.io/ai-prd-workflow/"><img src=".github/social-preview.png" width="820" alt="AI PRD Workflow：エージェントが作り始める前に、何を作るかを決める"></a>
+
 # 📋 AI PRD Workflow
 
 ### AI コーディングエージェントのための RFC 駆動開発

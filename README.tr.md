@@ -1,5 +1,7 @@
 <div align="center">
 
+<a href="https://nurettincoban.github.io/ai-prd-workflow/"><img src=".github/social-preview.png" width="820" alt="AI PRD Workflow: ajanınız inşa etmeden önce neyin inşa edileceğine karar verin"></a>
+
 # 📋 AI PRD Workflow
 
 ### AI kodlama ajanları için RFC odaklı geliştirme
