@@ -1,0 +1,11 @@
+# Cold read: RFC-002
+
+1. Interface guess: how a command registers its arguments. "Each `build_parser()` subparser is created by iterating `COMMANDS`; the argument definition of a command lives in that command's RFC." But `COMMANDS` is only `{name: handler}`, and a test may replace an entry with a plain function. The RFC defines no hook (an attribute on the handler, a second dict, a function) for adding positionals or flags. RFC-003 and RFC-004 code against this contract, and each implementer would invent a different mechanism. Pin one, for example `ARGUMENTS = {name: callable(subparser)}`, and say what happens when a name has no entry.
+
+2. Contradiction on closed stdout. Open Question 3 says "a closed stdout exits 0". The approach says only BrokenPipeError gives 0, and "a closed `sys.stdout` that is `None`" is an unexpected error with exit 1. For `td list >&-` the outcome depends on whether any line is written: an empty list exits 0 and a non-empty list exits 1. Say which of the two statements wins, and whether "closed stdout" means a closed pipe or a missing descriptor. Nothing in the criteria tests this, so both readings pass.
+
+3. Criterion 10 is not satisfiable as written. "`stdout.split("\n")` and `stdout.splitlines()` both give exactly one line per task". Output ends in `"\n"`, so `split("\n")` always gives one extra empty element. Reword it, for example "after dropping the final empty element".
+
+4. Criterion 13 is ambiguous: "An `ast` or text scan of `td` finds no `isatty` ... no `TODO`...". A text scan also hits comments and docstrings. DEV-2 requires explanatory assumption comments, so a comment such as "no isatty check (OUT-3)" would fail a text scan but pass an `ast` scan. State which scan is used and whether comments count.
+
+5. Parse-error stderr line. The spec says the `error()` override writes `td: <message>`. Only the later paragraph says every message has control characters replaced before printing, and it is written for `TdError` and unexpected errors. It is not clear that argparse messages, which echo user arguments, go through the same sanitizer. For `td $'a\nb'` this decides between one stderr line and two. The criteria never test it, so it passes either way.

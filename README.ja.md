@@ -4,7 +4,7 @@
 
 # 📋 AI PRD Workflow
 
-### AI コーディングエージェントのための RFC 駆動開発
+### エージェントが作り始める前に、何を作るかを決める。
 
 **アイデアまたは既存のコード → 検証済みの PRD → 機能 → ルール → 順序付きの RFC → レビューとテストを経たコード**
 
@@ -14,11 +14,11 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#クイックスタート)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#インストールオプション)
 
-**[🌐 ウェブサイト](https://nurettincoban.github.io/ai-prd-workflow/)** · **[クイックスタート](#クイックスタート)** · **[仕組み](#仕組み)** · **[なぜ](#なぜこのワークフローか)** · **[実証](#実証)** · **[インストールオプション](#インストールオプション)**
+**[🌐 ウェブサイト](https://nurettincoban.github.io/ai-prd-workflow/)** · **[実際の実行例を見る](#1-回の実行が生んだもの)** · **[クイックスタート](#クイックスタート)** · **[仕組み](#仕組み)** · **[なぜ](#なぜこのワークフローか)** · **[実証](#実証)** · **[インストールオプション](#インストールオプション)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · 日本語 · [한국어](README.ko.md) · [Español](README.es.md)
 
-<sub><b>2025 年 3 月</b>から RFC 駆動 —— Claude Code や Cursor にプランモードが登場する前、そして Kiro や Spec Kit が生まれる前から。</sub>
+<sub><a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>2025 年 3 月</b></a>から RFC 駆動 —— Claude Code や Cursor にプランモードが登場する前、そして Kiro や Spec Kit が生まれる前から。</sub>
 
 </div>
 
@@ -27,36 +27,50 @@
 
 ---
 
-AI コーディングエージェントはコードを書くのが得意です。苦手なのは、何を作るべきかを決めること、昨日の決定を覚えておくこと、そして 2 つのドキュメントが食い違っていることに気づくことです。このワークフローはその部分を担います。アイデア（あるいはすでに存在するコードベース）を、レビュー済みの PRD（製品要求仕様書）、優先度付きの機能一覧、プロジェクトのルール、そして依存関係の順に並んだ小さな RFC へと変換し、それらを 1 つずつ実装・レビューします。
+AI コーディングエージェントはコードを書くのが得意です。苦手なのは、何を作るべきかを決めること、昨日の決定を覚えておくこと、そして 2 つのドキュメントが食い違っていることに気づくことです。このワークフローはその部分を担います。アイデア（あるいはすでに存在するコードベース）を、レビュー済みのプロダクト仕様（PRD）、優先度付きの機能一覧、プロジェクトのルール、そして依存関係の順に並んだ小さな実装仕様（RFC）へと変換し、それらを 1 つずつ実装・レビューします。
 
-各ステップは次のステップが読む markdown ファイルを書き出すので、チャットセッションが終わっても決定は失われません。さらにスクリプトが、ファイル同士の整合性が保たれているかをチェックします。覚えるべき CLI も、導入すべきフレームワークも、ロックインもありません。
+各ステップは次のステップが読む markdown ファイルを書き出すので、チャットセッションが終わっても決定は失われません。さらにスクリプトが、ファイル同士の整合性が保たれているかをチェックします。覚えるべき CLI も、導入すべきフレームワークも、ロックインもありません。コマンドはただのプロンプトで、Claude Code、Codex、Copilot、Cursor、Gemini CLI、OpenCode、Devin 向けのスキルとしてインストールされます。
 
-<p align="center">
-  <img src=".github/demo-workflow-status.svg" width="860" alt="v2.0 のサンプルを監査する /workflow-status：F7 に対応する RFC がなく RFCS.md も存在しないためトレーサビリティチェックが失敗し、続いてドキュメント同士を突き合わせた結果、UI を作る RFC がないことや、HTTP 301 のキャッシュでクリック数が正しく数えられないことなど、20 件の不整合が見つかる">
-</p>
-<p align="center"><sub>このリポジトリ自身の v2.0 サンプルに対する実際の <code>/workflow-status</code> の実行結果を、要約して再生したものです。<a href="examples/url-shortener/workflow-status-on-before.md">完全なレポート</a> · <a href="examples/url-shortener/README.md">照合に使った問題リスト</a></sub></p>
+## 1 回の実行が生んだもの
+
+完成しているように見える小さな URL 短縮サービスの仕様を渡して、コマンドを実行しました。コードがまだ存在しない段階で見つけたことを 3 つ挙げます:
+
+| 仕様に書かれていたこと | ワークフローがしたこと |
+|---|---|
+| 「短縮 URL を HTTP 301 で元の URL にリダイレクトする」 | `/verify-prd`: ブラウザは 301 をキャッシュするので、2 回目以降のクリックは数えられず、削除したリンクもリダイレクトし続ける。修正後の仕様は 302 でリダイレクトし、[RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) は「決して 301 を返さない」ことをテストする。 |
+| ユーザーアカウントがないのに、誰でも「短縮 URL を削除」できる | `/verify-prd`: 誰でも他人のリンクを削除できてしまう。判断できる人がいなかったので、修正案を決定としてではなく、**(assumption)**（仮定）と印を付けた未解決の質問として書いた。 |
+| RFC-002 は機能 F5、F6、F11 を担当すると主張している | `/workflow-status`: その受け入れ基準は API しかテストしていないため、これらの機能が必要とする分析ページとグラフを誰かに作らせるものが何もなかった。ID はすべて引用されていたので、スクリプトでは見抜けなかった。 |
+
+手作業で挙げておいた問題 **10 件中 10 件**を、`/verify-prd` がそのリストを見ずに見つけました。ドキュメント間の問題は、**13 件中 12 件**を `/workflow-status` が見つけました。**12 個の RFC** と **203 件の計画済みテスト**が生成され、各 RFC はまず第 2 のモデルが予備知識なしで読み通しました（コールドリード）。Claude Opus 5.5 でおよそ 1 時間のエージェント時間、人間の入力はなしです。**[実行の全体を見る →](examples/url-shortener/)**
 
 ## クイックスタート
 
-**Claude Code** — プラグインをインストールします:
+Claude Code では、プラグインをインストールし、Claude Code を再起動して、インタビューを始めます:
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
+/prd-workflow:create-prd          # 次に /prd-workflow:verify-prd
 ```
 
-**Codex、GitHub Copilot、Cursor、Gemini CLI、OpenCode、Devin** — スキルをプロジェクトにインストールします:
+<details>
+<summary><b>Codex、GitHub Copilot、Cursor、Gemini CLI、OpenCode、Devin、または任意のチャットアシスタント</b></summary>
+
+スキルをプロジェクトにインストールします:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project
+cd your-project
+curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-**任意のチャットアシスタント**（ChatGPT、Claude.ai など） — [コマンド表](#仕組み)からプロンプトをコピーして貼り付けます。
+Codex では `/create-prd` の代わりに `$create-prd` と入力します。チャットアシスタント（ChatGPT、Claude.ai など）では、[コマンド表](#仕組み)からプロンプトをコピーして貼り付けます。
+
+</details>
 
 > [!IMPORTANT]
 > インストール後は AI ツールを再起動してください。実行中のセッションは新しいスキルを認識しないため、最初のコマンドが `Unknown skill` で失敗します。インストールが壊れているように見えますが、セッションが古いだけです。
 
-その後、コマンドを順番に実行します:
+その後、コマンドを順番に実行します（プラグインでは、各コマンドにプラグイン名が付きます: `/prd-workflow:verify-prd`）:
 
 ```
 /create-prd          # インタビュー → PRD.md（既存のコードがある場合は /document-existing）
@@ -69,17 +83,17 @@ curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/
 /review-rfc 001      # 新しいコンテキストでレビュー → reviews/REVIEW-RFC-001.md
 ```
 
-次に何をすべきか迷ったら `/workflow-status` を、要件が変わったら `/manage-changes` を実行してください。Codex では `/create-prd` の代わりに `$create-prd` と入力します。Claude Code プラグインでは、コマンドにプラグイン名が付きます: `/prd-workflow:create-prd`。
+次に何をすべきか迷ったら `/workflow-status` を、要件が変わったら `/manage-changes` を実行してください。まずは最初の 2 つから始めましょう。インタビューは 10 分ほどで終わり、そこから数分で `/verify-prd` が、このワークフローがあなたに合うかどうかを教えてくれます。
 
-**まずはサンプルで試してみましょう。** リポジトリにある v2.0 のサンプルは完成しているように見えますが、そうではありません:
+**あるいはサンプルで試してみましょう。** `before/` フォルダは完成しているように見えますが、そうではありません。元のフォルダを比較用に残しておけるよう、コピーして使います:
 
 ```bash
 git clone https://github.com/nurettincoban/ai-prd-workflow.git
-cd ai-prd-workflow
-./install.sh examples/url-shortener/before
+cp -r ai-prd-workflow/examples/url-shortener/before linksnip
+ai-prd-workflow/install.sh linksnip
 ```
 
-AI ツールで `examples/url-shortener/before` を開き、`/workflow-status` を実行して、そのレポートを[私たちが手作業で見つけた問題](examples/url-shortener/README.md)と比べてみてください。
+AI ツールで `linksnip` を開き、`/workflow-status` または `/verify-prd` を実行して、その結果を[私たちが手作業で見つけた問題](examples/url-shortener/README.md)や、[私たちの実行](examples/url-shortener/after/)が生み出したものと比べてみてください。
 
 ## 仕組み
 
@@ -143,11 +157,22 @@ flowchart TB
 
 **向いているのは、** 数週間にわたる開発や、AI で本気で作るあらゆるもの —— コードの品質よりも、スコープの肥大化や忘れられた決定のほうが痛手になる場面です。**向いていないのは、** 1 行の修正です。
 
-仕様駆動開発（spec-driven development。GitHub Spec Kit や Amazon Kiro など）をご存じなら、これは同じ考え方です。作業単位は RFC で、導入すべき CLI やフレームワークはありません。そして、そのどちらよりも先に生まれました。
+仕様駆動開発（spec-driven development。GitHub Spec Kit や Amazon Kiro など）をご存じなら、これは同じ考え方です。作業単位は RFC で、導入すべき CLI やフレームワークはなく、ドキュメント同士を突き合わせるスクリプトがあります。
 
 ## 実証
 
-各ステップはプロジェクトを異なる角度から見て、他のステップでは見つけられない問題を見つけます。これは、実際の PRD からこのワークフローで実際の TypeScript ライブラリをエンドツーエンドで構築して測定したものです:
+このセクションの内容のうち確認できるものは、すべてここで確認できます:
+
+- **[url-shortener のサンプル](examples/url-shortener/)** —— v2.0 の仕様、私たちが手作業でその中に見つけた問題、そして現在のコマンドをそれに対して実行した完全な記録です。私たちのリストを一度も見ていない新しいコンテキストでの実行が、PRD の問題 10 件中 10 件（`/verify-prd`）と、ドキュメント間の問題 13 件中 12 件（`/workflow-status`）を見つけ、さらに私たちが見落としていた問題もいくつか見つけました。第 2 のモデルによるコールドリード（このサンプルでは手動で実行）では、生成された RFC のせいで実装者が推測を強いられたであろう箇所が 150 以上見つかりました。その[レポート](examples/url-shortener/cold-reads/)もあります。いずれも 1 つのモデルによる 1 回きりの実行です。
+- **[todo-cli のサンプル](examples/todo-cli/)** —— ターミナル用 ToDo リストの 10 行のアイデアを、レビュー済みの 386 行のコードと 66 件の通るテストまで進めた実行です。すべてのステップを Claude Sonnet 5.5 で行い、質問に答える人はいませんでした。各コマンドが見つけたもの（機能が壊れていても通ってしまうテストを含む）と、この実行があなたに残した唯一の判断が分かります。
+- **[評価スイート](evals/)** —— 同じチェックをワークフローありとなしの両方で、ご自身のアカウントで実行するので、差をご自身で測定できます。採点対象は PRD の 10 件の問題と、ドキュメント間の 13 件のうち 7 件、つまり正規表現で確実に認識できるものです。
+
+<p align="center">
+  <img src=".github/demo-workflow-status.svg" width="860" alt="v2.0 のサンプルを監査する /workflow-status：F7 に対応する RFC がなく RFCS.md も存在しないためトレーサビリティチェックが失敗し、続いてドキュメント同士を突き合わせた結果、UI を作る RFC がないことや、HTTP 301 のキャッシュでクリック数が正しく数えられないことなど、20 件の不整合が見つかる">
+</p>
+<p align="center"><sub>v2.0 サンプルに対する実際の <code>/workflow-status</code> の実行結果を、要約して再生したものです。<a href="examples/url-shortener/workflow-status-on-before.md">完全なレポート</a></sub></p>
+
+各ステップはプロジェクトを異なる角度から見て、他のステップでは見つけられない問題を見つけます。私たちはこのワークフローで TypeScript ライブラリをエンドツーエンドで構築したときに、それを目にしました。そのライブラリは公開されていないので、この表は証明ではなく現場からの報告として受け取ってください:
 
 | ステップ | 見つけたもの | なぜこのステップだけが見つけられたか |
 |---|---|---|
@@ -162,11 +187,6 @@ flowchart TB
 最も印象的な結果: コードが 1 行も存在しない段階で、ある RFC のエッジケースの節が、ビルドプラグインがまだ TypeScript 7 に対応していないことを予測し、代替のバージョンまで明記していました。実際にそのとおりになりました。型チェックは最後まで通っていたので、問題が明らかになったのはビルドを実際に実行したときだけでした。
 
 ID も保たれました。プロジェクトの途中で PRD が変わったとき、新しいエージェントが `/extract-features` を再実行し、番号を振り直す代わりに新しい機能を末尾に追加しました —— 誰にも指示されずに。RFC が機能を番号で参照していたからです。
-
-そのライブラリはこのリポジトリには含まれていないので、ご自身で確認できる証拠を挙げます:
-
-- **[url-shortener のサンプル](examples/url-shortener/)** —— 私たちの既知の問題リストを一度も見ていない新しいコンテキストでの実行が、ドキュメント間の問題 13 件中 12 件（`/workflow-status`）と、PRD の問題 10 件中 10 件（`/verify-prd`）を見つけ、さらに私たちが見落としていた問題もいくつか見つけました。
-- **[評価スイート](evals/)** —— 同じチェックをワークフローありとなしの両方で実行し、差を主張ではなく測定で示します。
 
 ## インストールオプション
 
@@ -216,4 +236,4 @@ MIT —— [LICENSE](LICENSE) をご覧ください。
 
 ---
 
-<p align="center">このワークフローで時間を節約できたら、⭐ を付けていただけると、より多くの人に届きます。</p>
+<p align="center">このワークフローのおかげで間違ったものを作らずに済んだなら、⭐ を付けていただけると、より多くの人に届きます。</p>

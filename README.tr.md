@@ -4,7 +4,7 @@
 
 # 📋 AI PRD Workflow
 
-### AI kodlama ajanları için RFC odaklı geliştirme
+### Ajanınız inşa etmeden önce neyin inşa edileceğine karar verin.
 
 **Fikir veya mevcut kod → doğrulanmış PRD → özellikler → kurallar → sıralı RFC'ler → incelenmiş, test edilmiş kod**
 
@@ -14,11 +14,11 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#hızlı-başlangıç)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#kurulum-seçenekleri)
 
-**[🌐 Web sitesi](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Hızlı başlangıç](#hızlı-başlangıç)** · **[Nasıl çalışır](#nasıl-çalışır)** · **[Neden](#neden-bu-iş-akışı)** · **[Kanıtlar](#kanıtlar)** · **[Kurulum seçenekleri](#kurulum-seçenekleri)**
+**[🌐 Web sitesi](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Gerçek bir çalıştırmayı görün](#bir-çalıştırmanın-ürettikleri)** · **[Hızlı başlangıç](#hızlı-başlangıç)** · **[Nasıl çalışır](#nasıl-çalışır)** · **[Neden](#neden-bu-iş-akışı)** · **[Kanıtlar](#kanıtlar)** · **[Kurulum seçenekleri](#kurulum-seçenekleri)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · Türkçe · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
-<sub><b>Mart 2025</b>'ten beri RFC odaklı — Claude Code ve Cursor'da henüz plan modu yokken, Kiro ve Spec Kit daha ortada yokken.</sub>
+<sub><a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>Mart 2025</b></a>'ten beri RFC odaklı — Claude Code ve Cursor'da henüz plan modu yokken, Kiro ve Spec Kit daha ortada yokken.</sub>
 
 </div>
 
@@ -27,36 +27,50 @@
 
 ---
 
-AI kodlama ajanları kod yazmakta iyidir. Ne yapılacağına karar vermekte, dünkü kararları hatırlamakta ve iki dokümanın birbiriyle çeliştiğini fark etmekte o kadar iyi değildirler. Bu iş akışı tam olarak bu kısmı üstlenir: bir fikri — ya da zaten var olan bir kod tabanını — gözden geçirilmiş bir PRD'ye (ürün gereksinimleri dokümanı), önceliklendirilmiş özelliklere, proje kurallarına ve bağımlılık sırasına dizilmiş küçük RFC'lere dönüştürür. Ardından bunları teker teker uygular ve inceler.
+AI kodlama ajanları kod yazmakta iyidir. Ne yapılacağına karar vermekte, dünkü kararları hatırlamakta ve iki dokümanın birbiriyle çeliştiğini fark etmekte o kadar iyi değildirler. Bu iş akışı tam olarak bu kısmı üstlenir: bir fikri — ya da zaten var olan bir kod tabanını — gözden geçirilmiş bir ürün spesifikasyonuna (PRD), önceliklendirilmiş özelliklere, proje kurallarına ve bağımlılık sırasına dizilmiş küçük uygulama spesifikasyonlarına (RFC'ler) dönüştürür. Ardından bunları teker teker uygular ve inceler.
 
-Her adım, bir sonraki adımın okuyacağı bir markdown dosyası yazar; böylece kararlar sohbet oturumu kapandığında kaybolmaz. Bir betik de bu dosyaların hâlâ birbiriyle tutarlı olduğunu kontrol eder. Öğrenilecek bir CLI, benimsenecek bir framework, bağımlı kalınacak bir araç yok.
+Her adım, bir sonraki adımın okuyacağı bir markdown dosyası yazar; böylece kararlar sohbet oturumu kapandığında kaybolmaz. Bir betik de bu dosyaların hâlâ birbiriyle tutarlı olduğunu kontrol eder. Öğrenilecek bir CLI, benimsenecek bir framework, bağımlı kalınacak bir araç yok: komutlar düz prompt'lardır ve Claude Code, Codex, Copilot, Cursor, Gemini CLI, OpenCode ve Devin için skill olarak kurulur.
 
-<p align="center">
-  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status v2.0 örneğini denetliyor: izlenebilirlik kontrolü başarısız oluyor, çünkü F7'nin RFC'si yok ve RFCS.md eksik; ardından dokümanlar birbiriyle karşılaştırılıyor ve 20 tutarsızlık bulunuyor, örneğin arayüzü hiçbir RFC'nin yapmaması ve HTTP 301 önbelleğinin tıklama sayımını bozması">
-</p>
-<p align="center"><sub>Deponun kendi v2.0 örneği üzerinde gerçek bir <code>/workflow-status</code> çalıştırmasının kısaltılmış tekrarı. <a href="examples/url-shortener/workflow-status-on-before.md">Tam rapor</a> · <a href="examples/url-shortener/README.md">neyle karşılaştırıldığı</a></sub></p>
+## Bir çalıştırmanın ürettikleri
+
+Küçük bir URL kısaltıcının bitmiş görünen spesifikasyonunu verdik ve komutları çalıştırdık. Daha hiç kod yokken yakaladığı üç şey:
+
+| Spesifikasyonda yazan | İş akışının yaptığı |
+|---|---|
+| "Kısa URL'yi HTTP 301 ile orijinal URL'ye yönlendir" | `/verify-prd`: tarayıcılar 301'i önbelleğe alır; bu yüzden tekrarlanan tıklamalar hiç sayılmaz ve silinen bağlantılar yönlendirmeye devam eder. Düzeltilmiş spesifikasyon 302 ile yönlendirir ve [RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) "asla 301 değil" diye test eder. |
+| Kullanıcı hesabı yok ve herkes "kısa bir URL'yi silebilir" | `/verify-prd`: herkes herkesin bağlantısını silebilir. Karar verecek kimse yoktu; bu yüzden önerdiği çözümü bir karar olarak değil, **(assumption)** (varsayım) işaretli açık bir soru olarak yazdı. |
+| RFC-002, F5, F6 ve F11 özelliklerini karşıladığını iddia ediyor | `/workflow-status`: kabul kriterleri yalnızca API'yi test ediyor; bu yüzden o özelliklerin gerektirdiği analiz sayfasını ve grafiği kimseye yaptıracak hiçbir şey yoktu. Her ID'ye atıf yapılmıştı, bu yüzden bir betik bunu göremezdi. |
+
+Elle listelediğimiz **10 problemin 10'u**, listeyi hiç görmeyen `/verify-prd` tarafından bulundu. Dokümanlar arası **13 problemin 12'si** `/workflow-status` tarafından bulundu. **12 RFC** ve **203 planlanmış test** üretildi; her RFC önce ikinci bir model tarafından bağlamsız olarak (cold read) okundu. Claude Opus 5.5 üzerinde yaklaşık bir saatlik ajan süresi, hiç insan girdisi olmadan. **[Çalıştırmanın tamamına göz atın →](examples/url-shortener/)**
 
 ## Hızlı başlangıç
 
-**Claude Code** — eklentiyi kurun:
+Claude Code'da eklentiyi kurun, Claude Code'u yeniden başlatın ve mülakatı başlatın:
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
+/prd-workflow:create-prd          # ardından /prd-workflow:verify-prd
 ```
 
-**Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode veya Devin** — skill'leri projenize kurun:
+<details>
+<summary><b>Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode, Devin veya herhangi bir sohbet asistanı</b></summary>
+
+Skill'leri projenize kurun:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project
+cd your-project
+curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-**Herhangi bir sohbet asistanı** (ChatGPT, Claude.ai, …) — [komut tablosundan](#nasıl-çalışır) bir prompt kopyalayıp yapıştırın.
+Codex'te `/create-prd` yerine `$create-prd` yazın. Bir sohbet asistanında (ChatGPT, Claude.ai, …) [komut tablosundan](#nasıl-çalışır) bir prompt kopyalayıp yapıştırın.
+
+</details>
 
 > [!IMPORTANT]
 > Kurulumdan sonra AI aracınızı yeniden başlatın. Çalışan bir oturum yeni skill'leri görmez; ilk komut `Unknown skill` hatası verir. Bu, kurulum bozukmuş gibi görünür ama oturum yalnızca eskimiştir.
 
-Ardından komutları sırayla çalıştırın:
+Ardından komutları sırayla çalıştırın (eklentiyle her komut eklentinin adını taşır: `/prd-workflow:verify-prd`):
 
 ```
 /create-prd          # mülakat → PRD.md   (kod zaten var mı? bunun yerine /document-existing)
@@ -69,17 +83,17 @@ Ardından komutları sırayla çalıştırın:
 /review-rfc 001      # temiz bir bağlamda inceleme → reviews/REVIEW-RFC-001.md
 ```
 
-Sıradaki adımdan emin olmadığınızda `/workflow-status`, gereksinimler değiştiğinde `/manage-changes` çalıştırın. Codex'te `/create-prd` yerine `$create-prd` yazın. Claude Code eklentisiyle komutlar eklentinin adını taşır: `/prd-workflow:create-prd`.
+Sıradaki adımdan emin olmadığınızda `/workflow-status`, gereksinimler değiştiğinde `/manage-changes` çalıştırın. İlk ikisiyle başlayın: mülakat yaklaşık on dakika sürer ve `/verify-prd` birkaç dakika içinde bunun size göre olup olmadığını söyler.
 
-**Önce örnek üzerinde deneyin.** Depodaki v2.0 örneği eksiksiz görünüyor, ama değil:
+**Ya da örnek üzerinde deneyin.** `before/` klasörü eksiksiz görünüyor, ama değil. Orijinali karşılaştırma için kalsın diye onu kopyalayın:
 
 ```bash
 git clone https://github.com/nurettincoban/ai-prd-workflow.git
-cd ai-prd-workflow
-./install.sh examples/url-shortener/before
+cp -r ai-prd-workflow/examples/url-shortener/before linksnip
+ai-prd-workflow/install.sh linksnip
 ```
 
-`examples/url-shortener/before` klasörünü AI aracınızda açın, `/workflow-status` çalıştırın ve raporunu [elle bulduğumuz problemlerle](examples/url-shortener/README.md) karşılaştırın.
+`linksnip` klasörünü AI aracınızda açın, `/workflow-status` veya `/verify-prd` çalıştırın ve sonucu [elle bulduğumuz problemlerle](examples/url-shortener/README.md) ve [bizim çalıştırmamızın](examples/url-shortener/after/) ürettikleriyle karşılaştırın.
 
 ## Nasıl çalışır
 
@@ -143,11 +157,22 @@ Kodlama ajanınızın muhtemelen bir plan modu var. Plan modu tek bir görevi pl
 
 **Şunlar için kullanın:** haftalar süren projeler ve AI ile ciddi olarak geliştirdiğiniz her şey — kapsam kaymasının ve unutulan kararların kod kalitesinden daha çok zarar verdiği işler. **Şunda gerek yok:** tek satırlık bir düzeltme.
 
-Spesifikasyon odaklı geliştirmeyi (spec-driven development; GitHub Spec Kit, Amazon Kiro) biliyorsanız, bu da aynı fikir: iş birimi olarak RFC'ler var, benimsenecek bir CLI ya da framework yok. Üstelik ikisinden de önce ortaya çıktı.
+Spesifikasyon odaklı geliştirmeyi (spec-driven development; GitHub Spec Kit, Amazon Kiro) biliyorsanız, bu da aynı fikir: iş birimi olarak RFC'ler var, benimsenecek bir CLI ya da framework yok ve dokümanları birbiriyle karşılaştıran bir betik var.
 
 ## Kanıtlar
 
-Her adım projeye farklı bir açıdan bakar ve her biri diğerlerinin yakalayamadığı problemleri yakalar. Bu, gerçek bir PRD'den yola çıkıp iş akışıyla uçtan uca gerçek bir TypeScript kütüphanesi geliştirilerek ölçüldü:
+Bu bölümde doğrulanabilecek her şeyi burada doğrulayabilirsiniz:
+
+- **[url-shortener örneği](examples/url-shortener/)** — v2.0 spesifikasyonu, içinde elle bulduğumuz problemler ve güncel komutların onun üzerinde tam bir çalıştırması. Listemizi hiç görmeden temiz bir bağlamda çalışan komutlar PRD'deki 10 problemin 10'unu (`/verify-prd`) ve dokümanlar arası 13 problemin 12'sini (`/workflow-status`) buldu; üstüne bizim kaçırdığımız birkaç problemi de. Bu örnekte elle çalıştırılan, ikinci bir modelin bağlamsız okumaları, üretilen RFC'lerin uygulayıcıyı tahmin yürütmeye zorlayacağı 150'den fazla yer buldu; [raporlar](examples/url-shortener/cold-reads/) da orada. Bunlar tek bir modelin tekil çalıştırmalarıdır.
+- **[todo-cli örneği](examples/todo-cli/)** — terminal için bir yapılacaklar listesinin on satırlık fikri, incelenmiş 386 satır koda ve geçen 66 teste kadar götürüldü. Her adım Claude Sonnet 5.5 ile çalıştı ve soruları yanıtlayan kimse yoktu. Her komutun neyi yakaladığını, özellik bozukken bile geçecek testler dahil, ve çalıştırmanın sana bıraktığı tek kararı gösterir.
+- **[Değerlendirme seti](evals/)** — aynı kontrolleri iş akışıyla ve iş akışı olmadan, kendi hesabınızda çalıştırır; böylece farkı kendiniz ölçebilirsiniz. On PRD problemini ve dokümanlar arası on üç problemin yedisini, yani bir düzenli ifadenin güvenilir biçimde tanıyabildiklerini puanlar.
+
+<p align="center">
+  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status v2.0 örneğini denetliyor: izlenebilirlik kontrolü başarısız oluyor, çünkü F7'nin RFC'si yok ve RFCS.md eksik; ardından dokümanlar birbiriyle karşılaştırılıyor ve 20 tutarsızlık bulunuyor, örneğin arayüzü hiçbir RFC'nin yapmaması ve HTTP 301 önbelleğinin tıklama sayımını bozması">
+</p>
+<p align="center"><sub>v2.0 örneği üzerinde gerçek bir <code>/workflow-status</code> çalıştırmasının kısaltılmış tekrarı. <a href="examples/url-shortener/workflow-status-on-before.md">Tam rapor</a></sub></p>
+
+Her adım projeye farklı bir açıdan bakar ve her biri diğerlerinin yakalayamadığı problemleri yakalar. Bunu, iş akışıyla uçtan uca bir TypeScript kütüphanesi geliştirirken gördük. O kütüphane herkese açık değil; bu yüzden bu tabloyu bir kanıt olarak değil, sahadan bir rapor olarak görün:
 
 | Adım | Neyi yakaladı | Neden yalnızca bu adım yakaladı |
 |---|---|---|
@@ -162,11 +187,6 @@ Her adım projeye farklı bir açıdan bakar ve her biri diğerlerinin yakalayam
 En çarpıcı sonuç: henüz hiç kod yokken bir RFC'nin uç durumlar bölümü, bir derleme eklentisinin TypeScript 7'yi henüz desteklemeyeceğini öngördü ve geri dönülecek sürümü yazdı. Tam olarak bu oldu. Tip denetimi baştan sona geçti; sorunu yalnızca derlemeyi gerçekten çalıştırmak ortaya çıkardı.
 
 ID'ler de korundu. Proje ortasında PRD değiştiğinde, taze bir ajan `/extract-features`'ı yeniden çalıştırdı ve yeni özellikleri yeniden numaralandırmak yerine sona ekledi — kimse ona söylemeden, çünkü RFC'ler özelliklere numarayla atıf yapıyordu.
-
-O kütüphane bu deponun bir parçası değil; bu yüzden kendiniz doğrulayabileceğiniz kanıtlar şunlar:
-
-- **[url-shortener örneği](examples/url-shortener/)** — bilinen problemler listemizi hiç görmeden temiz bir bağlamda çalışan komutlar, dokümanlar arası 13 problemin 12'sini (`/workflow-status`) ve PRD'deki 10 problemin 10'unu (`/verify-prd`) buldu; üstüne bizim kaçırdığımız birkaç problemi de.
-- **[Değerlendirme seti](evals/)** — aynı kontrolleri iş akışıyla ve iş akışı olmadan çalıştırır; böylece fark iddia edilmez, ölçülür.
 
 ## Kurulum seçenekleri
 
@@ -216,4 +236,4 @@ MIT — [LICENSE](LICENSE) dosyasına bakın.
 
 ---
 
-<p align="center">Bu iş akışı size zaman kazandırıyorsa, bir ⭐ başkalarının da onu bulmasına yardımcı olur.</p>
+<p align="center">Bu iş akışı sizi yanlış şeyi inşa etmekten kurtardıysa, bir ⭐ başkalarının da onu bulmasına yardımcı olur.</p>

@@ -19,10 +19,11 @@ Stage 6 comes before stage 7 deliberately: a test plan written after the code is
 Inspect the current project to determine workflow progress. If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project first (`python3 <path>/trace-check.py .`): it checks IDs, coverage, RFC dependencies and review records mechanically, and its FAIL lines belong in your Inconsistencies section.
 
 1. Which artifacts exist: PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCS.md, RFCs/ folder, TEST-STRATEGY.md, reviews/, changes/?
-2. Which RFCs are implemented? Start from the Status column in RFCS.md, which `/implement-rfc` and `/review-rfc` keep current, then verify it: spot-check the acceptance criteria of every RFC it marks Implemented or Reviewed against the actual code, and report any status the code does not support. Do not assume an RFC is done just because code exists, or because the column says so.
-3. Which RFCs have been reviewed? Check `reviews/` for a report per implemented RFC — an implemented RFC with no review is the most common real-world gap, and reviews are exactly what gets skipped under deadline.
-4. Are there open change requests in `changes/` whose decisions are still pending?
-5. Any signs of drift: code that contradicts the PRD or RULES.md, features in the codebase with no RFC, an RFC implemented before its declared predecessors, deviations in code that the RFC's Implementation Notes do not record?
+2. Which RFCs are implemented? Start from the Status column in RFCS.md, which `/implement-rfc`, `/review-rfc` and `/manage-changes` keep current, then verify it: spot-check the acceptance criteria of every RFC it marks Implemented or Reviewed against the actual code, and report any status the code does not support. Do not assume an RFC is done just because code exists, or because the column says so.
+3. Which RFCs have been reviewed? Check `reviews/` for a report per implemented RFC. An RFC counts as reviewed only if its Status is Reviewed and the last `## Round` of its review has no blocking issues; an RFC back at Implemented after Changes requested has an old review on file and fixes nobody has reviewed yet — an implemented RFC with no review is the most common real-world gap, and reviews are exactly what gets skipped under deadline.
+4. What is still unconfirmed? Count the open questions and **(assumption)** markers in PRD.md, FEATURES.md, RULES.md and the RFCs, and the entries under `## Open conflicts` in RFCS.md. Name the ones an RFC that is In progress or Implemented depends on: that is code built on a guess nobody confirmed.
+5. Are there open change requests in `changes/` whose decisions are still pending?
+6. Any signs of drift: code that contradicts the PRD or RULES.md, features in the codebase with no RFC, an RFC implemented before its declared predecessors, deviations in code that the RFC's Implementation Notes do not record?
 
 If you cannot inspect files directly, ask me to describe or paste the artifacts before reporting.
 

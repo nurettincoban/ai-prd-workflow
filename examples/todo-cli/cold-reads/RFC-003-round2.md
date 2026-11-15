@@ -1,0 +1,23 @@
+# Cold read of RFC-003
+
+## 1. Guesses that change behavior or a shared interface
+
+1. Leading zeros on an unknown id, and the "id as typed" message. Criterion 10 requires `td: no task with id <id as typed>`. The `done` section says `find_task` raises `no task with id <n>`, and RFC-001's `find_task(store, task_id: int)` formats the int. So `td done 007` could print `no task with id 7` or `no task with id 007`. The RFC only says "as typed" for the over-long case. Also, for an over-long id the handler cannot call `find_task`, which takes an int, so it has to build its own `TdError`. That is not spelled out.
+2. `td add` text that starts with `-` but looks like a number. The RFC says "Text that starts with `-` must follow `--` ... without `--`, argparse reads it as a flag and the command exits 2". Argparse treats `-1` and `-5` as positionals when the parser has no numeric-looking options, so `td add -1` would store `-1` and exit 0. The RFC does not say which behavior is intended. Only `-x` is tested (criterion 4).
+3. `--` handling when it is not the first token. `td add a -- b` could store `a b` or `a -- b`, and the result depends on the Python version. Only `td add -- -x` is specified.
+4. Argv bytes that are not valid UTF-8 (surrogateescape characters). The RFC does not say whether `add` rejects them or stores them. Which one happens depends on the implementer's choice of `ensure_ascii` (listed in RFC-001 as free). With `ensure_ascii=False` the save raises `UnicodeEncodeError`, which is not an `OSError`, so the user gets `td: unexpected error`, exit 1. With it on, a file is written that prints as `?`.
+5. Ids of more than 18 digits are treated as unknown "without calling `int`". This blocks a task whose id really is that large. RFC-001 allows any int in a valid file, so a legal task becomes unreachable. See the contradiction in 2.1.
+
+## 2. Contradictions
+
+1. Leading zeros against the 18-digit rule. "Leading zeros are allowed and mean the same task (`01` is 1)" conflicts with "A well-formed id of more than 18 digits ... treated as an unknown id". `td done 000000000000000000001` is 21 digits and means task 1 under the first rule, but is unknown under the second.
+2. `td add` with no arguments on a corrupt file. The approach says "`td add` with no arguments on a corrupt file exits 2". It also says `add` uses `nargs="*"` so the empty list reaches the handler, and the load happens before the handler. Both are in the same section. Under those two rules `td add` on a corrupt file exits 1. Criterion 12 repeats the claim: "`td add` and `td done` with no argument exit 2". The `add` half of that cannot be true as designed. `done` is fine, because a missing positional is an argparse error. Either `add` must not use `nargs="*"`, or the corrupt-file expectation must be exit 1. The same applies to a missing parent directory.
+3. Criterion 13 against the already-done rule. Criterion 13 says a successful `done` calls `save_store` once. The `done` section says an already-done `done` is a success (exit 0) and does not call `save_store`. A test that covers both cases cannot satisfy both statements.
+4. `td done -1` and `td rm -1` on a corrupt file. Argparse passes `-1` through as a positional, so the handler rejects it after the load, and the exit code is 1. The RFC says only that "`td done abc`" gives exit 1 there. It lists `-1` among the exit 2 cases in criterion 11. The order of events implies exit 1 on a corrupt file. That is unstated, and a reader may expect 2.
+
+## 3. Acceptance criteria that a test cannot check, or that pass by luck
+
+1. Criterion 6, "after `rm` of every task, the next `add` does not get id 1". This passes with any other id, such as 0 or a wrong number. It should pin the exact id, which is `next_id`.
+2. Criterion 10 lists only ids without leading zeros. "`<id as typed>`" is never exercised where it differs from the int form (`td rm 007` on an empty store), so the choice in 1.1 is untested.
+3. Criterion 13 does not say how the counting wrappers are installed. The RFC says handlers call `save_store` by name, but not that `main` and the handlers must look up `load_store` and `save_store` on the module at call time. A handler that binds them early passes silently without being counted.
+4. Criterion 5, "`td list` prints the full 100,000 characters". The text is stored whole, and `format_task` only replaces characters, so this is checkable. It passes by luck on platforms with a smaller argv limit, since a 100,000-character single argument is near Linux's per-argument limit of 131072 bytes. This is a minor risk, and only if the test passes non-ASCII text.

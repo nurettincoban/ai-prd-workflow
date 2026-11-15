@@ -1,0 +1,386 @@
+#!/usr/bin/env python3
+# td: a tiny command-line to-do list. Storage core (RFC-001), CLI framework and `list` (RFC-002), `add`, `done`, `rm` (RFC-003), `clear` (RFC-004).
+import argparse
+import json
+import os
+import pathlib
+import re
+import sys
+import unicodedata
+import uuid
+
+# assumption: PRD Open Questions 1 and 2, variable name and default file
+ENV_VAR = "TD_FILE"
+DEFAULT_FILE = "~/.td.json"
+
+# assumption: RFC-001 Open Question 2, key names of the data file
+TOP_KEYS = ("version", "next_id", "tasks")
+TASK_KEYS = ("id", "text", "done")
+
+
+class TdError(Exception):
+    """An expected failure; carries the process exit code (1 runtime, 2 usage)."""
+
+    def __init__(self, message, exit_code=1):
+        super().__init__(message)
+        self.exit_code = exit_code
+
+
+class UsageError(TdError):
+    """A bad command line; exit code 2."""
+
+    def __init__(self, message):
+        super().__init__(message, 2)
+
+
+def resolve_path():
+    """Return the data file path from the environment (read fresh on every call)."""
+    value = os.environ.get(ENV_VAR)
+    if not value:
+        value = DEFAULT_FILE
+    return pathlib.Path(os.path.expanduser(value))
+
+
+def _is_int(value):
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _validate(path, store):
+    """Raise TdError naming path if store is not a valid version 1 store."""
+    def bad(problem):
+        return TdError(f"{path}: {problem}")
+
+    if not isinstance(store, dict):
+        raise bad("not a JSON object")
+    for key in TOP_KEYS:
+        if key not in store:
+            raise bad(f"missing key '{key}'")
+    for key in store:
+        if key not in TOP_KEYS:
+            raise bad(f"unexpected key '{key}'")
+    if not _is_int(store["version"]) or store["version"] != 1:
+        raise bad("key 'version' must be the integer 1")
+    if not _is_int(store["next_id"]) or store["next_id"] < 1:
+        raise bad("key 'next_id' must be a positive integer")
+    if not isinstance(store["tasks"], list):
+        raise bad("key 'tasks' must be a list")
+    seen = set()
+    for task in store["tasks"]:
+        if not isinstance(task, dict):
+            raise bad("every entry of 'tasks' must be an object")
+        for key in TASK_KEYS:
+            if key not in task:
+                raise bad(f"task is missing field '{key}'")
+        for key in task:
+            if key not in TASK_KEYS:
+                raise bad(f"task has unexpected field '{key}'")
+        if not _is_int(task["id"]) or task["id"] < 1:
+            raise bad("task field 'id' must be a positive integer")
+        if not isinstance(task["text"], str):
+            raise bad("task field 'text' must be a string")
+        if not isinstance(task["done"], bool):
+            raise bad("task field 'done' must be true or false")
+        if task["id"] in seen:
+            raise bad(f"duplicate task 'id' {task['id']}")
+        seen.add(task["id"])
+        if store["next_id"] <= task["id"]:
+            # why: a damaged counter would reuse ids and defeat never-reused ids (F5)
+            raise bad("key 'next_id' must be greater than every task 'id'")
+
+
+def _check_parent(path):
+    parent = os.path.dirname(str(path)) or "."
+    if not os.path.isdir(parent):
+        raise TdError(f"{path}: directory {parent} does not exist or is not a directory")
+
+
+def load_store(path):
+    """Return the validated store at path (empty store if missing); raise TdError if unreadable or corrupt."""
+    _check_parent(path)
+    try:
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+    except FileNotFoundError:
+        return {"version": 1, "next_id": 1, "tasks": []}
+    except UnicodeDecodeError as exc:
+        raise TdError(f"{path}: invalid UTF-8: {exc}") from None
+    except OSError as exc:
+        raise TdError(f"{path}: {exc.strerror or exc}") from None
+    if text == "":
+        raise TdError(f"{path}: empty file")
+    try:
+        store = json.loads(text)
+    except ValueError as exc:
+        raise TdError(f"{path}: invalid JSON: {exc}") from None
+    _validate(path, store)
+    return store
+
+
+def save_store(path, store):
+    """Atomically write store to path (the only writer, SAFE-1); raise TdError if invalid or unwritable."""
+    _validate(path, store)
+    target = os.path.realpath(path)
+    directory = os.path.dirname(target)
+    if not os.path.isdir(directory):
+        raise TdError(f"{path}: directory {directory} does not exist or is not a directory")
+    data = json.dumps(store, indent=2)
+    tmp_path = os.path.join(directory, f".{os.path.basename(target)}.{uuid.uuid4().hex}.tmp")
+    try:
+        fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)  # umask decides mode (SEC-3)
+        try:
+            handle = os.fdopen(fd, "w", encoding="utf-8")
+        except BaseException:
+            os.close(fd)
+            raise
+        with handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())  # step 1
+        os.replace(tmp_path, target)  # step 2
+    except OSError as exc:
+        raise TdError(f"{path}: cannot save: {exc.strerror or exc}") from None
+    finally:
+        if os.path.lexists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+    _fsync_directory(directory)  # step 3
+
+
+def _fsync_directory(directory):
+    # SAFE-2: skip only OSError (platforms that cannot fsync a directory); nothing else is swallowed.
+    try:
+        dfd = os.open(directory, os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(dfd)
+    except OSError:
+        pass
+    finally:
+        os.close(dfd)
+
+
+def add_task(store, text):
+    """Append a new open task using next_id and return it (text is validated by the caller)."""
+    task = {"id": store["next_id"], "text": text, "done": False}
+    store["tasks"].append(task)
+    store["next_id"] += 1
+    return task
+
+
+def find_task(store, task_id):
+    """Return the task with task_id; raise TdError if there is none."""
+    for task in store["tasks"]:
+        if task["id"] == task_id:
+            return task
+    raise TdError(f"no task with id {task_id}")
+
+
+def remove_task(store, task_id):
+    """Remove the task with task_id in place; raise TdError if there is none."""
+    store["tasks"].remove(find_task(store, task_id))
+
+
+def clear_done(store):
+    """Remove every done task in place and return how many were removed."""
+    before = len(store["tasks"])
+    store["tasks"][:] = [t for t in store["tasks"] if not t["done"]]
+    return before - len(store["tasks"])
+
+
+# ---- CLI framework (RFC-002) ----
+
+_LINE_BREAKERS = ("Cc", "Zl", "Zp")
+
+
+def _one_line(text):
+    """Return text with every control character and line or paragraph separator replaced by a space."""
+    return "".join(" " if unicodedata.category(ch) in _LINE_BREAKERS else ch for ch in str(text))
+
+
+def format_task(task):
+    """Return the list line for task: '<id> [ ] <text>' or '<id> [x] <text>', safe for a terminal."""
+    marker = "x" if task["done"] else " "
+    return _one_line(f"{task['id']} [{marker}] {task['text']}")
+
+
+def cmd_list(args, store, path):
+    """List handler: every task, done or not, in ascending id order."""
+    return [format_task(t) for t in sorted(store["tasks"], key=lambda t: t["id"])]
+
+
+# ---- add, done, rm (RFC-003) ----
+
+# why: Python refuses int() on strings of more than 4300 digits; 4000 stays safely below that
+MAX_ID_DIGITS = 4000
+
+
+def cmd_add(args, store, path):
+    """Add handler: join the words, validate, store one open task, print its list line."""
+    text = " ".join(args.text)
+    # why: checked before stripping, so a leading or trailing newline is rejected too (CLI-1)
+    if "\n" in text or "\r" in text:
+        raise UsageError("task text must be a single line")
+    try:
+        text.encode("utf-8")
+    except UnicodeEncodeError:
+        # why: argv bytes that are not UTF-8 arrive as lone surrogates, which save_store cannot write
+        raise UsageError("task text is not valid UTF-8") from None
+    text = text.strip()
+    if not text:
+        raise UsageError("task text is empty")
+    task = add_task(store, text)
+    save_store(path, store)
+    return [format_task(task)]
+
+
+def _parse_id(raw):
+    """Return the task id for the typed argument raw, or None if it is too long to be a real id.
+
+    Raises UsageError if raw is not ASCII digits only. Leading zeros are allowed.
+    """
+    if not re.fullmatch(r"[0-9]+", raw):
+        raise UsageError(f"invalid id: {raw}")
+    digits = raw.lstrip("0")
+    if len(digits) > MAX_ID_DIGITS:
+        return None
+    return int(digits or "0")
+
+
+def _no_such_task(raw):
+    return TdError(f"no task with id {raw}")
+
+
+def _find(store, raw):
+    """Return the task whose id was typed as raw; raise UsageError or TdError."""
+    task_id = _parse_id(raw)
+    if task_id is None:
+        raise _no_such_task(raw)
+    try:
+        return find_task(store, task_id)
+    except TdError:
+        raise _no_such_task(raw) from None
+
+
+def cmd_done(args, store, path):
+    """Done handler: mark one task done; an already-done task leaves the file untouched (CLI-3)."""
+    task = _find(store, args.id)
+    if not task["done"]:
+        task["done"] = True
+        save_store(path, store)
+    return []
+
+
+def cmd_rm(args, store, path):
+    """Rm handler: delete one task; next_id is never lowered, so ids are not reused (DATA-4)."""
+    task = _find(store, args.id)
+    remove_task(store, task["id"])
+    save_store(path, store)
+    return []
+
+
+# ---- clear (RFC-004) ----
+
+
+def cmd_clear(args, store, path):
+    """Clear handler: remove every done task; nothing removed means the file is not rewritten (DATA-7)."""
+    if clear_done(store):
+        save_store(path, store)
+    return []
+
+
+# Handler contract: handler(args, store, path) -> list of lines to print (no newline).
+# Handlers that change data call save_store themselves, once, after validation, and never print.
+COMMANDS = {"list": cmd_list, "add": cmd_add, "done": cmd_done, "rm": cmd_rm, "clear": cmd_clear}
+# name -> callable(subparser) that declares that command's positionals; no entry means no arguments.
+ARGUMENTS = {
+    "add": lambda p: p.add_argument("text", nargs="*", help="the task text (use -- before text starting with -)"),
+    "done": lambda p: p.add_argument("id", help="id of the task to mark done"),
+    "rm": lambda p: p.add_argument("id", help="id of the task to remove"),
+}
+
+
+class _Parser(argparse.ArgumentParser):
+    """ArgumentParser whose errors are one 'td:' line on stderr and exit code 2 (OUT-7)."""
+
+    def error(self, message):
+        sys.stderr.write(f"td: {_one_line(message)}\n")
+        raise SystemExit(2)
+
+
+def build_parser():
+    """Build the parser from COMMANDS and ARGUMENTS as they are right now."""
+    parser = _Parser(prog="td", allow_abbrev=False, description="A tiny command-line to-do list.")
+    sub = parser.add_subparsers(dest="command", metavar="command")
+    for name in COMMANDS:
+        child = sub.add_parser(name, allow_abbrev=False, help=f"{name} tasks")
+        declare = ARGUMENTS.get(name)
+        if declare is not None:
+            declare(child)
+    return parser
+
+
+def _setup_output():
+    # why: a task text the terminal encoding cannot show must print as '?', never crash (OUT-6)
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(errors="replace")
+
+
+def _write_lines(lines):
+    """Write lines to stdout; a closed pipe is not an error (OUT-5)."""
+    if not lines:
+        return
+    try:
+        sys.stdout.write("".join(line + "\n" for line in lines))
+        sys.stdout.flush()
+    except BrokenPipeError:
+        # why: the reader went away; point stdout at devnull so the exit-time flush stays quiet
+        try:
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            try:
+                os.dup2(devnull, sys.stdout.fileno())
+            finally:
+                os.close(devnull)
+        except (OSError, ValueError, AttributeError):
+            pass
+
+
+def _report(message):
+    try:
+        sys.stderr.write(f"td: {_one_line(message)}\n")
+        sys.stderr.flush()
+    except (OSError, ValueError, AttributeError):
+        pass
+
+
+def main(argv=None):
+    """Run one td command and return the exit code (0 ok, 1 runtime error, 2 usage error)."""
+    try:
+        _setup_output()
+        try:
+            args = build_parser().parse_args(argv)
+        except SystemExit as exc:
+            return exc.code if isinstance(exc.code, int) else 0
+        path = resolve_path()
+        store = load_store(path)
+        handler = COMMANDS[args.command or "list"]
+        _write_lines(handler(args, store, path))
+        return 0
+    except TdError as exc:
+        _report(exc)
+        return exc.exit_code
+    except KeyboardInterrupt:
+        # assumption: OUT-2 allows only 0, 1 and 2, so Ctrl-C exits 1
+        _report("interrupted")
+        return 1
+    except Exception as exc:
+        _report(f"unexpected error: {type(exc).__name__}: {exc}")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

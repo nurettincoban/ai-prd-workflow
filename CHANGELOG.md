@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.1.0] - 2026-11-15
+
+This release came out of a review gauntlet: critics attacked the prompts, the README and the install path, and a second model (Fable 5.2) did the cold reads. Every finding below was reported by a critic and checked before it was fixed.
+
+### Fixed
+- `/verify-prd` no longer invents answers. It asks about every High-impact gap only the user can close (budget, team, which of two contradictory requirements is meant) before rewriting, and records anything unanswered in Open Questions marked **(assumption)**, never in Decisions. A guess written into PRD.md as a decision was defended by every later command
+- `/generate-rfcs` can run again on a project that already has RFCs. It extends the plan instead of renumbering from 001, never rewrites an RFC past Not started, and keeps every Status. A regenerated RFC-001 silently attached an old review to new work
+- `/manage-changes` stops after the assessment and applies only the changes you accept. It now adds each decision (accepted or rejected) to the PRD's Decisions, sets changed RFCs that were Implemented or Reviewed back to Changes requested, and runs the self-check and `trace-check.py`
+- A fix round after Changes requested no longer looks reviewed. Predecessors must be Implemented or Reviewed; `/workflow-status` counts a review only if its last round has no blocking issues
+- `/review-rfc` knows which code to review: `/implement-rfc` records the files changed and the commit or branch in the RFC's Implementation Notes
+- On existing codebases, `/review-rfc` marks the RFC's features Implemented in FEATURES.md, so the next `/generate-rfcs` does not plan them again. `/document-existing` now routes through `/extract-features` after `/verify-prd`
+- `/test-strategy` writes one section per RFC, one row per acceptance criterion, instead of six generic test-type checklists that nobody read at implementation time
+- `/generate-rules` writes only rules a reviewer can check against a line of code, adds accessibility rules only for products with a UI, and no longer copies priorities and phasing out of FEATURES.md
+- `/create-prd` records unanswered questions as labelled assumptions instead of filling Timeline and Success Metrics with guesses
+- The prompts now state the exact ID forms the checker reads (`- **FR-1**: text`, `F1`, `RFC-001`)
+- `trace-check.py` counts requirements defined in tables, lists and headings together (FRs in a table and NFRs as bullets gave false failures), exits 2 on a path that is not a directory instead of passing, and supports `--help`
+- `install.sh` says when a `--ref` tag is missing from the clone, rejects a second target directory and a target that is a file
+- `copy-prompt.sh` prints the prompt when piped or with `--print`, so it works over SSH and in containers
+- `.gitignore` covers `__pycache__/` left by the unit tests
+- Doubt no longer gets lost between files. A new shared section, **When a question has no answer**, tells every generating command what to do when nobody can answer: decide, mark it **(assumption)**, list it under `## Open Questions`, and never weaken a requirement from a higher artifact by assumption. Conflicts between artifacts go into one `## Open conflicts` list in RFCS.md. `/implement-rfc` puts both in front of you with the plan, and `/workflow-status` counts what is still unconfirmed. In the example run, about 100 assumptions and 22 flagged conflicts sat in files no command had to read before code was written
+- `/generate-rfcs` gives each cold reader the RFCs the RFC depends on, directly or through another RFC. In the todo-cli run, readers without them spent most of their reports on interfaces a predecessor already defined
+- `/generate-rfcs` fixes only cold-read findings that change behavior or a shared interface, cold-reads the fixed RFCs again before calling them passed, splits RFCs above about 15 criteria, and drops criteria that restate the rules
+- `/generate-rules` writes structure and architecture rules only where the PRD or existing code fixes them, so rules stop pre-empting the RFCs that do the design
+- `/manage-changes` saves the change request as pending before asking, and marks changed RFCs **Spec changed** instead of Changes requested, which the checker reserves for reviews
+- `/verify-prd` cites a finding for every change to scope or a requirement; `/test-strategy` cites criteria by number instead of restating them; `/review-rfc` marks a feature split across RFCs Implemented only when all of them are reviewed
+- The self-check says what `trace-check.py` does not check, instead of implying it checks everything
+
+### Added
+- `examples/url-shortener/after/`: the example's promised "after" half, produced by running `/verify-prd`, `/extract-features`, `/generate-rules`, `/generate-rfcs` and `/test-strategy` on the v2.0 PRD with these prompts, plus the cold-read reports that fixed the RFCs. The README and the example said it existed; it did not
+- `examples/todo-cli/`: a second, much smaller example run from a ten-line idea to reviewed code (`/create-prd` through `/review-rfc` and `/workflow-status`), every step on Claude Sonnet 5.5, with two rounds of cold reads
+- The README opens with a real run: one line of the input spec followed through the review, the fixed PRD and the RFC
+
+### Changed
+- README: a plain one-line pitch, a single Claude Code quick start with the other tools folded away, the evidence you can check first and the field report from an unpublished library labelled as such
+- Plugin and marketplace descriptions match the README, with keywords for discovery
+
 ## [3.0.0] - 2026-10-01
 
 The commands now ship as **Agent Skills** — one `SKILL.md` format for Claude Code, Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode and Devin — and the hand-offs between them are checked by machine instead of by the model's self-review.

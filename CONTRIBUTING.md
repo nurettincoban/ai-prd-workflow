@@ -80,7 +80,7 @@ Every one of those has shipped as a real bug: a review record no command produce
 | `/generate-rfcs` | prd-to-rfcs-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md | RFCs/, RFCS.md |
 | `/test-strategy` | testing-strategy-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, code | TEST-STRATEGY.md |
 | `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/ | code, RFCs/, RFCS.md |
-| `/review-rfc` | code-review-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, code | reviews/, RFCS.md |
+| `/review-rfc` | code-review-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, code | reviews/, RFCS.md, FEATURES.md |
 | `/manage-changes` | prd-change-management-prompt.md | PRD.md, PRD-REVIEW.md, RULES.md, changes/, code | changes/, PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md |
 | `/workflow-status` | workflow-status-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, changes/, code | — |
 <!-- contracts:end -->
@@ -97,7 +97,7 @@ The `README.*.md` files (Simplified Chinese, Turkish, Japanese, Korean, Spanish)
 
 ## Testing Prompts
 
-Before submitting, test your prompt with at least 2 different LLMs (e.g., Claude and GPT-4):
+Before submitting, test your prompt with at least 2 different models, ideally from different vendors (e.g., a Claude model and a GPT or Gemini model):
 
 1. Run the prompt with a realistic input
 2. Verify the output covers all expected sections

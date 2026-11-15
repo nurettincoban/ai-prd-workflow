@@ -243,6 +243,7 @@ footer .langs a { margin-right: 10px; }
   <div class="wrap">
     <a class="brand" href="#">📋 AI PRD Workflow</a>
     <nav class="nav-links" aria-label="Sections">
+      <a href="#run">Real run</a>
       <a href="#how">How it works</a>
       <a href="#why">Why</a>
       <a href="#evidence">Evidence</a>
@@ -280,12 +281,14 @@ footer .langs a { margin-right: 10px; }
       <div class="panel" role="tabpanel" id="p-claude" aria-labelledby="t-claude">
         <p>Install the plugin from inside Claude Code:</p>
 <pre class="code">/plugin marketplace add nurettincoban/ai-prd-workflow
-/plugin install prd-workflow@ai-prd-workflow</pre>
-        <p>Plugin commands carry the plugin's name: <code>/prd-workflow:create-prd</code>.</p>
+/plugin install prd-workflow@ai-prd-workflow
+/prd-workflow:create-prd</pre>
+        <p>Restart Claude Code between the install and the first command. Plugin commands carry the plugin's name.</p>
       </div>
       <div class="panel" role="tabpanel" id="p-agents" aria-labelledby="t-agents" hidden>
         <p>Install the skills into your project:</p>
-<pre class="code">curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project</pre>
+<pre class="code">cd your-project
+curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .</pre>
         <p>In Codex, type <code>$create-prd</code> instead of <code>/create-prd</code>.</p>
       </div>
       <div class="panel" role="tabpanel" id="p-chat" aria-labelledby="t-chat" hidden>
@@ -297,12 +300,21 @@ footer .langs a { margin-right: 10px; }
     </div>
   </div>
 
-  <section class="alt">
+  <section class="alt" id="run">
     <div class="wrap">
-      <figure class="demo">
-        <img src="demo-workflow-status.svg" width="860" alt="/workflow-status auditing the v2.0 example: the traceability check fails because F7 has no RFC and RFCS.md is missing, then reading the documents against each other finds 20 inconsistencies" loading="lazy">
-        <figcaption>A real <code>/workflow-status</code> run on the repo's own v2.0 example, condensed. <a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/examples/url-shortener/workflow-status-on-before.md">Full report</a></figcaption>
-      </figure>
+      <h2>What one run produced</h2>
+      <p class="section-lede">We gave it the spec of a small URL shortener that looks finished, and ran the commands. Three things it caught before any code existed:</p>
+      <div class="table-scroll">
+        <table class="compare">
+          <thead><tr><th>The spec said</th><th>What the workflow did</th></tr></thead>
+          <tbody>
+            <tr><td>"Redirect short URL to original URL via HTTP 301"</td><td><code>/verify-prd</code>: browsers cache a 301, so repeat clicks are never counted and deleted links keep redirecting. The fixed spec redirects with 302, and RFC-003 tests "never 301".</td></tr>
+            <tr><td>No user accounts, and anyone can "delete a short URL"</td><td><code>/verify-prd</code>: anyone can delete anyone's link. Nobody was there to decide, so it wrote a proposed fix as an open question marked (assumption), not as a decision.</td></tr>
+            <tr><td>RFC-002 claims features F5, F6 and F11</td><td><code>/workflow-status</code>: its acceptance criteria only test the API, so the analytics page and chart those features require had nothing to make anyone build them. Every ID was cited, so a script could not see it.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="section-lede" style="margin-top:20px"><strong>10 of 10</strong> problems we had listed by hand, found by <code>/verify-prd</code> without seeing the list. <strong>12 RFCs</strong> and <strong>203 planned tests</strong>, each RFC read cold by a second model first. About an hour of agent time, no human input. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener">Browse the whole run →</a></p>
     </div>
   </section>
 
@@ -384,12 +396,16 @@ footer .langs a { margin-right: 10px; }
   <section id="evidence">
     <div class="wrap">
       <h2>Each step catches what the others cannot</h2>
-      <p class="section-lede">Measured by building a real TypeScript library end to end with the workflow, from a real PRD — and checkable by you on the example in this repository.</p>
+      <p class="section-lede">The numbers below you can check on the example in this repository. The cards are a field report from building a TypeScript library end to end with the workflow; that library is not public.</p>
+      <figure class="demo">
+        <img src="demo-workflow-status.svg" width="860" alt="/workflow-status auditing the v2.0 example: the traceability check fails because F7 has no RFC and RFCS.md is missing, then reading the documents against each other finds 20 inconsistencies" loading="lazy">
+        <figcaption>A real <code>/workflow-status</code> run on the v2.0 example, condensed. <a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/examples/url-shortener/workflow-status-on-before.md">Full report</a></figcaption>
+      </figure>
 
       <div class="stats">
         <div class="stat"><div class="big">12 / 13</div><p>cross-document problems found by <code>/workflow-status</code> in a fresh context that never saw our list. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener">See the example</a></p></div>
         <div class="stat"><div class="big">10 / 10</div><p>PRD problems found by <code>/verify-prd</code> on the same example — plus several we had missed.</p></div>
-        <div class="stat"><div class="big">A/B</div><p>The <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/evals">eval suite</a> runs the same checks with and without the workflow, so the difference is measured, not claimed.</p></div>
+        <div class="stat"><div class="big">150+</div><p>places where the generated RFCs would have made an implementer guess, found by cold reads on a second model and fixed before any code. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener/cold-reads">Read the reports</a></p></div>
       </div>
 
       <div class="catches">
@@ -413,7 +429,7 @@ footer .langs a { margin-right: 10px; }
         <table class="tools">
           <thead><tr><th>Tool</th><th>Folder</th><th>Run a command</th></tr></thead>
           <tbody>
-            <tr><td>Claude Code</td><td><code>.claude/skills/</code>, or the plugin</td><td><code>/create-prd</code></td></tr>
+            <tr><td>Claude Code</td><td><code>.claude/skills/</code>, or the plugin</td><td><code>/create-prd</code> (plugin: <code>/prd-workflow:create-prd</code>)</td></tr>
             <tr><td>GitHub Copilot (VS Code, CLI)</td><td><code>.agents/skills/</code></td><td><code>/create-prd</code></td></tr>
             <tr><td>Cursor</td><td><code>.agents/skills/</code></td><td><code>/create-prd</code>, from the <code>/</code> menu</td></tr>
             <tr><td>Gemini CLI</td><td><code>.agents/skills/</code></td><td><code>/create-prd</code></td></tr>
@@ -429,10 +445,10 @@ footer .langs a { margin-right: 10px; }
   <section class="cta">
     <div class="wrap">
       <h2>Try it on the example first</h2>
-      <p>The repo's v2.0 example looks complete, and it is not. Run <code>/workflow-status</code> on it and compare the report with the problems we found by hand.</p>
+      <p>The example's <code>before/</code> folder looks complete, and it is not. Copy it, run <code>/workflow-status</code> or <code>/verify-prd</code>, and compare with the problems we found by hand and with our run.</p>
 <pre class="code" style="text-align:left;max-width:640px;margin:0 auto 28px">git clone https://github.com/nurettincoban/ai-prd-workflow.git
-cd ai-prd-workflow
-./install.sh examples/url-shortener/before</pre>
+cp -r ai-prd-workflow/examples/url-shortener/before linksnip
+ai-prd-workflow/install.sh linksnip</pre>
       <div class="hero-ctas">
         <a class="btn primary" href="https://github.com/nurettincoban/ai-prd-workflow">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>

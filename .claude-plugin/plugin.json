@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "prd-workflow",
-  "version": "3.0.0",
-  "description": "RFC-driven development workflow: vague idea → verified PRD → features → rules → sequenced RFCs → reviewed, tested code",
+  "version": "3.1.0",
+  "description": "Decide what to build before your agent builds it: idea or existing code → verified PRD → features → rules → sequenced RFCs → reviewed, tested code",
   "author": {
     "name": "Nurettin Coban",
     "url": "https://github.com/nurettincoban"
@@ -13,7 +13,12 @@
   "keywords": [
     "prd",
     "rfc",
-    "spec-driven",
+    "spec-driven-development",
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "cursor",
+    "planning",
     "workflow",
     "product-requirements"
   ]

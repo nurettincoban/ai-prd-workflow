@@ -20,7 +20,7 @@
 
 set -euo pipefail
 
-VERSION="3.0.0"
+VERSION="3.1.0"
 REPO_URL="https://github.com/nurettincoban/ai-prd-workflow"
 # Overridable so the curl path can be tested without the network (file:// works).
 RAW_BASE="${AI_PRD_WORKFLOW_RAW:-https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow}"
@@ -85,6 +85,7 @@ EOF
 }
 
 TARGET="."
+TARGET_SET=""
 TOOLS=""
 FORCE=0
 REF=""
@@ -106,7 +107,9 @@ while [ $# -gt 0 ]; do
         --build) BUILD=1 ;;
         --help|-h) usage; exit 0 ;;
         --*) die "unknown option '$1' (see --help)" ;;
-        *) TARGET="$1" ;;
+        *)
+            [ -z "$TARGET_SET" ] || die "only one target directory allowed (got '$TARGET' and '$1')"
+            TARGET="$1"; TARGET_SET=1 ;;
     esac
     shift
 done
@@ -166,6 +169,7 @@ if [ "$BUILD" = 1 ]; then
 fi
 
 # ---------------------------------------------------------------- install
+if [ -e "$TARGET" ] && [ ! -d "$TARGET" ]; then die "'$TARGET' is not a directory."; fi
 [ -d "$TARGET" ] || die "target directory '$TARGET' does not exist."
 
 # fetch <path in the repo>: the file from this copy, from a git ref of this clone, or downloaded
@@ -179,6 +183,12 @@ fetch() {
         curl -fsSL "$RAW_BASE/${REF:-main}/$path"
     fi
 }
+
+# A release missing from this clone otherwise surfaces as "could not fetch" on the first skill.
+if [ -n "$REF" ] && [ -n "$SCRIPT_DIR" ] && git -C "$SCRIPT_DIR" rev-parse --git-dir >/dev/null 2>&1 \
+    && ! git -C "$SCRIPT_DIR" rev-parse --verify -q "$REF^{commit}" >/dev/null; then
+    die "no tag or commit '$REF' in this clone. Run 'git fetch --tags' and try again, or check the name at $REPO_URL/tags"
+fi
 
 # Stage every skill once, so each tool folder gets identical files.
 STAGE="$(mktemp -d)"

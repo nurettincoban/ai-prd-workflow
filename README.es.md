@@ -4,7 +4,7 @@
 
 # 📋 AI PRD Workflow
 
-### Desarrollo guiado por RFC para agentes de programación con IA
+### Decide qué construir antes de que tu agente lo construya.
 
 **Idea o código existente → PRD verificado → funcionalidades → reglas → RFC ordenados → código revisado y probado**
 
@@ -14,11 +14,11 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#inicio-rápido)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#opciones-de-instalación)
 
-**[🌐 Sitio web](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Inicio rápido](#inicio-rápido)** · **[Cómo funciona](#cómo-funciona)** · **[Por qué](#por-qué-este-flujo-de-trabajo)** · **[Evidencia](#evidencia)** · **[Opciones de instalación](#opciones-de-instalación)**
+**[🌐 Sitio web](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Ver una ejecución real](#lo-que-produjo-una-ejecución)** · **[Inicio rápido](#inicio-rápido)** · **[Cómo funciona](#cómo-funciona)** · **[Por qué](#por-qué-este-flujo-de-trabajo)** · **[Evidencia](#evidencia)** · **[Opciones de instalación](#opciones-de-instalación)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · Español
 
-<sub>Guiado por RFC desde <b>marzo de 2025</b>: antes de que Claude Code o Cursor tuvieran un modo de planificación, y antes de que existieran Kiro o Spec Kit.</sub>
+<sub>Guiado por RFC desde <a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>marzo de 2025</b></a>: antes de que Claude Code o Cursor tuvieran un modo de planificación, y antes de que existieran Kiro o Spec Kit.</sub>
 
 </div>
 
@@ -27,36 +27,50 @@
 
 ---
 
-Los agentes de programación con IA escriben buen código. Se les da peor decidir qué construir, recordar las decisiones de ayer y darse cuenta de que dos documentos se contradicen. Este flujo de trabajo se encarga de esa parte: lleva una idea —o una base de código que ya existe— a un PRD (documento de requisitos de producto) revisado, funcionalidades priorizadas, reglas del proyecto y RFC pequeños en orden de dependencias. Después los implementa y los revisa uno a uno.
+Los agentes de programación con IA escriben buen código. Se les da peor decidir qué construir, recordar las decisiones de ayer y darse cuenta de que dos documentos se contradicen. Este flujo de trabajo se encarga de esa parte: lleva una idea —o una base de código que ya existe— a una especificación de producto (PRD) revisada, funcionalidades priorizadas, reglas del proyecto y pequeñas especificaciones de implementación (RFC) en orden de dependencias. Después los implementa y los revisa uno a uno.
 
-Cada paso escribe un archivo markdown que lee el siguiente, así que las decisiones sobreviven a la sesión de chat. Un script comprueba que los archivos siguen siendo coherentes entre sí. Sin CLI que aprender, sin framework que adoptar, sin dependencia de ninguna herramienta.
+Cada paso escribe un archivo markdown que lee el siguiente, así que las decisiones sobreviven a la sesión de chat. Un script comprueba que los archivos siguen siendo coherentes entre sí. Sin CLI que aprender, sin framework que adoptar, sin dependencia de ninguna herramienta: los comandos son prompts normales, instalados como skills para Claude Code, Codex, Copilot, Cursor, Gemini CLI, OpenCode y Devin.
 
-<p align="center">
-  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status auditando el ejemplo v2.0: la comprobación de trazabilidad falla porque F7 no tiene RFC y falta RFCS.md; después, al contrastar los documentos entre sí, encuentra 20 incoherencias, como que ningún RFC construye la interfaz o que la caché de HTTP 301 estropea el conteo de clics">
-</p>
-<p align="center"><sub>Repetición resumida de una ejecución real de <code>/workflow-status</code> sobre el ejemplo v2.0 del propio repositorio. <a href="examples/url-shortener/workflow-status-on-before.md">Informe completo</a> · <a href="examples/url-shortener/README.md">con qué se comparó</a></sub></p>
+## Lo que produjo una ejecución
+
+Le dimos la especificación de un pequeño acortador de URL que parece terminada y ejecutamos los comandos. Tres cosas que detectó antes de que existiera código:
+
+| Lo que decía la especificación | Lo que hizo el flujo de trabajo |
+|---|---|
+| «Redirigir la URL corta a la URL original mediante HTTP 301» | `/verify-prd`: los navegadores guardan en caché un 301, así que los clics repetidos nunca se cuentan y los enlaces borrados siguen redirigiendo. La especificación corregida redirige con 302, y [RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) prueba «nunca 301». |
+| Sin cuentas de usuario, y cualquiera puede «borrar una URL corta» | `/verify-prd`: cualquiera puede borrar el enlace de cualquiera. No había nadie para decidir, así que escribió la solución que proponía como una pregunta abierta marcada **(assumption)** (supuesto), no como una decisión. |
+| RFC-002 afirma cubrir las funcionalidades F5, F6 y F11 | `/workflow-status`: sus criterios de aceptación solo prueban la API, así que nada obligaba a nadie a construir la página de analítica y el gráfico que esas funcionalidades exigen. Todos los ID estaban citados, así que un script no podía verlo. |
+
+**10 de 10** problemas que habíamos listado a mano, encontrados por `/verify-prd` sin ver la lista. **12 de 13** problemas entre documentos, encontrados por `/workflow-status`. **12 RFC** y **203 pruebas planificadas** generados, y cada RFC leído primero en frío por un segundo modelo. Alrededor de una hora de tiempo de agente con Claude Opus 5.5, sin intervención humana. **[Explora la ejecución completa →](examples/url-shortener/)**
 
 ## Inicio rápido
 
-**Claude Code**: instala el plugin.
+En Claude Code, instala el plugin, reinicia Claude Code y empieza la entrevista:
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
+/prd-workflow:create-prd          # después, /prd-workflow:verify-prd
 ```
 
-**Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode o Devin**: instala las skills en tu proyecto.
+<details>
+<summary><b>Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode, Devin o cualquier asistente de chat</b></summary>
+
+Instala las skills en tu proyecto:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project
+cd your-project
+curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-**Cualquier asistente de chat** (ChatGPT, Claude.ai, …): copia un prompt de la [tabla de comandos](#cómo-funciona) y pégalo.
+En Codex, escribe `$create-prd` en lugar de `/create-prd`. En un asistente de chat (ChatGPT, Claude.ai, …), copia un prompt de la [tabla de comandos](#cómo-funciona) y pégalo.
+
+</details>
 
 > [!IMPORTANT]
 > Reinicia tu herramienta de IA después de instalar. Una sesión que ya está en marcha no ve las skills nuevas, así que el primer comando falla con `Unknown skill`: parece una instalación rota, pero solo es una sesión antigua.
 
-Después, ejecuta los comandos en orden:
+Después, ejecuta los comandos en orden (con el plugin, cada uno lleva su nombre: `/prd-workflow:verify-prd`):
 
 ```
 /create-prd          # entrevista → PRD.md   (¿ya hay código? usa /document-existing)
@@ -69,17 +83,17 @@ Después, ejecuta los comandos en orden:
 /review-rfc 001      # revisión en un contexto nuevo → reviews/REVIEW-RFC-001.md
 ```
 
-Ejecuta `/workflow-status` cuando no sepas qué viene después, y `/manage-changes` cuando cambien los requisitos. En Codex, escribe `$create-prd` en lugar de `/create-prd`. Con el plugin de Claude Code, los comandos llevan el nombre del plugin: `/prd-workflow:create-prd`.
+Ejecuta `/workflow-status` cuando no sepas qué viene después, y `/manage-changes` cuando cambien los requisitos. Empieza por los dos primeros: la entrevista dura unos diez minutos, y en unos pocos más `/verify-prd` te dirá si esto es para ti.
 
-**Pruébalo primero con el ejemplo.** El ejemplo v2.0 del repositorio parece completo, y no lo está:
+**O pruébalo con el ejemplo.** La carpeta `before/` parece completa, y no lo está. Cópiala, para que el original quede para comparar:
 
 ```bash
 git clone https://github.com/nurettincoban/ai-prd-workflow.git
-cd ai-prd-workflow
-./install.sh examples/url-shortener/before
+cp -r ai-prd-workflow/examples/url-shortener/before linksnip
+ai-prd-workflow/install.sh linksnip
 ```
 
-Abre `examples/url-shortener/before` en tu herramienta de IA, ejecuta `/workflow-status` y compara su informe con [los problemas que encontramos a mano](examples/url-shortener/README.md).
+Abre `linksnip` en tu herramienta de IA, ejecuta `/workflow-status` o `/verify-prd` y compara el resultado con [los problemas que encontramos a mano](examples/url-shortener/README.md) y con lo que produjo [nuestra ejecución](examples/url-shortener/after/).
 
 ## Cómo funciona
 
@@ -143,11 +157,22 @@ Ambos se complementan: `/generate-rfcs` decide cuál es la siguiente pieza de tr
 
 **Úsalo para** proyectos de varias semanas y cualquier cosa seria que construyas con IA, donde el crecimiento descontrolado del alcance y las decisiones olvidadas hacen más daño que la calidad del código. **No hace falta para** un arreglo de una línea.
 
-Si conoces el desarrollo guiado por especificaciones (spec-driven development: GitHub Spec Kit, Amazon Kiro), esta es la misma idea, con los RFC como unidad de trabajo y sin CLI ni framework que adoptar. Y es anterior a ambos.
+Si conoces el desarrollo guiado por especificaciones (spec-driven development: GitHub Spec Kit, Amazon Kiro), esta es la misma idea, con los RFC como unidad de trabajo, sin CLI ni framework que adoptar, y con un script que contrasta los documentos entre sí.
 
 ## Evidencia
 
-Cada paso mira el proyecto desde un ángulo distinto, y cada uno detecta problemas que los demás no pueden ver. Se midió construyendo de principio a fin, con este flujo de trabajo y a partir de un PRD real, una biblioteca de TypeScript real:
+Todo lo que en esta sección se puede comprobar, lo puedes comprobar aquí:
+
+- **[El ejemplo url-shortener](examples/url-shortener/)**: la especificación v2.0, los problemas que encontramos en ella a mano y una ejecución completa de los comandos actuales sobre ella. Ejecuciones en un contexto nuevo, que nunca vieron nuestra lista, encontraron 10 de 10 problemas del PRD (`/verify-prd`) y 12 de 13 problemas entre documentos (`/workflow-status`), además de varios que se nos habían escapado. Las lecturas en frío de un segundo modelo, lanzadas a mano en este ejemplo, encontraron más de 150 puntos en los que los RFC generados habrían obligado a quien los implementara a adivinar; los [informes](examples/url-shortener/cold-reads/) también están ahí. Son ejecuciones únicas de un solo modelo.
+- **[El ejemplo todo-cli](examples/todo-cli/)**: una idea de diez líneas para una lista de tareas en la terminal, llevada hasta 386 líneas de código revisado y 66 pruebas que pasan, con cada paso en Claude Sonnet 5.5 y sin nadie que respondiera preguntas. Muestra lo que encontró cada comando, incluidas pruebas que habrían pasado con la función rota, y la única decisión que la ejecución dejó abierta para ti.
+- **[La batería de evaluaciones](evals/)**: ejecuta las mismas comprobaciones con y sin el flujo de trabajo, con tu propia cuenta, para que puedas medir la diferencia tú mismo. Califica los diez problemas del PRD y siete de los trece entre documentos: los que una expresión regular puede reconocer de forma fiable.
+
+<p align="center">
+  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status auditando el ejemplo v2.0: la comprobación de trazabilidad falla porque F7 no tiene RFC y falta RFCS.md; después, al contrastar los documentos entre sí, encuentra 20 incoherencias, como que ningún RFC construye la interfaz o que la caché de HTTP 301 estropea el conteo de clics">
+</p>
+<p align="center"><sub>Repetición resumida de una ejecución real de <code>/workflow-status</code> sobre el ejemplo v2.0. <a href="examples/url-shortener/workflow-status-on-before.md">Informe completo</a></sub></p>
+
+Cada paso mira el proyecto desde un ángulo distinto, y cada uno detecta problemas que los demás no pueden ver. Lo vimos al construir de principio a fin una biblioteca de TypeScript con este flujo de trabajo. Esa biblioteca no es pública, así que toma esta tabla como un informe de campo, no como una prueba:
 
 | Paso | Qué detectó | Por qué solo este paso lo detectó |
 |---|---|---|
@@ -162,11 +187,6 @@ Cada paso mira el proyecto desde un ángulo distinto, y cada uno detecta problem
 El resultado más llamativo: antes de que existiera una sola línea de código, la sección de casos límite de un RFC predijo que un plugin de compilación aún no admitiría TypeScript 7, e indicó la versión a la que volver. Fue exactamente lo que pasó. La comprobación de tipos pasó en todo momento, así que solo ejecutar la compilación lo reveló.
 
 Los ID también se mantuvieron. Cuando el PRD cambió a mitad del proyecto, un agente nuevo volvió a ejecutar `/extract-features` y añadió las funcionalidades nuevas al final en lugar de renumerar, sin que nadie se lo pidiera, porque los RFC citaban las funcionalidades por número.
-
-Esa biblioteca no forma parte de este repositorio, así que aquí tienes evidencia que puedes comprobar tú mismo:
-
-- **[El ejemplo url-shortener](examples/url-shortener/)**: ejecuciones en un contexto nuevo, que nunca vieron nuestra lista de problemas conocidos, encontraron 12 de 13 problemas entre documentos (`/workflow-status`) y 10 de 10 problemas del PRD (`/verify-prd`), además de varios que se nos habían escapado.
-- **[La batería de evaluaciones](evals/)**: ejecuta las mismas comprobaciones con y sin el flujo de trabajo, para que la diferencia se mida en lugar de afirmarse.
 
 ## Opciones de instalación
 
@@ -216,4 +236,4 @@ MIT: consulta [LICENSE](LICENSE).
 
 ---
 
-<p align="center">Si este flujo de trabajo te ahorra tiempo, una ⭐ ayuda a que otros lo encuentren.</p>
+<p align="center">Si este flujo de trabajo te ha evitado construir lo que no era, una ⭐ ayuda a que otros lo encuentren.</p>
