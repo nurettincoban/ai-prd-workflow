@@ -164,6 +164,7 @@ Spesifikasyon odaklı geliştirmeyi (spec-driven development; GitHub Spec Kit, A
 Bu bölümde doğrulanabilecek her şeyi burada doğrulayabilirsiniz:
 
 - **[url-shortener örneği](examples/url-shortener/)** — v2.0 spesifikasyonu, içinde elle bulduğumuz problemler ve güncel komutların onun üzerinde tam bir çalıştırması. Listemizi hiç görmeden temiz bir bağlamda çalışan komutlar PRD'deki 10 problemin 10'unu (`/verify-prd`) ve dokümanlar arası 13 problemin 12'sini (`/workflow-status`) buldu; üstüne bizim kaçırdığımız birkaç problemi de. Bu örnekte elle çalıştırılan, ikinci bir modelin bağlamsız okumaları, üretilen RFC'lerin uygulayıcıyı tahmin yürütmeye zorlayacağı 150'den fazla yer buldu; [raporlar](examples/url-shortener/cold-reads/) da orada. Bunlar tek bir modelin tekil çalıştırmalarıdır.
+- **[todo-cli örneği](examples/todo-cli/)** — terminal için bir yapılacaklar listesinin on satırlık fikri, incelenmiş 386 satır koda ve geçen 66 teste kadar götürüldü. Her adım Claude Sonnet 5.5 ile çalıştı ve soruları yanıtlayan kimse yoktu. Her komutun neyi yakaladığını, özellik bozukken bile geçecek testler dahil, ve çalıştırmanın sana bıraktığı tek kararı gösterir.
 - **[Değerlendirme seti](evals/)** — aynı kontrolleri iş akışıyla ve iş akışı olmadan, kendi hesabınızda çalıştırır; böylece farkı kendiniz ölçebilirsiniz. On PRD problemini ve dokümanlar arası on üç problemin yedisini, yani bir düzenli ifadenin güvenilir biçimde tanıyabildiklerini puanlar.
 
 <p align="center">

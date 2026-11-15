@@ -24,6 +24,7 @@ This release came out of a review gauntlet: critics attacked the prompts, the RE
 - `copy-prompt.sh` prints the prompt when piped or with `--print`, so it works over SSH and in containers
 - `.gitignore` covers `__pycache__/` left by the unit tests
 - Doubt no longer gets lost between files. A new shared section, **When a question has no answer**, tells every generating command what to do when nobody can answer: decide, mark it **(assumption)**, list it under `## Open Questions`, and never weaken a requirement from a higher artifact by assumption. Conflicts between artifacts go into one `## Open conflicts` list in RFCS.md. `/implement-rfc` puts both in front of you with the plan, and `/workflow-status` counts what is still unconfirmed. In the example run, about 100 assumptions and 22 flagged conflicts sat in files no command had to read before code was written
+- `/generate-rfcs` gives each cold reader the RFCs the RFC depends on, directly or through another RFC. In the todo-cli run, readers without them spent most of their reports on interfaces a predecessor already defined
 - `/generate-rfcs` fixes only cold-read findings that change behavior or a shared interface, cold-reads the fixed RFCs again before calling them passed, splits RFCs above about 15 criteria, and drops criteria that restate the rules
 - `/generate-rules` writes structure and architecture rules only where the PRD or existing code fixes them, so rules stop pre-empting the RFCs that do the design
 - `/manage-changes` saves the change request as pending before asking, and marks changed RFCs **Spec changed** instead of Changes requested, which the checker reserves for reviews
@@ -32,6 +33,7 @@ This release came out of a review gauntlet: critics attacked the prompts, the RE
 
 ### Added
 - `examples/url-shortener/after/`: the example's promised "after" half, produced by running `/verify-prd`, `/extract-features`, `/generate-rules`, `/generate-rfcs` and `/test-strategy` on the v2.0 PRD with these prompts, plus the cold-read reports that fixed the RFCs. The README and the example said it existed; it did not
+- `examples/todo-cli/`: a second, much smaller example run from a ten-line idea to reviewed code (`/create-prd` through `/review-rfc` and `/workflow-status`), every step on Claude Sonnet 5.5, with two rounds of cold reads
 - The README opens with a real run: one line of the input spec followed through the review, the fixed PRD and the RFC
 
 ### Changed

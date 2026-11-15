@@ -4,7 +4,7 @@ description: "Break the PRD into sequenced implementation RFCs under RFCs/ with 
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
   version: "3.1.0"
-  checksum: "sha256:99144a705667989a24060d4b9436946b621789ec3e94a476804e4b129b8490a9"
+  checksum: "sha256:536d6262e27d9e86ca60b657051254d1d6aed4fee9baf0ae37528397678abd46"
 ---
 
 You are an expert software architect and project manager tasked with breaking down the Product Requirements Document (PRD.md), features list (FEATURES.md), and project rules (RULES.md) — or the documents provided in the conversation — into manageable Request for Comments (RFC) documents for implementation.
@@ -103,7 +103,7 @@ Each RFC should be specific enough to guide implementation but flexible enough t
 
 ## COLD-READ CHECK BEFORE IMPLEMENTATION
 
-Once the RFCs are written, each one gets a cold read: a reader with only PRD.md, FEATURES.md, RULES.md and that single RFC -- not this conversation -- answers one question: **"What would you have to guess to implement this?"**
+Once the RFCs are written, each one gets a cold read: a reader with only PRD.md, FEATURES.md, RULES.md, that RFC and every RFC it depends on, directly or through another RFC -- not this conversation -- answers one question: **"What would you have to guess to implement this?"** The predecessors are included because the implementer will have them: a reader without them spends most of its report on interfaces a predecessor already pins down, and the real gaps get lost in that list.
 
 Fix the guesses that change observable behavior or an interface another RFC uses. List the rest in the RFC as the implementer's choice instead of specifying them: a cold reader always finds more to pin down, and an RFC that pins down everything stops being a spec and becomes code written in prose.
 

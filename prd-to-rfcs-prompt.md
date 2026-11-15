@@ -94,7 +94,7 @@ Each RFC should be specific enough to guide implementation but flexible enough t
 
 ## COLD-READ CHECK BEFORE IMPLEMENTATION
 
-Once the RFCs are written, each one gets a cold read: a reader with only PRD.md, FEATURES.md, RULES.md and that single RFC -- not this conversation -- answers one question: **"What would you have to guess to implement this?"**
+Once the RFCs are written, each one gets a cold read: a reader with only PRD.md, FEATURES.md, RULES.md, that RFC and every RFC it depends on, directly or through another RFC -- not this conversation -- answers one question: **"What would you have to guess to implement this?"** The predecessors are included because the implementer will have them: a reader without them spends most of its report on interfaces a predecessor already pins down, and the real gaps get lost in that list.
 
 Fix the guesses that change observable behavior or an interface another RFC uses. List the rest in the RFC as the implementer's choice instead of specifying them: a cold reader always finds more to pin down, and an RFC that pins down everything stops being a spec and becomes code written in prose.
 

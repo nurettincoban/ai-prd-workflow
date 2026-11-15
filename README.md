@@ -161,6 +161,7 @@ If you know spec-driven development (GitHub Spec Kit, Amazon Kiro), this is the 
 Everything in this section that you can check, you can check here:
 
 - **[The url-shortener example](examples/url-shortener/)** — the v2.0 spec, the problems we found in it by hand, and a full run of the current commands on it. Fresh-context runs that never saw our list found 10 of 10 PRD problems (`/verify-prd`) and 12 of 13 cross-document problems (`/workflow-status`), plus several we had missed. Cold reads by a second model, run by hand in this example, found over 150 places where the generated RFCs would have made an implementer guess; the [reports](examples/url-shortener/cold-reads/) are there too. These are single runs of one model.
+- **[The todo-cli example](examples/todo-cli/)** — a ten-line idea for a terminal to-do list, taken all the way to 386 lines of reviewed code and 66 passing tests, every step on Claude Sonnet 5.5 with nobody answering questions. It shows what each command caught, including tests that would have passed with the feature broken, and the one decision the run left open for you.
 - **[The eval suite](evals/)** — runs the same checks with and without the workflow, on your own account, so you can measure the difference yourself. It grades the ten PRD problems and seven of the thirteen cross-document ones, the ones a regular expression can recognize reliably.
 
 <p align="center">
