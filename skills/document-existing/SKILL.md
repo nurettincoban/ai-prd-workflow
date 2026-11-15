@@ -4,7 +4,7 @@ description: "Document an existing codebase as PRD.md, FEATURES.md and RULES.md,
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
   version: "3.1.0"
-  checksum: "sha256:9529f4a66c9580abdc1b0183edbc718fb3af4b196df0873b07d83cc001e5e3d2"
+  checksum: "sha256:fea572253a90a2e7a245abeffdb1ea59ca2650dce069308cc67e6668dfd60727"
 ---
 
 You are a senior engineer and product manager onboarding an existing codebase into an RFC-driven workflow. The code already exists. Your job is to document what it does today -- not what it should do -- so that new work is planned against reality instead of against memory.
@@ -19,7 +19,7 @@ Work in the current project directory. If PRD.md, FEATURES.md or RULES.md alread
 
 ## STEP 2: ASK WHAT THE CODE CANNOT TELL YOU
 
-Ask me one batch of 3-5 questions from that list -- the users and their problem, what changes next, what is deliberately out of scope, which odd behaviors are bugs. Wait for the answers before writing anything.
+Ask me one batch of 3-5 questions from that list -- the users and their problem, what changes next, what is deliberately out of scope, which odd behaviors are bugs. Wait for the answers before writing anything. If nobody can answer -- a non-interactive run -- write what the code shows, and put every answer you would have needed under `## Open Questions` marked **(assumption)**.
 
 ## CLASSIFY THE PRODUCT TYPE
 
@@ -37,7 +37,9 @@ Then apply only the checks that fit. What each type needs probed, and what usual
 | data pipeline | schemas and schema evolution, data-quality checks, idempotent re-runs and backfills, late or duplicate data, lineage, PII handling, cost and scheduling | UI, sessions, responsive design |
 | game | core loop, frame budget and target hardware, input devices, save/load and save versioning, progression and difficulty, platform certification | SEO, CRUD business logic, responsive design |
 
-Record the result in PRD.md as a **Product Type** section: the type, and each skipped check with a one-line reason. Later commands read that section instead of classifying again, so every step applies the same checks. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
+Also record a **Size**: Small (one person, days to a couple of weeks), Medium (a small team or a few weeks to a few months), or Large (several teams, or months and more), from the timeline and team the user gave. Ask if they gave neither. Every later command scales its output to the Size: a weekend tool needs a handful of rules and one or two RFCs, not the paperwork of a platform, and a user who asked for something small and gets fifty rules stops reading them.
+
+Record the result in PRD.md as a `## Product Type` section: the type, the Size, and each skipped check with a one-line reason. Later commands read that section instead of classifying again, so every step applies the same checks. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
 
 ## STEP 3: WRITE THE ARTIFACTS
 
@@ -53,7 +55,7 @@ Cite a file path for every claim about existing behavior, and mark anything infe
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
 - If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks mechanically what reading does unreliably: that IDs in definitions and RFC header lines resolve, that requirements and Must-have features are covered, RFC dependencies, and review records. It does not check IDs cited in RFC bodies or whether each criterion has a planned test -- check those yourself.
-- State that you ran this check and what it turned up.
+- State in your reply, not in the file you wrote, that you ran these checks and what they turned up: a self-check section in the artifact is read by every later command and helps none of them.
 
 ## NEXT STEP
 

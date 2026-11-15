@@ -192,8 +192,14 @@ def check_features(root, prd_ids):
             cited |= set(re.findall(r"\b(?:FR|NFR)-\d+\b", f["row"]))
     if prd_ids:
         rules_text = read(root / "RULES.md") if (root / "RULES.md").exists() else ""
+        # FEATURES.md can hand an NFR to the rules before RULES.md exists, on a line
+        # such as "NFR-3, NFR-7: carried by RULES.md".
+        handed_to_rules = set()
+        for line in text.splitlines():
+            if "RULES.md" in line and not line.lstrip().startswith("|"):
+                handed_to_rules |= set(re.findall(r"\bNFR-\d+\b", line))
         for rid in sorted(prd_ids - cited, key=lambda r: (r.split("-")[0], int(r.split("-")[1]))):
-            if rid.startswith("NFR") and re.search(rf"\b{rid}\b", rules_text):
+            if rid.startswith("NFR") and (re.search(rf"\b{rid}\b", rules_text) or rid in handed_to_rules):
                 continue  # non-functional requirements are often carried by rules instead
             fail(f"{rid} (PRD.md) is not covered by any feature -- add one, or list it as Won't Have")
     return features

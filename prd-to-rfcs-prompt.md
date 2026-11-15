@@ -8,11 +8,11 @@ If PRD-REVIEW.md exists, read it as well: every High-impact finding in it must b
 
 ## WHEN A QUESTION HAS NO ANSWER
 
-If critical information is missing or unclear, ask specific questions before proceeding. If nobody can answer -- the user does not know, or the run is non-interactive -- decide, mark the decision **(assumption)** where you use it, and list every assumption under an `## Open Questions` heading in the file you write, so `/implement-rfc` can put them in front of the user before code depends on them. An assumption may fill a gap; it may never weaken or contradict a requirement in a higher artifact. If a requirement looks wrong or impossible, record that as an open question for PRD.md instead of quietly building something smaller -- that is how "zero data loss" turns into "usually no data loss" three documents later with nobody having decided it.
+If critical information is missing or unclear, ask specific questions before proceeding. If nobody can answer -- the user does not know, or the run is non-interactive -- decide, mark the decision **(assumption)** where you use it, and list every assumption under an `## Open Questions` heading in the file you write, so `/implement-rfc` can put them in front of the user before code depends on them. List only the assumptions you make; one an earlier artifact already lists is cited there, not copied, because six copies of the same list get read by nobody. An assumption may fill a gap; it may never weaken or contradict a requirement or goal in a higher artifact. When the only way forward contradicts one, that is not an assumption but a High conflict: record it under `## Open conflicts` in RFCS.md (in the file you write, if RFCS.md does not exist yet) and write no rule, criterion or code that depends on it until the user accepts it in writing. Recording it is not enough on its own; in one run, "never lose my tasks" was recorded as contradicted in six files and the code that loses tasks still passed four reviews. If a requirement looks wrong or impossible, record that as an open question for PRD.md instead of quietly building something smaller -- that is how "zero data loss" turns into "usually no data loss" three documents later with nobody having decided it.
 
 ## PRODUCT TYPE
 
-Read the **Product Type** section of PRD.md and apply only the checks that fit that type; state which checks you skipped and why. Skipping must be visible, never silent. If PRD.md has no such section, classify the product yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
+Read the `## Product Type` section of PRD.md and apply only the checks that fit that type. Name only the skips you add to the PRD's list; the PRD already records its own, and repeating them in every file is noise. Read the **Size** there too and scale what you write to it, following this prompt's own notes on size; a section that does not apply at that size is left out, not filled in. If PRD.md has no such section, classify the product and its Size yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game; Small, Medium or Large), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
 
 ## WHEN ARTIFACTS CONFLICT
 
@@ -20,7 +20,7 @@ Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Wh
 
 ## WHEN RFCS ALREADY EXIST
 
-If RFCs/ already has RFCs, extend the plan instead of regenerating it. Never renumber, rewrite or delete an RFC whose Status in RFCS.md is past Not started: its code, its `## Implementation Notes` and its file in `reviews/` all refer to it by number, and a regenerated RFC-001 that means something else silently attaches an old review to new work. New work takes the next unused number. Keep every existing Status value. A Not started RFC may be revised; say what changed.
+If RFCs/ already has RFCs, extend the plan instead of regenerating it. Never renumber, rewrite or delete an RFC whose Status in RFCS.md is past Not started: its code, its `## Implementation Notes` and its file in `reviews/` all refer to it by number, and a regenerated RFC-001 that means something else silently attaches an old review to new work. New work takes the next unused number. Keep every existing Status value. A Not started RFC may be revised; say what changed. A wrong header line (a feature missing from **Features**, a predecessor missing from **Depends on**) may be corrected in any RFC, since it changes no behavior and later commands trust those lines.
 
 ## GENERATE THE RFCS
 
@@ -57,7 +57,10 @@ Generate the RFC files under an RFCs folder by:
    - Implementation details -- what other RFCs and users depend on, not how to write each function: file structure, error codes and handling, logging and monitoring, and -- where they apply -- UI/UX, state management, authentication/authorization and caching
    - Acceptance criteria for each feature: observable behavior a test can check. Do not add criteria that restate RULES.md ("files follow ARCH-1", "tests are named after features") -- the reviewer already checks every rule, and a criterion nobody can test becomes a manual row in every plan. If an RFC needs more than about 15 criteria, split it: `/implement-rfc` has to demonstrate each one
    - Only the sections that apply to this product type and this RFC: no "Database Schema Changes" or "State Management" section in an RFC, or a product, that has neither
-   - Every file, behavior and constraint mentioned anywhere in the RFC MUST also appear in the acceptance criteria. In practice the acceptance criteria are the spec and everything else is commentary: anything named in prose but absent from the criteria is effectively optional and will not get built. Cross-check the file-structure section against the criteria before finishing
+   - Every behavior and constraint the RFC requires MUST also appear in the acceptance criteria. In practice the acceptance criteria are the spec and everything else is commentary: anything named in prose but absent from the criteria is effectively optional and will not get built
+   - Criteria describe behavior observable from outside the code: what a user, a caller or the data file sees. Never code structure, call counts, how a test is built, or a scan of the source for forbidden strings -- those turn the spec into code written in prose, and a rule already covers what a scan would check. One criterion is one behavior; packing nineteen cases into criterion 6 to stay under the limit defeats the limit
+   - A check that needs a person or another machine (a run on macOS, a real device, a load test on production-like hardware) goes in a release checklist in RFCS.md, not in an RFC's criteria, so the RFC can be finished and reviewed
+   - Scale to the Size in PRD.md: a Small product usually needs one to three RFCs; do not split a weekend's work into five
 
 4. IMPLEMENTATION CONSIDERATIONS:
    - Technical challenges and potential edge cases
@@ -74,7 +77,7 @@ Generate the RFC files under an RFCs folder by:
 
 6. RFCS.MD CREATION:
    - Create a master RFCS.md in the project root listing all RFCs in implementation order, each by its full ID as in the file name (`RFC-001`, never `RFC-1`), with a Status column (Not started / In progress / Implemented / Changes requested / Spec changed / Reviewed) that `/implement-rfc`, `/review-rfc` and `/manage-changes` keep current
-   - End RFCS.md with an `## Open conflicts` section: every conflict between artifacts you found and how each RFC resolved it, and every High-impact open question in PRD.md that an RFC depends on. `/implement-rfc` puts these in front of the user before writing code; a conflict recorded anywhere else is read by nobody
+   - End RFCS.md with an `## Open conflicts` section: every conflict between artifacts you found and how each RFC resolved it, and every High-impact open question in PRD.md that an RFC depends on. Number them (C1, C2, ...) and give each a status (open or resolved, and by whom) so later commands can cite and close them. A note that blocks nothing and needs no decision does not belong here. `/implement-rfc` puts these in front of the user before writing code; a conflict recorded anywhere else is read by nobody
    - Every Must Have feature belongs to an RFC. Should and Could Have features either belong to one or are listed in RFCS.md as deferred, with the reason
    - Include a dependency table showing relationships between RFCs
    - Provide a clear implementation roadmap
@@ -82,7 +85,7 @@ Generate the RFC files under an RFCs folder by:
 
 First, provide a brief overview of your breakdown approach and the sequential implementation order. Then create the RFC documents.
 
-Each RFC should be specific enough to guide implementation but flexible enough to allow for engineering decisions. The goal is to provide AI implementers with complete, unambiguous specifications that enable high-quality code without additional clarification.
+Each RFC pins down what another RFC or a user depends on -- interfaces, behavior, errors -- and leaves the rest to the implementer. Where the two pull apart, pin the behavior and leave the code.
 
 ## SELF-CHECK BEFORE FINISHING
 
@@ -90,14 +93,18 @@ Each RFC should be specific enough to guide implementation but flexible enough t
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
 - If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks mechanically what reading does unreliably: that IDs in definitions and RFC header lines resolve, that requirements and Must-have features are covered, RFC dependencies, and review records. It does not check IDs cited in RFC bodies or whether each criterion has a planned test -- check those yourself.
-- State that you ran this check and what it turned up.
+- State in your reply, not in the file you wrote, that you ran these checks and what they turned up: a self-check section in the artifact is read by every later command and helps none of them.
 
 ## COLD-READ CHECK BEFORE IMPLEMENTATION
 
 Once the RFCs are written, each one gets a cold read: a reader with only PRD.md, FEATURES.md, RULES.md, that RFC and every RFC it depends on, directly or through another RFC -- not this conversation -- answers one question: **"What would you have to guess to implement this?"** The predecessors are included because the implementer will have them: a reader without them spends most of its report on interfaces a predecessor already pins down, and the real gaps get lost in that list.
 
-Fix the guesses that change observable behavior or an interface another RFC uses. List the rest in the RFC as the implementer's choice instead of specifying them: a cold reader always finds more to pin down, and an RFC that pins down everything stops being a spec and becomes code written in prose.
+Ask the reader for at most the five guesses most likely to produce a wrong implementation, each with the criterion or section it comes from. Without a cap a cold reader always finds more, and one run went from 135 findings to 44 to a 4,000-digit limit on task ids.
 
-If you can start a subagent with a clean context, run the cold reads yourself now, one subagent per RFC, fix what they report, and cold-read the changed RFCs again before you note in RFCS.md that they passed -- a fix is new text that nobody has read cold. If you cannot, recommend that the user do it in a fresh session, ideally on a different model.
+Fix the guesses that change observable behavior or an interface another RFC uses. List the rest in the RFC as the implementer's choice instead of specifying them: an RFC that pins down everything stops being a spec and becomes code written in prose.
+
+An RFC passes when one cold read of its changed text finds no guess that changes behavior or an interface. Record each RFC's result in RFCS.md (passed, or the open guesses), and keep the reports in `cold-reads/`, one file per RFC and round. `/implement-rfc` shows an RFC that has not passed with its plan, so the user decides whether to build on it.
+
+If you can start a subagent with a clean context, run the cold reads yourself now, one subagent per RFC, fix what they report, and cold-read the changed RFCs once more. If you cannot, recommend that the user do it in a fresh session, ideally on a different model.
 
 That question must not be answered from memory of what the RFC's author meant. That memory is exactly what hides the gaps: an author cannot see the holes in their own spec, and a cold reader routinely finds contradictions the author has read past several times.

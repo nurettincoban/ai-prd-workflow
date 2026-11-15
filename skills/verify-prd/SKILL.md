@@ -4,7 +4,7 @@ description: "Review PRD.md for gaps, contradictions and unverifiable claims, wr
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
   version: "3.1.0"
-  checksum: "sha256:d28d120efcde2da226543e8ae6cc11fbaefc9fcbc2554cbc3b4675202eceaeff"
+  checksum: "sha256:992b865149cc52219e2d6e7197251042c932e7011fedf290d458199d0e4d2249"
 ---
 
 You are an expert product manager tasked with reviewing a Product Requirements Document (PRD). Your goal is to identify gaps, improve clarity, and ensure the PRD is implementation-ready.
@@ -29,7 +29,9 @@ Then apply only the checks that fit. What each type needs probed, and what usual
 | data pipeline | schemas and schema evolution, data-quality checks, idempotent re-runs and backfills, late or duplicate data, lineage, PII handling, cost and scheduling | UI, sessions, responsive design |
 | game | core loop, frame budget and target hardware, input devices, save/load and save versioning, progression and difficulty, platform certification | SEO, CRUD business logic, responsive design |
 
-Record the result in PRD.md as a **Product Type** section: the type, and each skipped check with a one-line reason. Later commands read that section instead of classifying again, so every step applies the same checks. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
+Also record a **Size**: Small (one person, days to a couple of weeks), Medium (a small team or a few weeks to a few months), or Large (several teams, or months and more), from the timeline and team the user gave. Ask if they gave neither. Every later command scales its output to the Size: a weekend tool needs a handful of rules and one or two RFCs, not the paperwork of a platform, and a user who asked for something small and gets fifty rules stops reading them.
+
+Record the result in PRD.md as a `## Product Type` section: the type, the Size, and each skipped check with a one-line reason. Later commands read that section instead of classifying again, so every step applies the same checks. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
 
 ## STEP 0: GROUND THE PRD IN REALITY
 
@@ -41,7 +43,7 @@ Before the gap analysis:
 
 ## STEP 1: GAP ANALYSIS
 
-Identify critical missing elements in these areas:
+Identify critical missing elements in these areas, as far as the Product Type and Size call for them -- a weekend CLI has no market factors or team plan to find missing:
 
 1. PRODUCT FUNDAMENTALS
    - Product vision and problem statement
@@ -89,7 +91,7 @@ Provide specific recommendations in these areas:
 ## DELIVERABLES
 
 1. SUMMARY OF FINDINGS
-   - List of critical gaps (High/Medium/Low impact)
+   - List of critical gaps (High/Medium/Low impact), numbered `P1`, `P2`, ... -- not `F-1`, which reads like a feature ID once FEATURES.md exists
    - 2-3 sentence overall assessment
 
 2. SPECIFIC RECOMMENDATIONS
@@ -101,15 +103,13 @@ Provide specific recommendations in these areas:
    - Include the Product Type section (see CLASSIFY THE PRODUCT TYPE)
    - Give every functional and non-functional requirement a permanent ID if it has none, one per line as `- **FR-1**: text` or `- **NFR-1**: text`, and never renumber existing ones -- features and RFCs cite them, and `trace-check.py` reads that form
    - Keep the PRD's Decisions section, and add every decision the user made, or the PRD's own text settles, while resolving these findings -- what was decided, why, and what was rejected. Add the section if the PRD has none. Unanswered questions stay in Open Questions (see STEP 1.5)
+   - Every goal in the PRD maps to at least one FR or NFR whose fulfilment achieves it, or is reworded until one does. A goal no requirement carries is invisible to `trace-check.py` and to every review: "never lose my tasks" narrowed to an NFR about crashes passed full coverage while two concurrent runs lost tasks
    - Change only what a finding calls for. Every change to scope or to a requirement cites the finding ID that motivated it in PRD-REVIEW.md; an improvement with no finding behind it is a new open question, not an edit
    - Save as "PRD.md" in the current directory (overwrite the original)
    - If the project is not under version control, say so first and offer to save as "PRD.v2.md" instead -- overwriting a hand-written PRD with no way to recover it destroys the diff the user needs in order to review what you changed
 
-4. QUALITY ASSESSMENT
-   - Score the PRD (1-10) on: Completeness, Clarity, Feasibility, and User-Focus
-
-5. PRD-REVIEW.md
-   - Write deliverables 1, 2 and 4 to "PRD-REVIEW.md" alongside the improved PRD: the gap list, the recommendations, the scores, and why each change was made
+4. PRD-REVIEW.md
+   - Write deliverables 1 and 2 to "PRD-REVIEW.md" alongside the improved PRD: the gap list, the recommendations, and why each change was made
    - Findings that live only in this conversation are gone the moment it ends. The next reader then sees a decision in PRD.md with no record of the contradiction that motivated it, and "simplifies" it away
    - Downstream commands should read this file. Every High-impact finding must stay traceable into FEATURES.md and the RFCs
 
@@ -119,4 +119,4 @@ Provide specific recommendations in these areas:
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
 - If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks mechanically what reading does unreliably: that IDs in definitions and RFC header lines resolve, that requirements and Must-have features are covered, RFC dependencies, and review records. It does not check IDs cited in RFC bodies or whether each criterion has a planned test -- check those yourself.
-- State that you ran this check and what it turned up.
+- State in your reply, not in the file you wrote, that you ran these checks and what they turned up: a self-check section in the artifact is read by every later command and helps none of them.

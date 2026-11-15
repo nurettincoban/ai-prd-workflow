@@ -55,6 +55,7 @@ A few sections appear word for word in several prompts, because every prompt mus
 | `shared/product-type.md` | prompts that read the classification from PRD.md |
 | `shared/self-check.md` | prompts that generate an artifact |
 | `shared/when-artifacts-conflict.md` | prompts that read several artifacts |
+| `shared/when-a-question-has-no-answer.md` | prompts that generate an artifact and may have to decide without the user |
 
 Edit the file in `shared/`, then run `python3 scripts/check-prompts.py --fix` to copy it into every prompt that has that section. CI fails when a copy differs. `--fix` refuses to overwrite a section that holds more than the shared text — content after a shared section needs its own `## ` heading.
 
@@ -77,11 +78,11 @@ Every one of those has shipped as a real bug: a review record no command produce
 | `/verify-prd` | prd-comprehensive-verification-prompt.md | PRD.md, code | PRD.md, PRD-REVIEW.md |
 | `/extract-features` | prd-to-features-prompt.md | PRD.md, PRD-REVIEW.md | FEATURES.md |
 | `/generate-rules` | prd-to-rules-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, code | RULES.md |
-| `/generate-rfcs` | prd-to-rfcs-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md | RFCs/, RFCS.md |
+| `/generate-rfcs` | prd-to-rfcs-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md | RFCs/, RFCS.md, cold-reads/ |
 | `/test-strategy` | testing-strategy-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, code | TEST-STRATEGY.md |
-| `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/ | code, RFCs/, RFCS.md |
+| `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, cold-reads/ | code, RFCs/, RFCS.md |
 | `/review-rfc` | code-review-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, code | reviews/, RFCS.md, FEATURES.md |
-| `/manage-changes` | prd-change-management-prompt.md | PRD.md, PRD-REVIEW.md, RULES.md, changes/, code | changes/, PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md |
+| `/manage-changes` | prd-change-management-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, changes/, code | changes/, PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md |
 | `/workflow-status` | workflow-status-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, changes/, code | — |
 <!-- contracts:end -->
 
