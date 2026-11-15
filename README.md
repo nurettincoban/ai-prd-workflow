@@ -4,7 +4,7 @@
 
 # 📋 AI PRD Workflow
 
-### RFC-driven development for AI coding agents
+### Decide what to build before your agent builds it.
 
 **Idea or existing code → verified PRD → features → rules → sequenced RFCs → reviewed, tested code**
 
@@ -14,46 +14,60 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#quick-start)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#install-options)
 
-**[🌐 Website](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Quick start](#quick-start)** · **[How it works](#how-it-works)** · **[Why](#why-this-workflow)** · **[Evidence](#evidence)** · **[Install options](#install-options)**
+**[🌐 Website](https://nurettincoban.github.io/ai-prd-workflow/)** · **[See a real run](#what-one-run-produced)** · **[Quick start](#quick-start)** · **[How it works](#how-it-works)** · **[Why](#why-this-workflow)** · **[Evidence](#evidence)** · **[Install options](#install-options)**
 
 English · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
-<sub>RFC-driven since <b>March 2025</b> — before Claude Code or Cursor had a plan mode, and before Kiro or Spec Kit existed.</sub>
+<sub>RFC-driven since <a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>March 2025</b></a> — before Claude Code or Cursor had a plan mode, and before Kiro or Spec Kit existed.</sub>
 
 </div>
 
 ---
 
-AI coding agents write code well. They are worse at deciding what to build, remembering yesterday's decisions, and noticing when two documents disagree. This workflow handles that part. It takes an idea — or a codebase that already exists — to a reviewed PRD, prioritized features, project rules, and small RFCs in dependency order. Then it implements and reviews them one at a time.
+AI coding agents write code well. They are worse at deciding what to build, remembering yesterday's decisions, and noticing when two documents disagree. This workflow handles that part. It takes an idea — or a codebase that already exists — to a reviewed product spec (PRD), prioritized features, project rules, and small implementation specs (RFCs) in dependency order. Then it implements and reviews them one at a time.
 
-Every step writes a markdown file that the next step reads, so decisions outlive the chat session. A script checks that the files still agree with each other. No CLI to learn, no framework to adopt, no lock-in.
+Every step writes a markdown file that the next step reads, so decisions outlive the chat session. A script checks that the files still agree with each other. No CLI to learn, no framework to adopt, no lock-in: the commands are plain prompts, installed as skills for Claude Code, Codex, Copilot, Cursor, Gemini CLI, OpenCode and Devin.
 
-<p align="center">
-  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status auditing the v2.0 example: the traceability check fails because F7 has no RFC and RFCS.md is missing, then reading the documents against each other finds 20 inconsistencies, such as no RFC building the UI and HTTP 301 caching breaking click counts">
-</p>
-<p align="center"><sub>A real <code>/workflow-status</code> run on the repo's own v2.0 example, condensed. <a href="examples/url-shortener/workflow-status-on-before.md">Full report</a> · <a href="examples/url-shortener/README.md">what it was checked against</a></sub></p>
+## What one run produced
+
+We gave it the spec of a small URL shortener that looks finished, and ran the commands. Three things it caught before any code existed:
+
+| The spec said | What the workflow did |
+|---|---|
+| "Redirect short URL to original URL via HTTP 301" | `/verify-prd`: browsers cache a 301, so repeat clicks are never counted and deleted links keep redirecting. The fixed spec redirects with 302, and [RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) tests "never 301". |
+| No user accounts, and anyone can "delete a short URL" | `/verify-prd`: anyone can delete anyone's link. Nobody was there to decide, so it wrote a proposed fix as an open question marked **(assumption)**, not as a decision. |
+| RFC-002 claims features F5, F6 and F11 | `/workflow-status`: its acceptance criteria only test the API, so the analytics page and chart those features require had nothing to make anyone build them. Every ID was cited, so a script could not see it. |
+
+**10 of 10** problems we had listed by hand, found by `/verify-prd` without seeing the list. **12 of 13** cross-document problems, found by `/workflow-status`. **12 RFCs** and **203 planned tests** generated, each RFC read cold by a second model first. About an hour of agent time on Claude Opus 5.5, no human input. **[Browse the whole run →](examples/url-shortener/)**
 
 ## Quick start
 
-**Claude Code** — install the plugin:
+In Claude Code, install the plugin, restart Claude Code, and start the interview:
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
+/prd-workflow:create-prd          # then /prd-workflow:verify-prd
 ```
 
-**Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode or Devin** — install the skills into your project:
+<details>
+<summary><b>Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode, Devin, or any chat assistant</b></summary>
+
+Install the skills into your project:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project
+cd your-project
+curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-**Any chat assistant** (ChatGPT, Claude.ai, …) — copy a prompt from the [command table](#how-it-works) and paste it in.
+In Codex, type `$create-prd` instead of `/create-prd`. In a chat assistant (ChatGPT, Claude.ai, …), copy a prompt from the [command table](#how-it-works) and paste it in.
+
+</details>
 
 > [!IMPORTANT]
 > Restart your AI tool after installing. A running session does not see new skills, so the first command fails with `Unknown skill` — which looks like a broken install but is only a stale session.
 
-Then run the commands in order:
+Then run the commands in order (with the plugin, each one carries its name: `/prd-workflow:verify-prd`):
 
 ```
 /create-prd          # interview → PRD.md   (existing code? use /document-existing instead)
@@ -66,17 +80,17 @@ Then run the commands in order:
 /review-rfc 001      # review in a fresh context → reviews/REVIEW-RFC-001.md
 ```
 
-Run `/workflow-status` whenever you are unsure what comes next, and `/manage-changes` when requirements change. In Codex, type `$create-prd` instead of `/create-prd`. With the Claude Code plugin, commands carry the plugin's name: `/prd-workflow:create-prd`.
+Run `/workflow-status` whenever you are unsure what comes next, and `/manage-changes` when requirements change. Start with the first two: the interview takes about ten minutes, and `/verify-prd` will tell you within a few more whether this is for you.
 
-**Try it on the example first.** The repo's v2.0 example looks complete, and it is not:
+**Or try it on the example.** The `before/` folder looks complete, and it is not. Copy it, so the original stays for comparison:
 
 ```bash
 git clone https://github.com/nurettincoban/ai-prd-workflow.git
-cd ai-prd-workflow
-./install.sh examples/url-shortener/before
+cp -r ai-prd-workflow/examples/url-shortener/before linksnip
+ai-prd-workflow/install.sh linksnip
 ```
 
-Open `examples/url-shortener/before` in your AI tool, run `/workflow-status`, and compare its report with [the problems we found by hand](examples/url-shortener/README.md).
+Open `linksnip` in your AI tool, run `/workflow-status` or `/verify-prd`, and compare the result with [the problems we found by hand](examples/url-shortener/README.md) and with what [our run](examples/url-shortener/after/) produced.
 
 ## How it works
 
@@ -140,11 +154,21 @@ The two work together: `/generate-rfcs` decides what the next piece of work is, 
 
 **Use it for** multi-week builds, and anything real you build with AI, where scope creep and forgotten decisions hurt more than code quality. **Skip it for** a one-line fix.
 
-If you know spec-driven development (GitHub Spec Kit, Amazon Kiro), this is the same idea, with RFCs as the unit of work and no CLI or framework to adopt. It predates both.
+If you know spec-driven development (GitHub Spec Kit, Amazon Kiro), this is the same idea, with RFCs as the unit of work, no CLI or framework to adopt, and a script that checks the documents against each other.
 
 ## Evidence
 
-Each step looks at the project from a different angle, and each catches problems the others cannot. This was measured by building a real TypeScript library end to end with the workflow, from a real PRD:
+Everything in this section that you can check, you can check here:
+
+- **[The url-shortener example](examples/url-shortener/)** — the v2.0 spec, the problems we found in it by hand, and a full run of the current commands on it. Fresh-context runs that never saw our list found 10 of 10 PRD problems (`/verify-prd`) and 12 of 13 cross-document problems (`/workflow-status`), plus several we had missed. Cold reads by a second model, run by hand in this example, found over 150 places where the generated RFCs would have made an implementer guess; the [reports](examples/url-shortener/cold-reads/) are there too. These are single runs of one model.
+- **[The eval suite](evals/)** — runs the same checks with and without the workflow, on your own account, so you can measure the difference yourself. It grades the ten PRD problems and seven of the thirteen cross-document ones, the ones a regular expression can recognize reliably.
+
+<p align="center">
+  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status auditing the v2.0 example: the traceability check fails because F7 has no RFC and RFCS.md is missing, then reading the documents against each other finds 20 inconsistencies, such as no RFC building the UI and HTTP 301 caching breaking click counts">
+</p>
+<p align="center"><sub>A real <code>/workflow-status</code> run on the v2.0 example, condensed. <a href="examples/url-shortener/workflow-status-on-before.md">Full report</a></sub></p>
+
+Each step looks at the project from a different angle, and each catches problems the others cannot. We saw this while building a TypeScript library end to end with the workflow. That library is not public, so treat this table as a field report, not proof:
 
 | Step | What it caught | Why only this step caught it |
 |---|---|---|
@@ -159,11 +183,6 @@ Each step looks at the project from a different angle, and each catches problems
 The most striking result: before any code existed, an RFC's edge-case section predicted that a build plugin would not support TypeScript 7 yet, and named the fallback version. That is exactly what happened. Type-checking passed throughout, so only running the build revealed it.
 
 IDs held, too. When the PRD changed mid-project, a fresh agent re-ran `/extract-features` and added the new features at the end instead of renumbering — without being told to, because the RFCs cite features by number.
-
-That library is not part of this repository, so here is evidence you can check yourself:
-
-- **[The url-shortener example](examples/url-shortener/)** — fresh-context runs that never saw our list of known problems found 12 of 13 cross-document problems (`/workflow-status`) and 10 of 10 PRD problems (`/verify-prd`), plus several we had missed.
-- **[The eval suite](evals/)** — runs the same checks with and without the workflow, so the difference is measured, not claimed.
 
 ## Install options
 
@@ -213,4 +232,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-<p align="center">If this workflow saves you time, a ⭐ helps others find it.</p>
+<p align="center">If this workflow saved you from building the wrong thing, a ⭐ helps others find it.</p>

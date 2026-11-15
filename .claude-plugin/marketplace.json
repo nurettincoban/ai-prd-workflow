@@ -3,14 +3,20 @@
   "owner": {
     "name": "Nurettin Coban"
   },
-  "description": "RFC-driven development workflow prompts for AI coding agents",
+  "description": "Decide what to build before your agent builds it: PRD, features, rules and sequenced RFCs for AI coding agents",
   "plugins": [
     {
       "name": "prd-workflow",
       "source": "./",
-      "description": "Eleven commands that take a project — new or existing — to a verified PRD, prioritized features, project rules, and sequenced RFCs — then guide implementation, review, and testing.",
+      "description": "Eleven commands that take an idea or an existing codebase to a verified PRD, features, rules and sequenced RFCs, then implement and review them one at a time, with a script that checks the files still agree.",
       "category": "workflows",
-      "tags": ["prd", "rfc", "spec-driven", "planning"]
+      "tags": [
+        "prd",
+        "rfc",
+        "spec-driven",
+        "planning",
+        "agent-skills"
+      ]
     }
   ]
 }

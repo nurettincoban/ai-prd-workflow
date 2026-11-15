@@ -4,7 +4,7 @@
 
 # 📋 AI PRD Workflow
 
-### 面向 AI 编程代理的 RFC 驱动开发
+### 在代理动手之前，先决定要构建什么。
 
 **想法或现有代码 → 经过验证的 PRD → 功能 → 规则 → 有序的 RFC → 经过评审和测试的代码**
 
@@ -14,11 +14,11 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#快速开始)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#安装选项)
 
-**[🌐 网站](https://nurettincoban.github.io/ai-prd-workflow/)** · **[快速开始](#快速开始)** · **[工作原理](#工作原理)** · **[为什么](#为什么选择这个工作流)** · **[实证](#实证)** · **[安装选项](#安装选项)**
+**[🌐 网站](https://nurettincoban.github.io/ai-prd-workflow/)** · **[看一次真实运行](#一次运行的产出)** · **[快速开始](#快速开始)** · **[工作原理](#工作原理)** · **[为什么](#为什么选择这个工作流)** · **[实证](#实证)** · **[安装选项](#安装选项)**
 
 [English](README.md) · 简体中文 · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
-<sub>自 <b>2025 年 3 月</b>起采用 RFC 驱动 —— 早于 Claude Code 和 Cursor 推出计划模式（plan mode），也早于 Kiro 和 Spec Kit 的出现。</sub>
+<sub>自 <a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>2025 年 3 月</b></a>起采用 RFC 驱动 —— 早于 Claude Code 和 Cursor 推出计划模式（plan mode），也早于 Kiro 和 Spec Kit 的出现。</sub>
 
 </div>
 
@@ -27,36 +27,50 @@
 
 ---
 
-AI 编程代理很擅长写代码，却不太擅长决定该做什么、记住昨天做过的决定，以及发现两份文档之间的矛盾。这个工作流负责的正是这一部分：它把一个想法（或一个已经存在的代码库）变成经过评审的 PRD（产品需求文档）、带优先级的功能清单、项目规则，以及按依赖顺序排列的小型 RFC，然后逐个实现并评审。
+AI 编程代理很擅长写代码，却不太擅长决定该做什么、记住昨天做过的决定，以及发现两份文档之间的矛盾。这个工作流负责的正是这一部分：它把一个想法（或一个已经存在的代码库）变成经过评审的产品规格（PRD）、带优先级的功能清单、项目规则，以及按依赖顺序排列的小型实现规格（RFC），然后逐个实现并评审。
 
-每一步都会写出一个 markdown 文件，供下一步读取，因此决策不会随着聊天会话结束而丢失；还有一个脚本会检查这些文件之间是否仍然一致。无需学习 CLI，无需引入框架，没有厂商锁定。
+每一步都会写出一个 markdown 文件，供下一步读取，因此决策不会随着聊天会话结束而丢失；还有一个脚本会检查这些文件之间是否仍然一致。无需学习 CLI，无需引入框架，没有厂商锁定：这些命令只是普通的提示词，以技能（skills）的形式安装到 Claude Code、Codex、Copilot、Cursor、Gemini CLI、OpenCode 和 Devin 中。
 
-<p align="center">
-  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status 审查 v2.0 示例：可追溯性检查失败，因为 F7 没有对应的 RFC 且缺少 RFCS.md；随后交叉阅读各文档，发现 20 处不一致，例如没有任何 RFC 实现界面，以及 HTTP 301 缓存导致点击统计失真">
-</p>
-<p align="center"><sub>对本仓库自带的 v2.0 示例真实运行 <code>/workflow-status</code> 的精简回放。<a href="examples/url-shortener/workflow-status-on-before.md">完整报告</a> · <a href="examples/url-shortener/README.md">对照的问题清单</a></sub></p>
+## 一次运行的产出
+
+我们拿一个看起来已经完成的小型短链接服务的规格，运行了这些命令。在任何代码出现之前，它就发现了这三件事：
+
+| 规格里写的 | 工作流做了什么 |
+|---|---|
+| "通过 HTTP 301 将短链接重定向到原始 URL" | `/verify-prd`：浏览器会缓存 301，所以重复点击永远不会被统计，已删除的链接也会继续重定向。修正后的规格改用 302 重定向，[RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) 会测试"绝不返回 301"。 |
+| 没有用户账户，而任何人都可以"删除短链接" | `/verify-prd`：任何人都能删除任何人的链接。当时没有人可以拍板，所以它把建议的修复写成一个标注为 **(assumption)**（假设）的开放问题，而不是一项决定。 |
+| RFC-002 声称覆盖功能 F5、F6 和 F11 | `/workflow-status`：它的验收标准只测试了 API，所以这些功能所要求的分析页面和图表，没有任何东西促使人去构建。每个 ID 都被引用了，所以脚本发现不了这个问题。 |
+
+我们人工列出的问题，**10 个中的 10 个**都被 `/verify-prd` 找到，而它从未看过这份清单。跨文档问题中，`/workflow-status` 找到了 **13 个中的 12 个**。共生成 **12 个 RFC** 和 **203 个计划测试**，每个 RFC 都先由第二个模型在没有任何背景的情况下通读一遍（冷读）。在 Claude Opus 5.5 上大约花了一小时的代理时间，全程无需人工输入。**[浏览完整的运行记录 →](examples/url-shortener/)**
 
 ## 快速开始
 
-**Claude Code**：安装插件。
+在 Claude Code 中，安装插件，重启 Claude Code，然后开始访谈：
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
+/prd-workflow:create-prd          # 然后运行 /prd-workflow:verify-prd
 ```
 
-**Codex、GitHub Copilot、Cursor、Gemini CLI、OpenCode 或 Devin**：把技能（skills）安装到你的项目中。
+<details>
+<summary><b>Codex、GitHub Copilot、Cursor、Gemini CLI、OpenCode、Devin 或任意聊天助手</b></summary>
+
+把技能（skills）安装到你的项目中：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- /path/to/your/project
+cd your-project
+curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-**任意聊天助手**（ChatGPT、Claude.ai 等）：从[命令表](#工作原理)中复制一个提示词，粘贴进去即可。
+在 Codex 中，用 `$create-prd` 代替 `/create-prd`。在聊天助手（ChatGPT、Claude.ai 等）中，从[命令表](#工作原理)中复制一个提示词，粘贴进去即可。
+
+</details>
 
 > [!IMPORTANT]
 > 安装后请重启你的 AI 工具。正在运行的会话看不到新安装的技能，第一个命令会报 `Unknown skill`——看起来像是安装失败，其实只是会话过期了。
 
-然后按顺序运行这些命令：
+然后按顺序运行这些命令（使用插件时，每个命令都带有插件名前缀：`/prd-workflow:verify-prd`）：
 
 ```
 /create-prd          # 访谈 → PRD.md（已有代码？改用 /document-existing）
@@ -69,17 +83,17 @@ curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/
 /review-rfc 001      # 在全新上下文中评审 → reviews/REVIEW-RFC-001.md
 ```
 
-不确定下一步做什么时，运行 `/workflow-status`；需求变更时，运行 `/manage-changes`。在 Codex 中，用 `$create-prd` 代替 `/create-prd`。使用 Claude Code 插件时，命令带有插件名前缀：`/prd-workflow:create-prd`。
+不确定下一步做什么时，运行 `/workflow-status`；需求变更时，运行 `/manage-changes`。先从前两个开始：访谈大约需要十分钟，再过几分钟，`/verify-prd` 就会告诉你这个工作流是否适合你。
 
-**先在示例上试试。** 仓库自带的 v2.0 示例看起来很完整，其实并不：
+**或者在示例上试试。** `before/` 文件夹看起来很完整，其实并不。先复制一份，让原件留作对照：
 
 ```bash
 git clone https://github.com/nurettincoban/ai-prd-workflow.git
-cd ai-prd-workflow
-./install.sh examples/url-shortener/before
+cp -r ai-prd-workflow/examples/url-shortener/before linksnip
+ai-prd-workflow/install.sh linksnip
 ```
 
-在你的 AI 工具中打开 `examples/url-shortener/before`，运行 `/workflow-status`，再把它的报告和[我们人工找到的问题](examples/url-shortener/README.md)对比一下。
+在你的 AI 工具中打开 `linksnip`，运行 `/workflow-status` 或 `/verify-prd`，再把结果和[我们人工找到的问题](examples/url-shortener/README.md)以及[我们的运行](examples/url-shortener/after/)产出的内容对比一下。
 
 ## 工作原理
 
@@ -143,11 +157,21 @@ flowchart TB
 
 **适合**：持续数周的项目，以及任何你用 AI 认真构建的东西——在这些场景里，范围蔓延和被遗忘的决策比代码质量更伤人。**不适合**：一行代码的修复。
 
-如果你了解规范驱动开发（spec-driven development，例如 GitHub Spec Kit、Amazon Kiro），这里是同样的理念：以 RFC 为工作单元，不需要引入任何 CLI 或框架。而且它比这两者都更早出现。
+如果你了解规范驱动开发（spec-driven development，例如 GitHub Spec Kit、Amazon Kiro），这里是同样的理念：以 RFC 为工作单元，不需要引入任何 CLI 或框架，还有一个脚本会把各文档相互核对。
 
 ## 实证
 
-每一步都从不同的角度审视项目，每一步都能发现其他步骤发现不了的问题。这是在用该工作流、基于一份真实的 PRD，从头到尾构建一个真实的 TypeScript 库时实际测得的：
+本节中凡是你能核实的内容，都可以在这里核实：
+
+- **[url-shortener 示例](examples/url-shortener/)**：v2.0 规格、我们人工在其中找到的问题，以及用当前命令对它完整运行的一次结果。在全新上下文中运行、从未看过我们清单的命令，找出了 10 个 PRD 问题中的全部 10 个（`/verify-prd`）和 13 个跨文档问题中的 12 个（`/workflow-status`），还发现了好几个我们漏掉的问题。由第二个模型进行的冷读（在本示例中是手动运行的）找出了 150 多处生成的 RFC 会让实现者不得不靠猜的地方；[报告](examples/url-shortener/cold-reads/)也在那里。这些都是单个模型的单次运行。
+- **[评测套件](evals/)**：在启用和不启用该工作流的两种情况下运行同样的检查，用的是你自己的账户，所以你可以亲自测量差异。它评分的是那 10 个 PRD 问题，以及 13 个跨文档问题中的 7 个，也就是正则表达式能够可靠识别的那些。
+
+<p align="center">
+  <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status 审查 v2.0 示例：可追溯性检查失败，因为 F7 没有对应的 RFC 且缺少 RFCS.md；随后交叉阅读各文档，发现 20 处不一致，例如没有任何 RFC 实现界面，以及 HTTP 301 缓存导致点击统计失真">
+</p>
+<p align="center"><sub>对 v2.0 示例真实运行 <code>/workflow-status</code> 的精简回放。<a href="examples/url-shortener/workflow-status-on-before.md">完整报告</a></sub></p>
+
+每一步都从不同的角度审视项目，每一步都能发现其他步骤发现不了的问题。我们在用该工作流从头到尾构建一个 TypeScript 库时看到了这一点。那个库没有公开，所以请把下表当作实地报告，而不是证明：
 
 | 步骤 | 发现了什么 | 为什么只有这一步能发现 |
 |---|---|---|
@@ -162,11 +186,6 @@ flowchart TB
 最惊人的一个结果：在任何代码出现之前，某个 RFC 的边界情况一节就预测到一个构建插件还不支持 TypeScript 7，并写明了回退版本。后来果然如此。类型检查一直是通过的，只有真正运行构建才暴露了这个问题。
 
 ID 也守住了。项目进行到一半 PRD 发生变化时，一个全新的代理重新运行了 `/extract-features`，把新功能追加到末尾而不是重新编号——没有人告诉它这样做，原因是各个 RFC 都按编号引用功能。
-
-那个库不在本仓库中，所以这里提供你可以亲自验证的证据：
-
-- **[url-shortener 示例](examples/url-shortener/)**：在全新上下文中运行、从未看过我们问题清单的命令，找出了 13 个跨文档问题中的 12 个（`/workflow-status`）和 10 个 PRD 问题中的全部 10 个（`/verify-prd`），还发现了好几个我们漏掉的问题。
-- **[评测套件](evals/)**：在启用和不启用该工作流的两种情况下运行同样的检查，用测量结果说明差异，而不是空口断言。
 
 ## 安装选项
 
@@ -216,4 +235,4 @@ MIT —— 参见 [LICENSE](LICENSE)。
 
 ---
 
-<p align="center">如果这个工作流帮你节省了时间，点个 ⭐ 能让更多人发现它。</p>
+<p align="center">如果这个工作流让你免于构建错误的东西，点个 ⭐ 能让更多人发现它。</p>

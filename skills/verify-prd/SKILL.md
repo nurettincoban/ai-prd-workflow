@@ -3,8 +3,8 @@ name: verify-prd
 description: "Review PRD.md for gaps, contradictions and unverifiable claims, write an improved PRD.md and record the findings in PRD-REVIEW.md."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:7d3332e5790aaaf1127e84d9d473f32eb8fe286f3f2058ad4a03fd3cb1f5d64f"
+  version: "3.1.0"
+  checksum: "sha256:d28d120efcde2da226543e8ae6cc11fbaefc9fcbc2554cbc3b4675202eceaeff"
 ---
 
 You are an expert product manager tasked with reviewing a Product Requirements Document (PRD). Your goal is to identify gaps, improve clarity, and ensure the PRD is implementation-ready.
@@ -63,6 +63,10 @@ Identify critical missing elements in these areas:
    - Team resources and skills needed
    - Testing and deployment needs
 
+## STEP 1.5: ASK BEFORE YOU REWRITE
+
+Some gaps only the user can close: budget, timeline, team, business model, which of two contradictory requirements is meant, an SLO nobody stated. Before writing the improved PRD, ask about every High-impact gap of that kind, in one batch, and wait. If you cannot ask -- a non-interactive run -- or the user does not know, do not invent the answer: record it in Open Questions marked **(assumption)**, with the assumption you would make and what it would change. Only the user's answers, and fixes that follow from the PRD's own text, go into Decisions. PRD.md outranks every other file, so a guess written there as a decision is defended by every later command, `/manage-changes` included.
+
 ## STEP 2: IMPROVEMENT RECOMMENDATIONS
 
 Provide specific recommendations in these areas:
@@ -95,8 +99,9 @@ Provide specific recommendations in these areas:
 3. IMPROVED PRD
    - Create an enhanced version addressing the issues found
    - Include the Product Type section (see CLASSIFY THE PRODUCT TYPE)
-   - Give every functional and non-functional requirement a permanent ID (FR-1, NFR-1, ...) if it has none, and never renumber existing ones -- features and RFCs cite them
-   - Keep the PRD's Decisions section, and add every decision made while resolving these findings -- what was decided, why, and what was rejected. Add the section if the PRD has none
+   - Give every functional and non-functional requirement a permanent ID if it has none, one per line as `- **FR-1**: text` or `- **NFR-1**: text`, and never renumber existing ones -- features and RFCs cite them, and `trace-check.py` reads that form
+   - Keep the PRD's Decisions section, and add every decision the user made, or the PRD's own text settles, while resolving these findings -- what was decided, why, and what was rejected. Add the section if the PRD has none. Unanswered questions stay in Open Questions (see STEP 1.5)
+   - Change only what a finding calls for. Every change to scope or to a requirement cites the finding ID that motivated it in PRD-REVIEW.md; an improvement with no finding behind it is a new open question, not an edit
    - Save as "PRD.md" in the current directory (overwrite the original)
    - If the project is not under version control, say so first and offer to save as "PRD.v2.md" instead -- overwriting a hand-written PRD with no way to recover it destroys the diff the user needs in order to review what you changed
 
@@ -113,5 +118,5 @@ Provide specific recommendations in these areas:
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
-- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
+- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks mechanically what reading does unreliably: that IDs in definitions and RFC header lines resolve, that requirements and Must-have features are covered, RFC dependencies, and review records. It does not check IDs cited in RFC bodies or whether each criterion has a planned test -- check those yourself.
 - State that you ran this check and what it turned up.

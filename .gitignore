@@ -6,5 +6,9 @@
 **/.claude/skills/
 **/.agents/skills/
 
+# Written by running the unit tests (python3 -m unittest discover scripts)
+__pycache__/
+*.pyc
+
 # claude plugin eval results
 evals/results/

@@ -84,6 +84,29 @@ class TraceCheckTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("nothing to check", out)
 
+    def test_requirements_in_tables_bullets_and_headings_all_count(self):
+        files = dict(CLEAN)
+        files["PRD.md"] = files["PRD.md"].replace("- **FR-2**", "### FR-2:")
+        files["PRD.md"] += "\n| ID | Requirement |\n|---|---|\n| FR-9 | Table-defined requirement |\n"
+        files["FEATURES.md"] += "| F9 | From the table | Could | FR-9 | Low | x |\n"
+        code, out = run(project(files))
+        self.assertNotIn("does not define", out)
+        self.assertNotIn("FR-2 is not covered", out)
+
+    def test_a_path_that_is_not_a_directory_is_a_usage_error(self):
+        # A typo must not pass a CI gate as "nothing to check".
+        missing = project({}) / "does-not-exist"
+        result = subprocess.run([sys.executable, str(SCRIPT), str(missing)], capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("is not a directory", result.stderr)
+
+    def test_help_and_unknown_options(self):
+        result = subprocess.run([sys.executable, str(SCRIPT), "--help"], capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("Usage:", result.stdout)
+        result = subprocess.run([sys.executable, str(SCRIPT), "--strict"], capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 2)
+
     def test_every_seeded_defect_is_reported(self):
         files = dict(CLEAN)
         files["PRD.md"] += "- **FR-3**: List links\n- **FR-3**: Duplicate definition\n"

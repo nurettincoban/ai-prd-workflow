@@ -8,7 +8,8 @@ disk. Whether a reference points at the RIGHT thing is still a judgement
 call for the reviewer; this only guarantees it points at SOMETHING.
 
 Usage:  python3 trace-check.py [project-dir]
-Exit:   0 = no failures (warnings allowed), 1 = at least one failure.
+Exit:   0 = no failures (warnings allowed), 1 = at least one failure,
+        2 = usage error (a path that is not a directory, an unknown option).
 Needs:  Python 3.8+, standard library only.
 """
 import re
@@ -78,10 +79,13 @@ def priority_of(text):
 def id_definitions(text, pattern):
     """(defined IDs, IDs defined more than once) for IDs matching `pattern`.
 
-    Bullet definitions (`- **SEC-3**: ...`) win when a document has any.
-    Otherwise each table's first column defines IDs. An ID repeated in a
-    second table -- an index, a coverage table -- is a reference, not a
-    second definition; repeated within one table, or among bullets, it is.
+    An ID is defined by a list item (`- **SEC-3**: ...`, `1. **FR-1** ...`),
+    a heading (`### FR-1: Title`) or the first column of a table. Documents
+    mix these -- functional requirements in a table, non-functional ones as
+    bullets -- so all three count. An ID repeated in a second table (an
+    index, a coverage table) or in a table and a list is a reference, not a
+    second definition; repeated within one table, or among list items and
+    headings, it is.
     """
     bullets, tables = {}, {}
     table_no, in_table = -1, False
@@ -95,12 +99,12 @@ def id_definitions(text, pattern):
                 per_table[table_no] = per_table.get(table_no, 0) + 1
             continue
         in_table = False
-        m = re.match(rf"^\s*[-*]\s+\**({pattern})\**\b", line)
+        m = re.match(rf"^\s*(?:[-*]|\d+[.)]|#{{1,6}})\s+\**({pattern})\**\b", line)
         if m:
             bullets[m.group(1)] = bullets.get(m.group(1), 0) + 1
-    if bullets:
-        return set(bullets), {i for i, n in bullets.items() if n > 1}
-    return set(tables), {i for i, per in tables.items() if any(n > 1 for n in per.values())}
+    duplicated = {i for i, n in bullets.items() if n > 1}
+    duplicated |= {i for i, per in tables.items() if any(n > 1 for n in per.values())}
+    return set(bullets) | set(tables), duplicated
 
 
 def check_prd(root):
@@ -309,7 +313,19 @@ def check_index(root, rfcs):
 
 
 def main():
-    root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
+    args = sys.argv[1:]
+    if args and args[0] in ("-h", "--help"):
+        print(__doc__.strip())
+        return 0
+    if len(args) > 1 or (args and args[0].startswith("-")):
+        print(f"trace-check: usage: trace-check.py [project-dir]  (got: {' '.join(args)})", file=sys.stderr)
+        return 2
+    root = Path(args[0] if args else ".").resolve()
+    # A mistyped path must not read as "nothing to check": a hook or CI job
+    # gating on the exit code would pass without checking anything.
+    if not root.is_dir():
+        print(f"trace-check: error: '{root}' is not a directory", file=sys.stderr)
+        return 2
     if not (root / "PRD.md").exists():
         print(f"trace-check: no PRD.md in {root} -- nothing to check yet")
         return 0

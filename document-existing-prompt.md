@@ -32,7 +32,7 @@ Record the result in PRD.md as a **Product Type** section: the type, and each sk
 
 ## STEP 3: WRITE THE ARTIFACTS
 
-1. **PRD.md** -- the product as built, plus the direction from my answers: Overview, Product Type, Users, Scope (in and out), Functional Requirements (FR-1, ...) and Non-Functional Requirements (NFR-1, ...) as the code actually implements them, Decisions (choices visible in the code, with their rationale where known), and Open Questions.
+1. **PRD.md** -- the product as built, plus the direction from my answers: Overview, Product Type, Users, Scope (in and out), Functional Requirements and Non-Functional Requirements as the code actually implements them, one per line as `- **FR-1**: text` and `- **NFR-1**: text`, Decisions (choices visible in the code, with their rationale where known), and Open Questions.
 2. **FEATURES.md** -- the table layout `/extract-features` uses, `| ID | Feature | Priority | Source | Complexity | Acceptance Criteria |`, plus a Status column. Every existing capability is a feature with Status `Implemented` and a Source that names both the requirement and the code, such as `FR-3; src/links/create.ts`. Work from my answers gets Status `Planned` and a MoSCoW priority. `/generate-rfcs` plans only the Planned features.
 3. **RULES.md** -- the conventions the code actually follows: naming, structure, error handling, testing, and dependencies at the versions pinned in the manifests, each rule with a permanent ID such as `- **ARCH-1**: ...`. Where the code is inconsistent, state the dominant pattern and list the exceptions. Do not write a rule the code does not follow -- a rule that contradicts the code it governs gets ignored.
 
@@ -43,9 +43,9 @@ Cite a file path for every claim about existing behavior, and mark anything infe
 - Recount every summary table from the actual content. Never carry a count forward from earlier in your own output.
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
-- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks IDs, coverage and dependencies mechanically, which reading cannot do reliably.
+- If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks mechanically what reading does unreliably: that IDs in definitions and RFC header lines resolve, that requirements and Must-have features are covered, RFC dependencies, and review records. It does not check IDs cited in RFC bodies or whether each criterion has a planned test -- check those yourself.
 - State that you ran this check and what it turned up.
 
 ## NEXT STEP
 
-Recommend `/verify-prd` to review the result with fresh eyes, then `/generate-rfcs` for the Planned features -- or `/manage-changes` when the next piece of work changes existing behavior.
+Recommend `/verify-prd` to review the result with fresh eyes, then `/extract-features` to bring any requirement it added into FEATURES.md (existing IDs and Status values are kept), then `/generate-rfcs` for the Planned features -- or `/manage-changes` when the next piece of work changes existing behavior.

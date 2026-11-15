@@ -9,11 +9,13 @@ show_help() {
     echo ""
     echo "Options:"
     echo "  --list, -l    List all available prompts with descriptions"
+    echo "  --print, -p   Print the prompt instead of copying it (SSH, containers, piping)"
     echo "  --help, -h    Show this help message"
     echo ""
     echo "Examples:"
     echo "  ./copy-prompt.sh interactive-prd-creation-prompt.md"
     echo "  ./copy-prompt.sh --list"
+    echo "  ./copy-prompt.sh --print code-review-prompt.md | pbcopy"
 }
 
 show_prompts() {
@@ -46,6 +48,12 @@ if [[ "$1" == "--list" || "$1" == "-l" ]]; then
     exit 0
 fi
 
+PRINT=0
+if [[ "$1" == "--print" || "$1" == "-p" ]]; then
+    PRINT=1
+    shift
+fi
+
 # Check if a prompt file was specified
 if [ $# -eq 0 ]; then
     echo "Usage: ./copy-prompt.sh <prompt-file>"
@@ -75,6 +83,12 @@ copy_windows() {
     fi
 }
 
+# Piped or asked to print: write the prompt to stdout, so headless machines can use it too.
+if [[ "$PRINT" == 1 || ! -t 1 ]]; then
+    cat "$1"
+    exit 0
+fi
+
 # Copy to clipboard based on OS
 if [[ "$OSTYPE" == "darwin"* ]]; then
     pbcopy < "$1"
@@ -87,7 +101,7 @@ elif command -v xclip > /dev/null; then
 elif command -v xsel > /dev/null; then
     xsel --clipboard < "$1"
 else
-    echo "Error: no clipboard tool found (pbcopy, clip.exe, wl-copy, xclip or xsel). Copy the file contents manually."
+    echo "Error: no clipboard tool found (pbcopy, clip.exe, wl-copy, xclip or xsel). Run with --print to print it instead."
     exit 1
 fi
 echo "Copied '$1' to clipboard. Paste it into your AI assistant."

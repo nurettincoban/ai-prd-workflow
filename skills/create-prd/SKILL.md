@@ -3,8 +3,8 @@ name: create-prd
 description: "Interview the user about a product idea and write PRD.md. Use at the start of a new project, before features, rules or RFCs exist."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:bdc449f0224f1840d8d8360fc867b59597f2d87782d176567b915e519adf07ab"
+  version: "3.1.0"
+  checksum: "sha256:15fad08a1a406234995327d1ced8a9013c1bcd4985cf4ab4e26cb4645267291f"
 ---
 
 You are an experienced Product Manager with expertise in creating detailed Product Requirements Documents (PRDs).
@@ -38,13 +38,13 @@ Once you feel you have gathered sufficient details, create a structured PRD that
 - **Goals and Objectives** - Clear, measurable goals the product aims to achieve
 - **Scope** - What's included and explicitly what's excluded from the initial release
 - **User Personas or Target Audience** - Detailed descriptions of the intended users
-- **Functional Requirements** - Specific features and capabilities, organized by priority, each with a permanent ID: FR-1, FR-2, ...
-- **Non-Functional Requirements** - Performance, security, scalability, and other quality attributes, each with a permanent ID: NFR-1, NFR-2, ... Features and RFCs cite these IDs, so later edits add new numbers and never renumber
+- **Functional Requirements** - Specific features and capabilities, organized by priority, one per line as `- **FR-1**: requirement text`
+- **Non-Functional Requirements** - Performance, security, scalability, and other quality attributes, written the same way: `- **NFR-1**: requirement text`. Features and RFCs cite these IDs and `trace-check.py` reads that exact form, so later edits add new numbers and never renumber
 - **User Journeys** - Key workflows and interactions from the user's perspective
 - **Success Metrics** - How we'll measure if the product is successful
 - **Timeline** - High-level implementation schedule with key milestones
 - **Decisions** - Choices made during this interview, each with its reason and the alternatives rejected. `/manage-changes` checks future changes against this list, so a decision recorded here cannot be reversed by accident
-- **Open Questions/Assumptions** - Areas that need further clarification or investigation
+- **Open Questions/Assumptions** - Everything you asked about and did not get an answer to, and every assumption you made, each labelled **(assumption)**. Never write a guess into Timeline, Success Metrics or Decisions as if I had said it -- every later command treats PRD.md as the highest authority, so a guess recorded there becomes a requirement
 
 ## Guidelines for the Questioning Process
 
@@ -53,9 +53,9 @@ Once you feel you have gathered sufficient details, create a structured PRD that
 - Start with broad, foundational questions before diving into specifics
 - Group related questions together in a logical sequence
 - Adapt your questions based on my previous answers
-- Only ask follow-up questions if absolutely necessary for critical information
+- Ask follow-up questions only where the answer changes what gets built; leave nice-to-know details as open questions
 - Prioritize questions about user needs and core functionality early
-- Do NOT make assumptions -- always ask for clarification on important details
+- Do not fill an important gap yourself. Ask; if I do not know or skip it, record it as an open question
 
 Cover these areas in your questioning: product vision and purpose, user needs and behaviors, feature requirements, business goals, and implementation considerations.
 

@@ -6,8 +6,8 @@ context: fork
 agent: general-purpose
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:d09031cde2a96a96151860bd2c4f067c7c6b817a2f82e7da193cfd25f5e6a31d"
+  version: "3.1.0"
+  checksum: "sha256:1dd0e77d205b6671ff362d694e4046619cb5224559756ed1d317bb7ed8e5550c"
 ---
 
 Target RFC ID: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the RFC ID from my message instead. Substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
@@ -20,16 +20,16 @@ Review the implementation of the specified RFC and provide a thorough, actionabl
 
 ## Inputs
 - PRD.md for the Product Type section
-- RFCS.md for the RFC's declared predecessors and current status
+- RFCS.md for the RFC's declared predecessors, current status and `## Open conflicts`; a conflict that touches this RFC tells you which artifact the code was meant to follow
 - The RFC being reviewed: `RFCs/RFC-[ID]-*.md`, including its `## Implementation Notes`
-- The implementation code
+- The implementation code: start from the **Files changed** list and commit or branch in the RFC's Implementation Notes, and say so if that list is missing. Read beyond it wherever the change reaches
 - RULES.md for project standards
 - FEATURES.md for requirement traceability
 - TEST-STRATEGY.md for the tests planned for this RFC -- a planned test that does not exist is a finding
 
 ## WHEN ARTIFACTS CONFLICT
 
-Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Where this prompt's generic guidance conflicts with RULES.md, RULES.md wins -- it was written for this project and this prompt was not. Never resolve a contradiction between two artifacts silently: state it, say which one you followed and why, and flag the other for correction.
+Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Where this prompt's generic guidance conflicts with RULES.md, RULES.md wins -- it was written for this project and this prompt was not. Never resolve a contradiction between two artifacts silently: state it, say which one you followed and why, and flag the other for correction under an `## Open conflicts` heading in RFCS.md (in the file you write, if RFCS.md does not exist yet). `/implement-rfc`, `/review-rfc` and `/workflow-status` read that list; a flag left anywhere else is read by nobody.
 
 ## STEP 0: RUN IT
 
@@ -88,4 +88,4 @@ Then provide:
 - **Blocking Issues**: Issues that must be fixed before merge (if any)
 - **Improvement Suggestions**: Non-blocking recommendations for better code quality
 
-Save the complete review to `reviews/REVIEW-RFC-[ID].md`. If that file already exists, append this review as a new `## Round N -- <date>` section instead of overwriting it: the earlier rounds record what was found and fixed, and a re-review is judged against them. Then set the RFC's Status in RFCS.md to Reviewed, or to Changes requested if any blocking issue remains. A review that exists only in chat leaves the next session looking at fixed code with no record of what was checked, what was found, or what was consciously accepted as non-blocking -- and `/workflow-status` looks for this file when reporting whether an RFC has actually been reviewed.
+Save the complete review to `reviews/REVIEW-RFC-[ID].md`. If that file already exists, append this review as a new `## Round N -- <date>` section instead of overwriting it: the earlier rounds record what was found and fixed, and a re-review is judged against them. Then set the RFC's Status in RFCS.md to Reviewed, or to Changes requested if any blocking issue remains. If you set Reviewed and FEATURES.md has a Status column, set each of this RFC's features to Implemented there once every RFC that lists that feature is Reviewed; a built feature left as Planned gets planned again by the next `/generate-rfcs`. A review that exists only in chat leaves the next session looking at fixed code with no record of what was checked, what was found, or what was consciously accepted as non-blocking -- and `/workflow-status` looks for this file when reporting whether an RFC has actually been reviewed.
