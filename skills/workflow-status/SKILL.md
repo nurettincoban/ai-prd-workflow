@@ -3,8 +3,8 @@ name: workflow-status
 description: "Report which workflow artifacts exist, which RFCs are implemented and reviewed, what has drifted, and the next step."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:9088401f342f4a6e031009e15fff062c2e6385de834fc7a63c1d33b2fc602094"
+  version: "3.1.0"
+  checksum: "sha256:eb68a556e0565955697021c68fe29bac4aefa0f51c0259eea0a097ea62ab5d94"
 ---
 
 You are guiding a project through an RFC-driven development workflow with these stages:
@@ -20,6 +20,7 @@ You are guiding a project through an RFC-driven development workflow with these 
 | 6 | Testing strategy | TEST-STRATEGY.md | `/test-strategy` (testing-strategy-prompt.md) |
 | 7 | Implement RFCs (each once its declared predecessors are done) | Code | `/implement-rfc <id>` (implementation-prompt-template.md) |
 | 8 | Review each implementation | `reviews/REVIEW-RFC-<id>.md` | `/review-rfc <id>` (code-review-prompt.md) |
+| G | Quality gates: `prd` after stage 2, `plan` after stage 6, `rfc <id>` after each stage 8 | GAUNTLET.md | `/gauntlet <gate>` (gauntlet-prompt.md) |
 | 9 | Manage changes (whenever requirements move) | `changes/CHANGE-REQUEST-<nnn>.md` | `/manage-changes` (prd-change-management-prompt.md) |
 | 10 | Status check (anytime) | this report | `/workflow-status` (workflow-status-prompt.md) |
 
@@ -27,11 +28,12 @@ Stage 6 comes before stage 7 deliberately: a test plan written after the code is
 
 Inspect the current project to determine workflow progress. If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project first (`python3 <path>/trace-check.py .`): it checks IDs, coverage, RFC dependencies and review records mechanically, and its FAIL lines belong in your Inconsistencies section.
 
-1. Which artifacts exist: PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCS.md, RFCs/ folder, TEST-STRATEGY.md, reviews/, changes/?
+1. Which artifacts exist: PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCS.md, RFCs/ folder, TEST-STRATEGY.md, reviews/, changes/, GAUNTLET.md?
 2. Which RFCs are implemented? Start from the Status column in RFCS.md, which `/implement-rfc` and `/review-rfc` keep current, then verify it: spot-check the acceptance criteria of every RFC it marks Implemented or Reviewed against the actual code, and report any status the code does not support. Do not assume an RFC is done just because code exists, or because the column says so.
 3. Which RFCs have been reviewed? Check `reviews/` for a report per implemented RFC — an implemented RFC with no review is the most common real-world gap, and reviews are exactly what gets skipped under deadline.
-4. Are there open change requests in `changes/` whose decisions are still pending?
-5. Any signs of drift: code that contradicts the PRD or RULES.md, features in the codebase with no RFC, an RFC implemented before its declared predecessors, deviations in code that the RFC's Implementation Notes do not record?
+4. Which gates has GAUNTLET.md recorded, with what verdict? A stage built on a BLOCKED gate, an OVERRIDDEN gate, or a gate never run is a finding -- and so is a gate that PASSED before the files it judged were changed.
+5. Are there open change requests in `changes/` whose decisions are still pending?
+6. Any signs of drift: code that contradicts the PRD or RULES.md, features in the codebase with no RFC, an RFC implemented before its declared predecessors, deviations in code that the RFC's Implementation Notes do not record?
 
 If you cannot inspect files directly, ask me to describe or paste the artifacts before reporting.
 
@@ -41,9 +43,9 @@ Then report:
 2. **Per-RFC progress** — implementation and review status side by side, one row per RFC:
 
    ```
-   RFC-001  implemented ✅   reviewed ❌
-   RFC-002  implemented ✅   reviewed ❌
-   RFC-003  implemented ✅   reviewed ✅
+   RFC-001  implemented ✅   reviewed ❌   gauntlet —
+   RFC-002  implemented ✅   reviewed ✅   gauntlet BLOCKED
+   RFC-003  implemented ✅   reviewed ✅   gauntlet PASS
    ```
 
    A single "reviews done" row hides which RFCs were actually reviewed. Report them individually.

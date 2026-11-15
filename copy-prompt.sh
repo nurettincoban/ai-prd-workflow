@@ -27,6 +27,7 @@ show_prompts() {
     echo "  prd-to-rfcs-prompt.md                      Break PRD into implementation RFCs"
     echo "  implementation-prompt-template.md          Template for implementing RFCs"
     echo "  code-review-prompt.md                      Review implementation against RFC"
+    echo "  gauntlet-prompt.md                         Quality gate: an adversarial critic tries to break it"
     echo "  testing-strategy-prompt.md                 Generate test plan from features/RFCs"
     echo "  prd-change-management-prompt.md            Manage PRD changes mid-development"
     echo "  workflow-status-prompt.md                  Show workflow progress and next step"

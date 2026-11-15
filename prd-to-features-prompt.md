@@ -4,6 +4,8 @@ Create a comprehensive FEATURES.md file that clearly outlines all features, orga
 
 If PRD-REVIEW.md exists, read it too. Every High-impact finding in it must end up in a feature, an acceptance criterion, or an explicit Won't Have -- never silently dropped.
 
+If GAUNTLET.md exists and the latest `prd` round in it is BLOCKED, stop: list its open Blockers and tell me to fix them and rerun `/gauntlet prd`. Continue only if I explicitly say so. Every feature extracted from a PRD with a known Blocker carries that Blocker into the RFCs and the code. If there is no `prd` round, continue, and say that the PRD has not been through the gauntlet.
+
 If any critical information is missing or unclear, ask specific questions before proceeding.
 
 Extract and organize the features by:

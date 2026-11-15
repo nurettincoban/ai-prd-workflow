@@ -32,7 +32,7 @@ New prompt files should follow these conventions:
 
 ## Source of Truth & Generated Files
 
-The prompt `.md` files at the repo root are the single source of truth — they are also what copy-paste users read. `skills/` is **generated** from them by `./install.sh --build` and committed, because the Claude Code plugin, `install.sh` and the skills CLI all ship it as is. Never edit `skills/` by hand. (`.claude-plugin/` manifests are hand-maintained.)
+The prompt `.md` files at the repo root are the single source of truth — they are also what copy-paste users read. `skills/` is **generated** from them by `./install.sh --build` and committed, because the Claude Code plugin, `install.sh` and the skills CLI all ship it as is. Never edit `skills/` by hand. (`.claude-plugin/` manifests and `agents/`, the Claude Code subagents the plugin ships and `install.sh --claude` copies to `.claude/agents/`, are hand-maintained.)
 
 After adding or editing a prompt:
 
@@ -42,6 +42,8 @@ After adding or editing a prompt:
 4. Commit the regenerated files together with your prompt change — CI fails if `skills/` drifts from the source prompts
 
 `site/` is the landing page at https://nurettincoban.github.io/ai-prd-workflow/, hand-written and deployed by `.github/workflows/pages.yml` on every push to `main` that touches it. It restates the README in shorter form, so when the README's commands, install steps or evidence change, change `site/index.html` too. Its images are copied from `.github/` at deploy time; do not add copies to `site/`.
+
+`agents/gauntlet-critic.md` pins its model (`claude-fable-5-2`). The point of the critic is that it is not the model that wrote the artifacts, so when the default authoring model changes, check the critic is still a different one.
 
 Releasing: bump `VERSION` in `install.sh` and `version` in `.claude-plugin/plugin.json`, add the CHANGELOG entry, run `./install.sh --build` (every skill carries the version), and tag `vX.Y.Z`. `check-prompts.py` fails if the three disagree.
 
@@ -75,14 +77,15 @@ Every one of those has shipped as a real bug: a review record no command produce
 | `/create-prd` | interactive-prd-creation-prompt.md | code | PRD.md |
 | `/document-existing` | document-existing-prompt.md | code | PRD.md, FEATURES.md, RULES.md |
 | `/verify-prd` | prd-comprehensive-verification-prompt.md | PRD.md, code | PRD.md, PRD-REVIEW.md |
-| `/extract-features` | prd-to-features-prompt.md | PRD.md, PRD-REVIEW.md | FEATURES.md |
+| `/extract-features` | prd-to-features-prompt.md | PRD.md, PRD-REVIEW.md, GAUNTLET.md | FEATURES.md |
 | `/generate-rules` | prd-to-rules-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, code | RULES.md |
 | `/generate-rfcs` | prd-to-rfcs-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md | RFCs/, RFCS.md |
 | `/test-strategy` | testing-strategy-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, code | TEST-STRATEGY.md |
-| `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/ | code, RFCs/, RFCS.md |
+| `/implement-rfc` | implementation-prompt-template.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, GAUNTLET.md | code, RFCs/, RFCS.md |
 | `/review-rfc` | code-review-prompt.md | PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, code | reviews/, RFCS.md |
+| `/gauntlet` | gauntlet-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, GAUNTLET.md, code | GAUNTLET.md |
 | `/manage-changes` | prd-change-management-prompt.md | PRD.md, PRD-REVIEW.md, RULES.md, changes/, code | changes/, PRD.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md |
-| `/workflow-status` | workflow-status-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, changes/, code | — |
+| `/workflow-status` | workflow-status-prompt.md | PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCs/, RFCS.md, TEST-STRATEGY.md, reviews/, changes/, GAUNTLET.md, code | — |
 <!-- contracts:end -->
 
 ## README Translations

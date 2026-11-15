@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.1.0] - 2026-11-15
+
+**The gauntlet.** Each artifact now has to survive a critic before the next stage builds on it. The workflow already put a fresh reader in front of RFCs and code; the gauntlet makes that a gate with a verdict and a record, at the three points where a mistake gets most expensive to undo.
+
+### Added
+- `/gauntlet <gate>` runs a quality gate: `prd` after `/verify-prd`, `plan` after `/generate-rfcs` and `/test-strategy`, and `rfc <id>` after each `/review-rfc`. It runs `trace-check.py` first (any FAIL blocks), then hands the files to a critic in a clean context with one question per gate and a fixed brief: every finding needs a severity, a quote and the failure it causes, and an invented Blocker counts as harm. A Blocker means BLOCKED. Fixes go through the command that owns the file, and a fresh critic runs the next round. After three BLOCKED rounds it stops and asks the user, because a document that keeps failing is usually missing a decision
+- `GAUNTLET.md`, an append-only ledger of every gate round: verdict, which critic ran on which model, a 0-10 score, and each finding with its resolution (Fixed, Disputed with a quote, or Open). Overrides are recorded with their reason
+- `agents/gauntlet-critic.md`, a read-only Claude Code subagent pinned to Fable 5.2 (`claude-fable-5-2`), shipped by the plugin and installed to `.claude/agents/` by `install.sh --claude`. The critic is deliberately a different model from the one that usually writes the artifacts, so it does not share the author's blind spots. Other tools use a clean-context subagent, or a new session on another model; the orchestrating model never plays the critic itself
+- `install.sh` installs agents with the same rules as skills: an edited agent is kept, `--force` replaces it after a backup, and `--ref` to a release before 3.1.0 skips it
+
+### Changed
+- The gates bind. `/extract-features` stops on a BLOCKED `prd` gate and `/implement-rfc` on a BLOCKED `plan` gate, until the user explicitly overrides; with no gate run they continue and say so, so existing projects keep working. `/implement-rfc` treats open Blockers from an `rfc <id>` round like a review's blocking issues
+- `/verify-prd` and `/review-rfc` end by recommending the matching gate
+- `/workflow-status` reports each gate's verdict, per RFC as well, and flags stages built on a BLOCKED, OVERRIDDEN or never-run gate, or on a gate that passed before its files changed
+- The url-shortener example predates the gauntlet; it has no `GAUNTLET.md`
+
 ## [3.0.0] - 2026-10-01
 
 The commands now ship as **Agent Skills** — one `SKILL.md` format for Claude Code, Codex, GitHub Copilot, Cursor, Gemini CLI, OpenCode and Devin — and the hand-offs between them are checked by machine instead of by the model's self-review.

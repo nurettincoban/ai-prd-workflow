@@ -75,3 +75,5 @@ Then provide:
 - **Improvement Suggestions**: Non-blocking recommendations for better code quality
 
 Save the complete review to `reviews/REVIEW-RFC-[ID].md`. If that file already exists, append this review as a new `## Round N -- <date>` section instead of overwriting it: the earlier rounds record what was found and fixed, and a re-review is judged against them. Then set the RFC's Status in RFCS.md to Reviewed, or to Changes requested if any blocking issue remains. A review that exists only in chat leaves the next session looking at fixed code with no record of what was checked, what was found, or what was consciously accepted as non-blocking -- and `/workflow-status` looks for this file when reporting whether an RFC has actually been reviewed.
+
+Finally, recommend `/gauntlet rfc [ID]`: a critic on a different model, attacking what this review passed.

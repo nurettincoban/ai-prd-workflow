@@ -98,6 +98,7 @@ Provide specific recommendations in these areas:
    - Write deliverables 1, 2 and 4 to "PRD-REVIEW.md" alongside the improved PRD: the gap list, the recommendations, the scores, and why each change was made
    - Findings that live only in this conversation are gone the moment it ends. The next reader then sees a decision in PRD.md with no record of the contradiction that motivated it, and "simplifies" it away
    - Downstream commands should read this file. Every High-impact finding must stay traceable into FEATURES.md and the RFCs
+   - Then recommend `/gauntlet prd`. This review was done by the model that just rewrote the PRD; the gate puts it in front of a critic that did not
 
 ## SELF-CHECK BEFORE FINISHING
 

@@ -3,8 +3,8 @@ name: verify-prd
 description: "Review PRD.md for gaps, contradictions and unverifiable claims, write an improved PRD.md and record the findings in PRD-REVIEW.md."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:7d3332e5790aaaf1127e84d9d473f32eb8fe286f3f2058ad4a03fd3cb1f5d64f"
+  version: "3.1.0"
+  checksum: "sha256:8020983ba6e7a3769b2b96e73a0fdb68936fd68d9e49f2127470b8c524cb38d4"
 ---
 
 You are an expert product manager tasked with reviewing a Product Requirements Document (PRD). Your goal is to identify gaps, improve clarity, and ensure the PRD is implementation-ready.
@@ -107,6 +107,7 @@ Provide specific recommendations in these areas:
    - Write deliverables 1, 2 and 4 to "PRD-REVIEW.md" alongside the improved PRD: the gap list, the recommendations, the scores, and why each change was made
    - Findings that live only in this conversation are gone the moment it ends. The next reader then sees a decision in PRD.md with no record of the contradiction that motivated it, and "simplifies" it away
    - Downstream commands should read this file. Every High-impact finding must stay traceable into FEATURES.md and the RFCs
+   - Then recommend `/gauntlet prd`. This review was done by the model that just rewrote the PRD; the gate puts it in front of a critic that did not
 
 ## SELF-CHECK BEFORE FINISHING
 

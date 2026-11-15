@@ -3,8 +3,8 @@ name: extract-features
 description: "Turn PRD.md into FEATURES.md: permanent feature IDs, MoSCoW priorities, acceptance criteria and the PRD requirement each feature comes from."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:6796876cd34d0837dcb2d38427e99ab0e1a08dbd550032d767d28585c51ff198"
+  version: "3.1.0"
+  checksum: "sha256:c2a6b1d39f61226f0fa72b2c625e6d5690f1c0bba9d1f67db800b6c165d54a8e"
 ---
 
 You are an expert product manager and technical lead tasked with extracting and organizing features from the Product Requirements Document (PRD.md, or the PRD provided in the conversation).
@@ -12,6 +12,8 @@ You are an expert product manager and technical lead tasked with extracting and 
 Create a comprehensive FEATURES.md file that clearly outlines all features, organized by priority and category. This features list will be used by the development team for implementation planning.
 
 If PRD-REVIEW.md exists, read it too. Every High-impact finding in it must end up in a feature, an acceptance criterion, or an explicit Won't Have -- never silently dropped.
+
+If GAUNTLET.md exists and the latest `prd` round in it is BLOCKED, stop: list its open Blockers and tell me to fix them and rerun `/gauntlet prd`. Continue only if I explicitly say so. Every feature extracted from a PRD with a known Blocker carries that Blocker into the RFCs and the code. If there is no `prd` round, continue, and say that the PRD has not been through the gauntlet.
 
 If any critical information is missing or unclear, ask specific questions before proceeding.
 

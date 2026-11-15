@@ -8,13 +8,15 @@
 
 **Fikir veya mevcut kod → doğrulanmış PRD → özellikler → kurallar → sıralı RFC'ler → incelenmiş, test edilmiş kod**
 
+**Her aşama bir gauntlet'ten geçer: ajanınız üzerine inşa etmeden önce, ikinci bir modeldeki eleştirmen onu kırmaya çalışır.**
+
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/nurettincoban/ai-prd-workflow?style=flat&color=orange)](https://github.com/nurettincoban/ai-prd-workflow/stargazers)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#hızlı-başlangıç)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#kurulum-seçenekleri)
 
-**[🌐 Web sitesi](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Hızlı başlangıç](#hızlı-başlangıç)** · **[Nasıl çalışır](#nasıl-çalışır)** · **[Neden](#neden-bu-iş-akışı)** · **[Kanıtlar](#kanıtlar)** · **[Kurulum seçenekleri](#kurulum-seçenekleri)**
+**[🌐 Web sitesi](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Hızlı başlangıç](#hızlı-başlangıç)** · **[Nasıl çalışır](#nasıl-çalışır)** · **[Gauntlet](#gauntlet)** · **[Neden](#neden-bu-iş-akışı)** · **[Kanıtlar](#kanıtlar)** · **[Kurulum seçenekleri](#kurulum-seçenekleri)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · Türkçe · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
@@ -29,7 +31,7 @@
 
 AI kodlama ajanları kod yazmakta iyidir. Ne yapılacağına karar vermekte, dünkü kararları hatırlamakta ve iki dokümanın birbiriyle çeliştiğini fark etmekte o kadar iyi değildirler. Bu iş akışı tam olarak bu kısmı üstlenir: bir fikri — ya da zaten var olan bir kod tabanını — gözden geçirilmiş bir PRD'ye (ürün gereksinimleri dokümanı), önceliklendirilmiş özelliklere, proje kurallarına ve bağımlılık sırasına dizilmiş küçük RFC'lere dönüştürür. Ardından bunları teker teker uygular ve inceler.
 
-Her adım, bir sonraki adımın okuyacağı bir markdown dosyası yazar; böylece kararlar sohbet oturumu kapandığında kaybolmaz. Bir betik de bu dosyaların hâlâ birbiriyle tutarlı olduğunu kontrol eder. Öğrenilecek bir CLI, benimsenecek bir framework, bağımlı kalınacak bir araç yok.
+Her adım, bir sonraki adımın okuyacağı bir markdown dosyası yazar; böylece kararlar sohbet oturumu kapandığında kaybolmaz. Bir betik de bu dosyaların hâlâ birbiriyle tutarlı olduğunu kontrol eder. Bir hatanın geri alınmasının en pahalı olduğu üç noktada ise [gauntlet](#gauntlet) dosyaları, onları yazmamış bir eleştirmenin önüne koyar. Öğrenilecek bir CLI, benimsenecek bir framework, bağımlı kalınacak bir araç yok.
 
 <p align="center">
   <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status v2.0 örneğini denetliyor: izlenebilirlik kontrolü başarısız oluyor, çünkü F7'nin RFC'si yok ve RFCS.md eksik; ardından dokümanlar birbiriyle karşılaştırılıyor ve 20 tutarsızlık bulunuyor, örneğin arayüzü hiçbir RFC'nin yapmaması ve HTTP 301 önbelleğinin tıklama sayımını bozması">
@@ -61,12 +63,15 @@ Ardından komutları sırayla çalıştırın:
 ```
 /create-prd          # mülakat → PRD.md   (kod zaten var mı? bunun yerine /document-existing)
 /verify-prd          # boşluklar ve çelişkiler → iyileştirilmiş PRD.md + PRD-REVIEW.md
+/gauntlet prd        # kapı 1: bir eleştirmen PRD'yi kırmaya çalışır → GAUNTLET.md
 /extract-features    # → FEATURES.md
 /generate-rules      # → RULES.md
 /generate-rfcs       # → RFCs/ + RFCS.md, bağımlılık sırasıyla
 /test-strategy       # → TEST-STRATEGY.md, daha hiçbir test yazılmadan
+/gauntlet plan       # kapı 2: daha kod yokken bir eleştirmen plana saldırır
 /implement-rfc 001   # plan → onayınız → kod → çalıştığının kanıtı
 /review-rfc 001      # temiz bir bağlamda inceleme → reviews/REVIEW-RFC-001.md
+/gauntlet rfc 001    # kapı 3: bir eleştirmen incelemenin geçirdiği şeye saldırır
 ```
 
 Sıradaki adımdan emin olmadığınızda `/workflow-status`, gereksinimler değiştiğinde `/manage-changes` çalıştırın. Codex'te `/create-prd` yerine `$create-prd` yazın. Claude Code eklentisiyle komutlar eklentinin adını taşır: `/prd-workflow:create-prd`.
@@ -89,15 +94,16 @@ flowchart TB
         direction LR
         idea([💡 Yeni fikir]) --> create["/create-prd"] --> verify["/verify-prd"]
         code([🗂️ Mevcut kod]) --> document["/document-existing"] --> verify
+        verify --> g1{{"⚔️ /gauntlet prd"}}
     end
     subgraph plan ["2 · Nasıl yapılacağını planla"]
         direction LR
-        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"] --> g2{{"⚔️ /gauntlet plan"}}
     end
     subgraph build ["3 · Her seferinde bir RFC uygula"]
         direction LR
-        implement["/implement-rfc"] --> review["/review-rfc"]
-        review -.->|sonraki RFC| implement
+        implement["/implement-rfc"] --> review["/review-rfc"] --> g3{{"⚔️ /gauntlet rfc"}}
+        g3 -.->|sonraki RFC| implement
     end
     subgraph anytime ["Gerektiğinde"]
         direction LR
@@ -118,6 +124,7 @@ flowchart TB
 | `/test-strategy` | Testler yazılmadan önce her RFC'nin testlerini planlar | `TEST-STRATEGY.md` | [görüntüle](testing-strategy-prompt.md) |
 | `/implement-rfc <id>` | Plan yapar, onayınızı bekler, kodu yazar, sonra her kabul kriterini kanıtlamak için derlemeyi ve testleri çalıştırır | kod, RFC durumu | [görüntüle](implementation-prompt-template.md) |
 | `/review-rfc <id>` | Kodu temiz bir bağlamda RFC'ye, kurallara ve test planına göre inceler | `reviews/` | [görüntüle](code-review-prompt.md) |
+| `/gauntlet <gate>` | Bir kalite kapısı çalıştırır: önce iz kontrolü, sonra dosyaları kırmaya çalışan ikinci bir modeldeki eleştirmen. Blocker'lar düzeltilene kadar sonraki aşamayı durdurur | `GAUNTLET.md` | [görüntüle](gauntlet-prompt.md) |
 | `/manage-changes` | Bir değişikliği geçmiş kararlara ve kurallara göre kontrol eder, sonra etkilenen bütün dosyaları birlikte günceller | `changes/` | [görüntüle](prd-change-management-prompt.md) |
 | `/workflow-status` | Nelerin bittiğini, nelerin saptığını ve sırada ne olduğunu raporlar | — | [görüntüle](workflow-status-prompt.md) |
 
@@ -125,6 +132,7 @@ flowchart TB
 
 - **Planla, onayla, sonra kodla.** `/implement-rfc` planı sunduktan sonra durur ve sizi bekler.
 - **Taze gözle incele.** `/review-rfc`, aynı sohbette yazılmış kodu incelemez; Claude Code'da otomatik olarak ayrı bir bağlamda çalışır.
+- **Gauntlet'ten geçir.** Bir aşama ancak bir öncekinin eleştirmenden sağ çıkmasıyla başlar. `/extract-features` ve `/implement-rfc`, BLOCKED bir kapıda siz düzeltene ya da geçersiz kılana kadar durur; geçersiz kılma da kayda geçer.
 - **ID'ler asla değişmez.** Gereksinimler, özellikler, kurallar ve RFC'ler birbirine ID ile atıf yapar. Bir atıf koptuğunda ya da bir Must-have özelliğin RFC'si olmadığında [`scripts/trace-check.py`](scripts/trace-check.py) hata verir; komutlar onu sizin yerinize çalıştırır.
 - **Dosyalar çeliştiğinde** `PRD.md`, `FEATURES.md`'nin; o `RULES.md`'nin; o da RFC'lerin önüne geçer. Komutlar hangi dosyayı esas aldığını söyler ve diğerini düzeltilmek üzere işaretler.
 
@@ -138,12 +146,27 @@ Kodlama ajanınızın muhtemelen bir plan modu var. Plan modu tek bir görevi pl
 | Plan, oturumla birlikte kaybolur | PRD, özellikler, kurallar ve RFC'ler kalır — oturumlar, modeller, araçlar ve ekip arkadaşları arasında |
 | İsteğinizi olduğu gibi kabul eder | Önce sizinle mülakat yapar; kararlar daha hiç kod yazılmadan kayda geçer |
 | Kodu "doğru görünüyor"a göre inceler | Yazılı kabul kriterlerine göre inceler ve dosyaları birbiriyle karşılaştırır |
+| Planı, onu yazan model değerlendirir | Farklı bir modeldeki eleştirmen PRD'ye, plana ve her RFC'ye saldırır; bir Blocker sonraki aşamayı durdurur |
 
 İkisi birlikte çalışır: `/generate-rfcs` sıradaki işin ne olduğuna karar verir, `/implement-rfc` ise ajanınızın planlayıcısına küçük ve net tanımlanmış bir görev verir.
 
 **Şunlar için kullanın:** haftalar süren projeler ve AI ile ciddi olarak geliştirdiğiniz her şey — kapsam kaymasının ve unutulan kararların kod kalitesinden daha çok zarar verdiği işler. **Şunda gerek yok:** tek satırlık bir düzeltme.
 
 Spesifikasyon odaklı geliştirmeyi (spec-driven development; GitHub Spec Kit, Amazon Kiro) biliyorsanız, bu da aynı fikir: iş birimi olarak RFC'ler var, benimsenecek bir CLI ya da framework yok. Üstelik ikisinden de önce ortaya çıktı.
+
+## Gauntlet
+
+Yazar kendi spesifikasyonundaki boşlukları göremez; onu yazan model de göremez: işini kontrol etmesi istendiğinde aynı akıl yürütmeyi yeniden okur ve yine hiçbir şey bulamaz. Bu yüzden iş akışı üç noktada durur ve dosyaları başka birinin önünden geçirir.
+
+| Kapı | Ne zaman | Eleştirmenin sorusu |
+|---|---|---|
+| `/gauntlet prd` | `/verify-prd` sonrasında | Yetkin bir ekibin yanlış şeyi yapmasına ya da hiç yapamamasına ne yol açar? |
+| `/gauntlet plan` | `/generate-rfcs` ve `/test-strategy` sonrasında | Bu planı sırayla izlemek nerede çöker: bir boşluk, yanlış bir sıra, kimsenin test edemeyeceği bir kriter? |
+| `/gauntlet rfc <id>` | her `/review-rfc` sonrasında | Uygulama neyi yanlış yaptı da inceleme onu geçirdi? |
+
+Her kapı önce `trace-check.py` çalıştırır; böylece kopuk bir ID eleştirmene hiç ulaşmaz. Ardından eleştirmen temiz bir bağlamda yalnızca dosyaları okur ve her bulguyu bir önem derecesi, bir alıntı ve yol açtığı hatayla desteklemek zorundadır. Tek bir Blocker bile **BLOCKED** demektir: onu dosyanın sahibi olan komutla düzeltirsiniz ve bir sonraki turu yeni bir eleştirmen yapar. Her tur `GAUNTLET.md`'ye yazılır; neyin sınandığını, ne bulunduğunu ve neyi bilerek kabul ettiğinizi sonradan görebilirsiniz.
+
+**Claude Code'da eleştirmen Fable 5.2'dir.** Eklenti, `claude-fable-5-2`'ye sabitlenmiş, yalnızca okuyan bir `gauntlet-critic` alt ajanıyla gelir; böylece eleştirmen, PRD'nizi ve RFC'lerinizi genellikle yazan modelden farklı bir modeldir ve onun kör noktalarını paylaşmaz. Diğer araçlar temiz bağlamlı bir alt ajan kullanır ya da sizden başka bir modelle yeni bir oturum açmanızı ister. Kapıyı çalıştıran model asla eleştirmeni kendisi oynamaz.
 
 ## Kanıtlar
 
@@ -174,7 +197,7 @@ O kütüphane bu deponun bir parçası değil; bu yüzden kendiniz doğrulayabil
 
 | Araç | Klasör | Komut çalıştırma |
 |---|---|---|
-| Claude Code | `.claude/skills/` ya da eklenti | `/create-prd` |
+| Claude Code | `.claude/skills/` ve `.claude/agents/`, ya da eklenti | `/create-prd` |
 | GitHub Copilot (VS Code, CLI) | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd`, `/` menüsünden |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |

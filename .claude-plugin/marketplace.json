@@ -8,9 +8,9 @@
     {
       "name": "prd-workflow",
       "source": "./",
-      "description": "Eleven commands that take a project — new or existing — to a verified PRD, prioritized features, project rules, and sequenced RFCs — then guide implementation, review, and testing.",
+      "description": "Twelve commands that take a project — new or existing — to a verified PRD, prioritized features, project rules, and sequenced RFCs — then guide implementation, review, and testing, with quality gates where an adversarial critic on a second model tries to break each artifact before work is built on it.",
       "category": "workflows",
-      "tags": ["prd", "rfc", "spec-driven", "planning"]
+      "tags": ["prd", "rfc", "spec-driven", "planning", "quality-gates"]
     }
   ]
 }

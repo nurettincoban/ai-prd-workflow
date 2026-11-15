@@ -8,13 +8,15 @@
 
 **Idea o código existente → PRD verificado → funcionalidades → reglas → RFC ordenados → código revisado y probado**
 
+**Cada etapa pasa por un gauntlet: un crítico en un segundo modelo intenta romperla antes de que tu agente construya sobre ella.**
+
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/nurettincoban/ai-prd-workflow?style=flat&color=orange)](https://github.com/nurettincoban/ai-prd-workflow/stargazers)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#inicio-rápido)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#opciones-de-instalación)
 
-**[🌐 Sitio web](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Inicio rápido](#inicio-rápido)** · **[Cómo funciona](#cómo-funciona)** · **[Por qué](#por-qué-este-flujo-de-trabajo)** · **[Evidencia](#evidencia)** · **[Opciones de instalación](#opciones-de-instalación)**
+**[🌐 Sitio web](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Inicio rápido](#inicio-rápido)** · **[Cómo funciona](#cómo-funciona)** · **[El gauntlet](#el-gauntlet)** · **[Por qué](#por-qué-este-flujo-de-trabajo)** · **[Evidencia](#evidencia)** · **[Opciones de instalación](#opciones-de-instalación)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · Español
 
@@ -29,7 +31,7 @@
 
 Los agentes de programación con IA escriben buen código. Se les da peor decidir qué construir, recordar las decisiones de ayer y darse cuenta de que dos documentos se contradicen. Este flujo de trabajo se encarga de esa parte: lleva una idea —o una base de código que ya existe— a un PRD (documento de requisitos de producto) revisado, funcionalidades priorizadas, reglas del proyecto y RFC pequeños en orden de dependencias. Después los implementa y los revisa uno a uno.
 
-Cada paso escribe un archivo markdown que lee el siguiente, así que las decisiones sobreviven a la sesión de chat. Un script comprueba que los archivos siguen siendo coherentes entre sí. Sin CLI que aprender, sin framework que adoptar, sin dependencia de ninguna herramienta.
+Cada paso escribe un archivo markdown que lee el siguiente, así que las decisiones sobreviven a la sesión de chat. Un script comprueba que los archivos siguen siendo coherentes entre sí. Y en los tres puntos donde un error cuesta más deshacer, [el gauntlet](#el-gauntlet) pone los archivos delante de un crítico que no los escribió. Sin CLI que aprender, sin framework que adoptar, sin dependencia de ninguna herramienta.
 
 <p align="center">
   <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status auditando el ejemplo v2.0: la comprobación de trazabilidad falla porque F7 no tiene RFC y falta RFCS.md; después, al contrastar los documentos entre sí, encuentra 20 incoherencias, como que ningún RFC construye la interfaz o que la caché de HTTP 301 estropea el conteo de clics">
@@ -61,12 +63,15 @@ Después, ejecuta los comandos en orden:
 ```
 /create-prd          # entrevista → PRD.md   (¿ya hay código? usa /document-existing)
 /verify-prd          # huecos y contradicciones → PRD.md mejorado + PRD-REVIEW.md
+/gauntlet prd        # puerta 1: un crítico intenta romper el PRD → GAUNTLET.md
 /extract-features    # → FEATURES.md
 /generate-rules      # → RULES.md
 /generate-rfcs       # → RFCs/ + RFCS.md, en orden de dependencias
 /test-strategy       # → TEST-STRATEGY.md, antes de escribir ninguna prueba
+/gauntlet plan       # puerta 2: un crítico ataca el plan antes de que exista código
 /implement-rfc 001   # plan → tu aprobación → código → prueba de que funciona
 /review-rfc 001      # revisión en un contexto nuevo → reviews/REVIEW-RFC-001.md
+/gauntlet rfc 001    # puerta 3: un crítico ataca lo que la revisión aprobó
 ```
 
 Ejecuta `/workflow-status` cuando no sepas qué viene después, y `/manage-changes` cuando cambien los requisitos. En Codex, escribe `$create-prd` en lugar de `/create-prd`. Con el plugin de Claude Code, los comandos llevan el nombre del plugin: `/prd-workflow:create-prd`.
@@ -89,15 +94,16 @@ flowchart TB
         direction LR
         idea([💡 Idea nueva]) --> create["/create-prd"] --> verify["/verify-prd"]
         code([🗂️ Código existente]) --> document["/document-existing"] --> verify
+        verify --> g1{{"⚔️ /gauntlet prd"}}
     end
     subgraph plan ["2 · Planificar cómo construirlo"]
         direction LR
-        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"] --> g2{{"⚔️ /gauntlet plan"}}
     end
     subgraph build ["3 · Construir, un RFC cada vez"]
         direction LR
-        implement["/implement-rfc"] --> review["/review-rfc"]
-        review -.->|siguiente RFC| implement
+        implement["/implement-rfc"] --> review["/review-rfc"] --> g3{{"⚔️ /gauntlet rfc"}}
+        g3 -.->|siguiente RFC| implement
     end
     subgraph anytime ["En cualquier momento"]
         direction LR
@@ -118,6 +124,7 @@ flowchart TB
 | `/test-strategy` | Planifica las pruebas de cada RFC antes de escribirlas | `TEST-STRATEGY.md` | [ver](testing-strategy-prompt.md) |
 | `/implement-rfc <id>` | Planifica, espera tu aprobación, escribe el código y luego ejecuta la compilación y las pruebas para demostrar cada criterio | código, estado del RFC | [ver](implementation-prompt-template.md) |
 | `/review-rfc <id>` | Revisa el código frente al RFC, las reglas y el plan de pruebas, en un contexto nuevo | `reviews/` | [ver](code-review-prompt.md) |
+| `/gauntlet <gate>` | Ejecuta una puerta de calidad: una comprobación de trazabilidad y después un crítico en un segundo modelo que intenta romper los archivos. Bloquea la siguiente etapa hasta que se corrijan sus Blockers | `GAUNTLET.md` | [ver](gauntlet-prompt.md) |
 | `/manage-changes` | Contrasta un cambio con las decisiones y reglas anteriores, y después actualiza juntos todos los archivos afectados | `changes/` | [ver](prd-change-management-prompt.md) |
 | `/workflow-status` | Informa de lo que está hecho, lo que se ha desviado y qué hacer después | — | [ver](workflow-status-prompt.md) |
 
@@ -125,6 +132,7 @@ Unas pocas reglas lo mantienen todo unido:
 
 - **Planifica, aprueba y después programa.** `/implement-rfc` se detiene tras el plan y espera tu respuesta.
 - **Revisa con ojos nuevos.** `/review-rfc` no revisa código escrito en la misma conversación. En Claude Code se ejecuta automáticamente en un contexto aparte.
+- **Pasa el gauntlet.** Una etapa empieza solo cuando la anterior sobrevive a un crítico. `/extract-features` y `/implement-rfc` se detienen ante una puerta BLOCKED hasta que la corrijas o la anules explícitamente, y la anulación queda registrada.
 - **Los ID nunca cambian.** Requisitos, funcionalidades, reglas y RFC se citan entre sí por ID. [`scripts/trace-check.py`](scripts/trace-check.py) falla cuando una cita se rompe o una funcionalidad Must-have no tiene RFC, y los comandos lo ejecutan por ti.
 - **Cuando los archivos no coinciden,** `PRD.md` prevalece sobre `FEATURES.md`, este sobre `RULES.md` y, por último, sobre los RFC. Los comandos indican qué archivo siguieron y marcan el otro para corregirlo.
 
@@ -138,12 +146,27 @@ Tu agente de programación probablemente tenga un modo de planificación. Un mod
 | El plan desaparece con la sesión | El PRD, las funcionalidades, las reglas y los RFC permanecen: entre sesiones, modelos, herramientas y compañeros de equipo |
 | Toma tu petición al pie de la letra | Primero te entrevista, para que las decisiones queden por escrito antes de que exista código |
 | Revisa el código según «parece correcto» | Revisa frente a criterios de aceptación escritos y contrasta los archivos entre sí |
+| El modelo que escribió el plan lo juzga | Un crítico en otro modelo ataca el PRD, el plan y cada RFC, y un Blocker detiene la siguiente etapa |
 
 Ambos se complementan: `/generate-rfcs` decide cuál es la siguiente pieza de trabajo y `/implement-rfc` le entrega al planificador de tu agente una tarea pequeña y bien definida.
 
 **Úsalo para** proyectos de varias semanas y cualquier cosa seria que construyas con IA, donde el crecimiento descontrolado del alcance y las decisiones olvidadas hacen más daño que la calidad del código. **No hace falta para** un arreglo de una línea.
 
 Si conoces el desarrollo guiado por especificaciones (spec-driven development: GitHub Spec Kit, Amazon Kiro), esta es la misma idea, con los RFC como unidad de trabajo y sin CLI ni framework que adoptar. Y es anterior a ambos.
+
+## El gauntlet
+
+Un autor no ve los huecos de su propia especificación, y el modelo que la escribió tampoco: cuando se le pide revisar su trabajo, relee el mismo razonamiento y vuelve a no encontrar nada. Por eso, en tres puntos, el flujo se detiene y obliga a los archivos a sobrevivir a otro.
+
+| Puerta | Cuándo | La pregunta del crítico |
+|---|---|---|
+| `/gauntlet prd` | después de `/verify-prd` | ¿Qué haría que un equipo competente construyera lo equivocado, o que no pudiera construirlo? |
+| `/gauntlet plan` | después de `/generate-rfcs` y `/test-strategy` | ¿Dónde fallará seguir este plan en orden: un hueco, un orden erróneo, un criterio que nadie puede probar? |
+| `/gauntlet rfc <id>` | después de cada `/review-rfc` | ¿Qué hizo mal la implementación que la revisión dejó pasar? |
+
+Cada puerta ejecuta primero `trace-check.py`, así que un ID roto nunca llega al crítico. Después, el crítico lee solo los archivos, en un contexto limpio, y debe respaldar cada hallazgo con una gravedad, una cita y el fallo que provoca. Un solo Blocker significa **BLOCKED**: lo corriges con el comando dueño del archivo, y un crítico nuevo hace la siguiente ronda. Cada ronda queda en `GAUNTLET.md`, así que más tarde puedes ver qué se puso a prueba, qué se encontró y qué decidiste aceptar.
+
+**En Claude Code, el crítico es Fable 5.2.** El plugin incluye un subagente `gauntlet-critic` de solo lectura fijado en `claude-fable-5-2`, de modo que el crítico es un modelo distinto del que suele escribir tu PRD y tus RFC, y no comparte sus puntos ciegos. Otras herramientas usan un subagente con contexto limpio, o te piden abrir una sesión nueva con otro modelo. El modelo que ejecuta la puerta nunca hace él mismo de crítico.
 
 ## Evidencia
 
@@ -174,7 +197,7 @@ Esa biblioteca no forma parte de este repositorio, así que aquí tienes evidenc
 
 | Herramienta | Carpeta | Ejecutar un comando |
 |---|---|---|
-| Claude Code | `.claude/skills/` o el plugin | `/create-prd` |
+| Claude Code | `.claude/skills/` y `.claude/agents/`, o el plugin | `/create-prd` |
 | GitHub Copilot (VS Code, CLI) | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd`, desde el menú `/` |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |

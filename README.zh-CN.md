@@ -8,13 +8,15 @@
 
 **想法或现有代码 → 经过验证的 PRD → 功能 → 规则 → 有序的 RFC → 经过评审和测试的代码**
 
+**每个阶段都要闯过一道关卡（gauntlet）：在你的代理基于它继续构建之前，由另一个模型担任的评审者会设法击破它。**
+
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/nurettincoban/ai-prd-workflow?style=flat&color=orange)](https://github.com/nurettincoban/ai-prd-workflow/stargazers)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#快速开始)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#安装选项)
 
-**[🌐 网站](https://nurettincoban.github.io/ai-prd-workflow/)** · **[快速开始](#快速开始)** · **[工作原理](#工作原理)** · **[为什么](#为什么选择这个工作流)** · **[实证](#实证)** · **[安装选项](#安装选项)**
+**[🌐 网站](https://nurettincoban.github.io/ai-prd-workflow/)** · **[快速开始](#快速开始)** · **[工作原理](#工作原理)** · **[关卡](#关卡-gauntlet)** · **[为什么](#为什么选择这个工作流)** · **[实证](#实证)** · **[安装选项](#安装选项)**
 
 [English](README.md) · 简体中文 · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
@@ -29,7 +31,7 @@
 
 AI 编程代理很擅长写代码，却不太擅长决定该做什么、记住昨天做过的决定，以及发现两份文档之间的矛盾。这个工作流负责的正是这一部分：它把一个想法（或一个已经存在的代码库）变成经过评审的 PRD（产品需求文档）、带优先级的功能清单、项目规则，以及按依赖顺序排列的小型 RFC，然后逐个实现并评审。
 
-每一步都会写出一个 markdown 文件，供下一步读取，因此决策不会随着聊天会话结束而丢失；还有一个脚本会检查这些文件之间是否仍然一致。无需学习 CLI，无需引入框架，没有厂商锁定。
+每一步都会写出一个 markdown 文件，供下一步读取，因此决策不会随着聊天会话结束而丢失；还有一个脚本会检查这些文件之间是否仍然一致。在出错后最难挽回的三个节点上，[关卡](#关卡-gauntlet)会把这些文件交给一位并非其作者的评审者。无需学习 CLI，无需引入框架，没有厂商锁定。
 
 <p align="center">
   <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status 审查 v2.0 示例：可追溯性检查失败，因为 F7 没有对应的 RFC 且缺少 RFCS.md；随后交叉阅读各文档，发现 20 处不一致，例如没有任何 RFC 实现界面，以及 HTTP 301 缓存导致点击统计失真">
@@ -61,12 +63,15 @@ curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/
 ```
 /create-prd          # 访谈 → PRD.md（已有代码？改用 /document-existing）
 /verify-prd          # 找出缺口和矛盾 → 改进后的 PRD.md + PRD-REVIEW.md
+/gauntlet prd        # 关卡 1：评审者设法击破 PRD → GAUNTLET.md
 /extract-features    # → FEATURES.md
 /generate-rules      # → RULES.md
 /generate-rfcs       # → RFCs/ + RFCS.md，按依赖顺序排列
 /test-strategy       # → TEST-STRATEGY.md，在编写任何测试之前
+/gauntlet plan       # 关卡 2：在任何代码出现之前，评审者攻击整个计划
 /implement-rfc 001   # 计划 → 你批准 → 编码 → 证明它能工作
 /review-rfc 001      # 在全新上下文中评审 → reviews/REVIEW-RFC-001.md
+/gauntlet rfc 001    # 关卡 3：评审者攻击评审已放行的内容
 ```
 
 不确定下一步做什么时，运行 `/workflow-status`；需求变更时，运行 `/manage-changes`。在 Codex 中，用 `$create-prd` 代替 `/create-prd`。使用 Claude Code 插件时，命令带有插件名前缀：`/prd-workflow:create-prd`。
@@ -89,15 +94,16 @@ flowchart TB
         direction LR
         idea([💡 新想法]) --> create["/create-prd"] --> verify["/verify-prd"]
         code([🗂️ 现有代码]) --> document["/document-existing"] --> verify
+        verify --> g1{{"⚔️ /gauntlet prd"}}
     end
     subgraph plan ["2 · 规划怎么做"]
         direction LR
-        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"] --> g2{{"⚔️ /gauntlet plan"}}
     end
     subgraph build ["3 · 逐个 RFC 构建"]
         direction LR
-        implement["/implement-rfc"] --> review["/review-rfc"]
-        review -.->|下一个 RFC| implement
+        implement["/implement-rfc"] --> review["/review-rfc"] --> g3{{"⚔️ /gauntlet rfc"}}
+        g3 -.->|下一个 RFC| implement
     end
     subgraph anytime ["随时可用"]
         direction LR
@@ -118,6 +124,7 @@ flowchart TB
 | `/test-strategy` | 在编写测试之前，为每个 RFC 规划测试 | `TEST-STRATEGY.md` | [查看](testing-strategy-prompt.md) |
 | `/implement-rfc <id>` | 先做计划并等待你批准，再写代码，然后运行构建和测试，逐条证明验收标准 | 代码、RFC 状态 | [查看](implementation-prompt-template.md) |
 | `/review-rfc <id>` | 在全新上下文中，对照 RFC、规则和测试计划评审代码 | `reviews/` | [查看](code-review-prompt.md) |
+| `/gauntlet <gate>` | 运行一道质量关卡：先做追溯检查，再由另一个模型担任的评审者设法击破这些文件。在 Blocker 修复之前，阻止进入下一阶段 | `GAUNTLET.md` | [查看](gauntlet-prompt.md) |
 | `/manage-changes` | 对照过去的决策和规则检查一项变更，再同步更新所有受影响的文件 | `changes/` | [查看](prd-change-management-prompt.md) |
 | `/workflow-status` | 报告哪些已完成、哪些已偏离，以及下一步做什么 | — | [查看](workflow-status-prompt.md) |
 
@@ -125,6 +132,7 @@ flowchart TB
 
 - **先计划，再批准，最后编码。** `/implement-rfc` 给出计划后会停下来等你。
 - **用新的眼光评审。** `/review-rfc` 不会评审在同一个对话中写出的代码；在 Claude Code 中，它会自动在独立的上下文里运行。
+- **闯过关卡。** 只有上一个阶段在评审者面前站住了脚，下一个阶段才会开始。遇到 BLOCKED 的关卡，`/extract-features` 和 `/implement-rfc` 会停下，直到你修复或明确放行，放行也会被记录下来。
 - **ID 永不改变。** 需求、功能、规则和 RFC 通过 ID 互相引用。一旦引用断开，或某个 Must-have 功能没有对应的 RFC，[`scripts/trace-check.py`](scripts/trace-check.py) 就会报错——各个命令会替你运行它。
 - **文件之间有冲突时，** `PRD.md` 优先于 `FEATURES.md`，其次是 `RULES.md`，最后是 RFC。命令会说明遵循了哪个文件，并标记另一个文件待修正。
 
@@ -138,12 +146,27 @@ flowchart TB
 | 计划随会话结束而消失 | PRD、功能、规则和 RFC 一直保留——跨会话、跨模型、跨工具、跨团队成员 |
 | 按字面接受你的请求 | 先对你进行访谈，让决策在任何代码出现之前就写下来 |
 | 凭"看起来没问题"评审代码 | 对照书面验收标准评审，并交叉检查各个文件 |
+| 由写出计划的模型来评判它 | 由另一个模型担任的评审者攻击 PRD、计划和每个 RFC，任何 Blocker 都会阻止下一阶段 |
 
 两者可以配合使用：`/generate-rfcs` 决定下一块工作是什么，`/implement-rfc` 再把一个小而明确的任务交给代理的计划器。
 
 **适合**：持续数周的项目，以及任何你用 AI 认真构建的东西——在这些场景里，范围蔓延和被遗忘的决策比代码质量更伤人。**不适合**：一行代码的修复。
 
 如果你了解规范驱动开发（spec-driven development，例如 GitHub Spec Kit、Amazon Kiro），这里是同样的理念：以 RFC 为工作单元，不需要引入任何 CLI 或框架。而且它比这两者都更早出现。
+
+## 关卡 (gauntlet)
+
+作者看不见自己规格里的漏洞，写出它的模型也看不见：让它检查自己的工作时，它只会重读同一套推理，结果还是什么都没发现。所以工作流会在三个节点停下来，让这些文件经受别人的检验。
+
+| 关卡 | 时机 | 评审者的问题 |
+|---|---|---|
+| `/gauntlet prd` | `/verify-prd` 之后 | 什么会让一个称职的团队做错东西，或者根本做不出来？ |
+| `/gauntlet plan` | `/generate-rfcs` 和 `/test-strategy` 之后 | 按顺序执行这个计划会在哪里失败：缺口、顺序错误，还是没人能测试的标准？ |
+| `/gauntlet rfc <id>` | 每次 `/review-rfc` 之后 | 实现中有哪些错误被评审放过了？ |
+
+每道关卡都会先运行 `trace-check.py`，断掉的 ID 根本到不了评审者那里。然后评审者在全新的上下文中只读这些文件，每条发现都必须给出严重程度、原文引用以及它造成的后果。只要有一个 Blocker 就是 **BLOCKED**：你通过负责该文件的命令修复它，下一轮由新的评审者进行。每一轮都写进 `GAUNTLET.md`，之后你可以看到哪些内容受过检验、发现了什么、你有意接受了什么。
+
+**在 Claude Code 中，评审者是 Fable 5.2。** 插件自带一个只读的 `gauntlet-critic` 子代理，固定使用 `claude-fable-5-2`，因此评审者与通常撰写你的 PRD 和 RFC 的模型不同，不会有相同的盲点。其他工具会使用全新上下文的子代理，或请你在另一个模型上开启新会话。运行关卡的模型绝不会自己扮演评审者。
 
 ## 实证
 
@@ -174,7 +197,7 @@ ID 也守住了。项目进行到一半 PRD 发生变化时，一个全新的代
 
 | 工具 | 目录 | 运行命令 |
 |---|---|---|
-| Claude Code | `.claude/skills/`，或插件 | `/create-prd` |
+| Claude Code | `.claude/skills/` 和 `.claude/agents/`，或插件 | `/create-prd` |
 | GitHub Copilot（VS Code、CLI） | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd`，从 `/` 菜单中选择 |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |

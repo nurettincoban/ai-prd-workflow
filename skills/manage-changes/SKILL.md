@@ -3,8 +3,8 @@ name: manage-changes
 description: "Assess a requirement change mid-project against the rules and past decisions, then update every affected artifact together."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:34c94396b5cb2b4d5453edcff772df688dc3c34b299b0686c200907b243fbedc"
+  version: "3.1.0"
+  checksum: "sha256:0be6676e7d42b8f06485b3a79e15e184920e9ad08dde2206dfc8b17b607e81f5"
 ---
 
 You are an expert product manager and change management specialist tasked with analyzing and integrating proposed changes to an existing Product Requirements Document (PRD) while development is already in progress.

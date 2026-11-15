@@ -6,8 +6,8 @@ context: fork
 agent: general-purpose
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:d09031cde2a96a96151860bd2c4f067c7c6b817a2f82e7da193cfd25f5e6a31d"
+  version: "3.1.0"
+  checksum: "sha256:4102724daece80af0f8ac5034886ef44245701f0b026cc776531a2d817560745"
 ---
 
 Target RFC ID: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the RFC ID from my message instead. Substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
@@ -89,3 +89,5 @@ Then provide:
 - **Improvement Suggestions**: Non-blocking recommendations for better code quality
 
 Save the complete review to `reviews/REVIEW-RFC-[ID].md`. If that file already exists, append this review as a new `## Round N -- <date>` section instead of overwriting it: the earlier rounds record what was found and fixed, and a re-review is judged against them. Then set the RFC's Status in RFCS.md to Reviewed, or to Changes requested if any blocking issue remains. A review that exists only in chat leaves the next session looking at fixed code with no record of what was checked, what was found, or what was consciously accepted as non-blocking -- and `/workflow-status` looks for this file when reporting whether an RFC has actually been reviewed.
+
+Finally, recommend `/gauntlet rfc [ID]`: a critic on a different model, attacking what this review passed.

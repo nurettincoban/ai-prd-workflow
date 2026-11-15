@@ -20,8 +20,10 @@
 
 set -euo pipefail
 
-VERSION="3.0.0"
+VERSION="3.1.0"
 REPO_URL="https://github.com/nurettincoban/ai-prd-workflow"
+# Subagents installed for Claude Code (.claude/agents/); the plugin ships them from agents/.
+AGENTS="gauntlet-critic"
 # Overridable so the curl path can be tested without the network (file:// works).
 RAW_BASE="${AI_PRD_WORKFLOW_RAW:-https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow}"
 
@@ -43,11 +45,14 @@ generate-rfcs|prd-to-rfcs-prompt.md|Break the PRD into sequenced implementation 
 test-strategy|testing-strategy-prompt.md|Write TEST-STRATEGY.md, a test plan per RFC, before the tests are written.||
 implement-rfc|implementation-prompt-template.md|Implement one RFC: check its predecessors, present a plan for approval, write the code, then demonstrate every acceptance criterion.|<rfc-id>|
 review-rfc|code-review-prompt.md|Review an implemented RFC in a fresh context against its acceptance criteria, RULES.md and the test plan, and save the review to reviews/.|<rfc-id>|fork
+gauntlet|gauntlet-prompt.md|Run a quality gate (prd, plan, or rfc <id>): a mechanical trace check, then an adversarial critic in a clean context, on Fable 5.2 in Claude Code. Records PASS or BLOCKED in GAUNTLET.md. Use after verify-prd, after generate-rfcs and test-strategy, and after each review-rfc.|prd, plan, or rfc <id>|gate
 manage-changes|prd-change-management-prompt.md|Assess a requirement change mid-project against the rules and past decisions, then update every affected artifact together.||
 workflow-status|workflow-status-prompt.md|Report which workflow artifacts exist, which RFCs are implemented and reviewed, what has drifted, and the next step.||
 '
 
 # shellcheck disable=SC2016  # $ARGUMENTS is a literal placeholder for the AI tool to substitute
+GATE_PREAMBLE='Gate to run: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the gate named in my message instead. For "rfc <id>", substitute the RFC ID for [ID] everywhere below. If no gate was given, follow the instructions below for picking one.'
+# shellcheck disable=SC2016
 ARG_PREAMBLE='Target RFC ID: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the RFC ID from my message instead. Substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.'
 
 die() { echo "Error: $*" >&2; exit 1; }
@@ -130,7 +135,10 @@ render_skill() {
     echo "  version: \"$VERSION\""
     echo "---"
     echo ""
-    if [ -n "$arghint" ]; then
+    if [ "$options" = "gate" ]; then
+        echo "$GATE_PREAMBLE"
+        echo ""
+    elif [ -n "$arghint" ]; then
         echo "$ARG_PREAMBLE"
         echo ""
     fi
@@ -194,6 +202,11 @@ while IFS='|' read -r name _; do
             || die "could not fetch skills/$name/scripts/trace-check.py"
     fi
 done <<< "$COMMANDS"
+mkdir -p "$STAGE/.agents"
+for agent in $AGENTS; do
+    # Releases before 3.1.0 have no agents/; their skills do not use one.
+    fetch "agents/$agent.md" > "$STAGE/.agents/$agent.md" 2>/dev/null || rm -f "$STAGE/.agents/$agent.md"
+done
 
 ADDED=0; UPDATED=0; CURRENT=0; KEPT=0
 
@@ -228,6 +241,31 @@ install_skill() {
         mkdir -p "$dest/scripts"
         cp "$STAGE/$name/scripts/"* "$dest/scripts/"
     fi
+}
+
+# Agent files carry no checksum: one that differs from ours is kept unless --force.
+install_agent() {
+    local src="$STAGE/.agents/$1.md" out="$TARGET/.claude/agents/$1.md"
+    [ -f "$src" ] || return 0
+    if [ -f "$out" ]; then
+        if [ "$(tr -d '\r' < "$out")" = "$(tr -d '\r' < "$src")" ]; then
+            CURRENT=$((CURRENT + 1))
+            return 0
+        fi
+        if [ "$FORCE" != 1 ]; then
+            echo "  kept     $out  (differs from this release -- rerun with --force to replace it)"
+            KEPT=$((KEPT + 1))
+            return 0
+        fi
+        cp "$out" "$out.backup-$(date +%Y%m%d%H%M%S)"
+        echo "  replaced $out  (backup saved beside it)"
+        UPDATED=$((UPDATED + 1))
+    else
+        echo "  added    $out"
+        ADDED=$((ADDED + 1))
+    fi
+    mkdir -p "$TARGET/.claude/agents"
+    cp "$src" "$out"
 }
 
 # v2.x installed plain command files under these names; skills with the same names replace them.
@@ -265,6 +303,9 @@ for tool in claude agents; do
         [ -n "$name" ] || continue
         install_skill "$name" "$TARGET/$dir/$name"
     done <<< "$COMMANDS"
+    if [ "$tool" = claude ]; then
+        for agent in $AGENTS; do install_agent "$agent"; done
+    fi
     if [ "$CURRENT" -gt 0 ]; then echo "  $CURRENT already up to date"; fi
     CURRENT=0
 done

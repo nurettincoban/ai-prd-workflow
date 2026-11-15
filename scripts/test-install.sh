@@ -38,7 +38,9 @@ t="$(fresh)"
 [ "$(count_skills "$t/.agents/skills")" -eq "$EXPECTED" ] || fail "default install: .agents/skills incomplete"
 [ -f "$t/.agents/skills/workflow-status/scripts/trace-check.py" ] || fail "trace-check.py not bundled"
 diff -r "$ROOT/skills" "$t/.claude/skills" > /dev/null || fail "installed skills differ from skills/"
-ok "default install writes .claude/skills and .agents/skills, identical to skills/"
+cmp -s "$ROOT/agents/gauntlet-critic.md" "$t/.claude/agents/gauntlet-critic.md" || fail "gauntlet-critic agent not installed for Claude Code"
+[ ! -e "$t/.agents/agents" ] || fail "Claude Code agents leaked into .agents/"
+ok "default install writes .claude/skills, .agents/skills and .claude/agents, identical to the repo"
 
 # --- idempotent -----------------------------------------------------------------
 out="$("$ROOT/install.sh" "$t")"
@@ -54,7 +56,14 @@ out="$("$ROOT/install.sh" "$t" --claude --force)"
 echo "$out" | grep -q "replaced .*create-prd/SKILL.md" || fail "--force did not replace: $out"
 backups=("$t"/.claude/skills/create-prd/SKILL.md.backup-*)
 [ -e "${backups[0]}" ] || fail "--force saved no backup"
-ok "edited skill kept without --force; replaced with a backup with --force"
+echo "my own note" >> "$t/.claude/agents/gauntlet-critic.md"
+out="$("$ROOT/install.sh" "$t" --claude)"
+echo "$out" | grep -q "kept .*gauntlet-critic.md" || fail "edited agent was not kept: $out"
+"$ROOT/install.sh" "$t" --claude --force > /dev/null
+cmp -s "$ROOT/agents/gauntlet-critic.md" "$t/.claude/agents/gauntlet-critic.md" || fail "--force did not replace the edited agent"
+agent_backups=("$t"/.claude/agents/gauntlet-critic.md.backup-*)
+[ -e "${agent_backups[0]}" ] || fail "--force saved no agent backup"
+ok "edited skill or agent kept without --force; replaced with a backup with --force"
 
 # --- an unedited file from an older release is updated ---------------------------
 f="$t/.agents/skills/verify-prd/SKILL.md"
@@ -85,13 +94,14 @@ ok "v2 command files reported; --remove-legacy backs up ours and leaves others a
 # --- the curl | bash path, served from file:// instead of GitHub --------------------
 served="$(fresh)"
 mkdir -p "$served/main"
-cp -r "$ROOT/skills" "$served/main/"
+cp -r "$ROOT/skills" "$ROOT/agents" "$served/main/"
 t="$(fresh)"
 url="file://$served"
 if command -v cygpath > /dev/null 2>&1; then url="file:///$(cygpath -m "$served")"; fi
 (cd "$t" && AI_PRD_WORKFLOW_RAW="$url" bash -s -- "$t" < "$ROOT/install.sh" > /dev/null)
 if [ "$(count_skills "$t/.claude/skills")" -ne "$EXPECTED" ] || [ "$(count_skills "$t/.agents/skills")" -ne "$EXPECTED" ]; then fail "curl-path install incomplete"; fi
 diff -r "$ROOT/skills" "$t/.agents/skills" > /dev/null || fail "curl-path skills differ from skills/"
+cmp -s "$ROOT/agents/gauntlet-critic.md" "$t/.claude/agents/gauntlet-critic.md" || fail "curl-path install missed the gauntlet-critic agent"
 ok "curl | bash path installs the same files"
 
 # --- flags --------------------------------------------------------------------------
@@ -101,6 +111,7 @@ if [ ! -d "$t/.claude/skills" ] || [ -d "$t/.agents" ]; then fail "--claude inst
 t="$(fresh)"
 "$ROOT/install.sh" "$t" --cursor > /dev/null 2>&1
 if [ ! -d "$t/.agents/skills" ] || [ -d "$t/.claude" ]; then fail "--cursor did not map to .agents/skills"; fi
+grep -q "^Gate to run:" "$ROOT/skills/gauntlet/SKILL.md" || fail "gauntlet skill does not take a gate argument"
 if "$ROOT/install.sh" "$t" --clade > /dev/null 2>&1; then fail "unknown flag accepted"; fi
 if "$ROOT/install.sh" "$t/does-not-exist" > /dev/null 2>&1; then fail "missing target accepted"; fi
 ok "--claude, --cursor alias, unknown flags and missing targets behave"

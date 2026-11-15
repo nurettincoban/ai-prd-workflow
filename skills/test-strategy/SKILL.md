@@ -3,8 +3,8 @@ name: test-strategy
 description: "Write TEST-STRATEGY.md, a test plan per RFC, before the tests are written."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:cd55d1f014fc3d0bd93b5bd69c7b6db301a767ccda34f1818b65bd64f785890c"
+  version: "3.1.0"
+  checksum: "sha256:3a408ee101eecee7dd2def2781549139491f39e05f6aa938fb75d7e935826534"
 ---
 
 You are an expert QA engineer and test architect tasked with generating a comprehensive test plan based on the project's features and RFCs.

@@ -8,13 +8,15 @@
 
 **아이디어 또는 기존 코드 → 검증된 PRD → 기능 → 규칙 → 순서가 정해진 RFC → 리뷰와 테스트를 거친 코드**
 
+**모든 단계는 건틀릿을 통과합니다: 에이전트가 그 위에 쌓기 전에, 다른 모델의 비평가가 그것을 깨뜨리려 합니다.**
+
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/nurettincoban/ai-prd-workflow?style=flat&color=orange)](https://github.com/nurettincoban/ai-prd-workflow/stargazers)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757)](#빠른-시작)
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-Codex%20%C2%B7%20Copilot%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20OpenCode%20%C2%B7%20Devin-555555)](#설치-옵션)
 
-**[🌐 웹사이트](https://nurettincoban.github.io/ai-prd-workflow/)** · **[빠른 시작](#빠른-시작)** · **[작동 방식](#작동-방식)** · **[왜](#왜-이-워크플로인가)** · **[근거](#근거)** · **[설치 옵션](#설치-옵션)**
+**[🌐 웹사이트](https://nurettincoban.github.io/ai-prd-workflow/)** · **[빠른 시작](#빠른-시작)** · **[작동 방식](#작동-방식)** · **[건틀릿](#건틀릿)** · **[왜](#왜-이-워크플로인가)** · **[근거](#근거)** · **[설치 옵션](#설치-옵션)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · 한국어 · [Español](README.es.md)
 
@@ -29,7 +31,7 @@
 
 AI 코딩 에이전트는 코드를 잘 작성합니다. 하지만 무엇을 만들지 정하고, 어제 내린 결정을 기억하고, 두 문서가 서로 어긋난다는 사실을 알아차리는 데는 서툽니다. 이 워크플로는 바로 그 부분을 맡습니다. 아이디어(또는 이미 존재하는 코드베이스)를 리뷰를 거친 PRD(제품 요구사항 문서), 우선순위가 매겨진 기능, 프로젝트 규칙, 그리고 의존 관계 순서로 정렬된 작은 RFC로 바꾼 다음, 하나씩 구현하고 리뷰합니다.
 
-모든 단계는 다음 단계가 읽을 markdown 파일을 남기므로, 채팅 세션이 끝나도 결정이 사라지지 않습니다. 또한 스크립트가 파일들이 여전히 서로 일치하는지 확인합니다. 배워야 할 CLI도, 도입해야 할 프레임워크도, 특정 도구에 대한 종속도 없습니다.
+모든 단계는 다음 단계가 읽을 markdown 파일을 남기므로, 채팅 세션이 끝나도 결정이 사라지지 않습니다. 또한 스크립트가 파일들이 여전히 서로 일치하는지 확인합니다. 그리고 실수를 되돌리는 비용이 가장 큰 세 지점에서는 [건틀릿](#건틀릿)이 파일을, 그것을 쓰지 않은 비평가 앞에 세웁니다. 배워야 할 CLI도, 도입해야 할 프레임워크도, 특정 도구에 대한 종속도 없습니다.
 
 <p align="center">
   <img src=".github/demo-workflow-status.svg" width="860" alt="v2.0 예제를 점검하는 /workflow-status: F7에 해당하는 RFC가 없고 RFCS.md도 없어서 추적성 검사가 실패하고, 이어서 문서들을 서로 대조한 결과 UI를 만드는 RFC가 없다는 점, HTTP 301 캐싱 때문에 클릭 수가 제대로 집계되지 않는다는 점 등 20개의 불일치가 발견됨">
@@ -61,12 +63,15 @@ curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/
 ```
 /create-prd          # 인터뷰 → PRD.md   (기존 코드가 있다면 대신 /document-existing)
 /verify-prd          # 빠진 부분과 모순 → 개선된 PRD.md + PRD-REVIEW.md
+/gauntlet prd        # 게이트 1: 비평가가 PRD를 깨뜨리려 한다 → GAUNTLET.md
 /extract-features    # → FEATURES.md
 /generate-rules      # → RULES.md
 /generate-rfcs       # → RFCs/ + RFCS.md, 의존 관계 순서대로
 /test-strategy       # → TEST-STRATEGY.md, 테스트를 작성하기 전에
+/gauntlet plan       # 게이트 2: 코드가 생기기 전에 비평가가 계획을 공격한다
 /implement-rfc 001   # 계획 → 사용자 승인 → 코드 → 동작한다는 증거
 /review-rfc 001      # 새 컨텍스트에서 리뷰 → reviews/REVIEW-RFC-001.md
+/gauntlet rfc 001    # 게이트 3: 리뷰가 통과시킨 것을 비평가가 공격한다
 ```
 
 다음에 무엇을 해야 할지 모르겠다면 `/workflow-status`를, 요구사항이 바뀌면 `/manage-changes`를 실행하세요. Codex에서는 `/create-prd` 대신 `$create-prd`를 입력합니다. Claude Code 플러그인에서는 명령어 앞에 플러그인 이름이 붙습니다: `/prd-workflow:create-prd`.
@@ -89,15 +94,16 @@ flowchart TB
         direction LR
         idea([💡 새 아이디어]) --> create["/create-prd"] --> verify["/verify-prd"]
         code([🗂️ 기존 코드]) --> document["/document-existing"] --> verify
+        verify --> g1{{"⚔️ /gauntlet prd"}}
     end
     subgraph plan ["2 · 어떻게 만들지 계획"]
         direction LR
-        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"]
+        features["/extract-features"] --> rules["/generate-rules"] --> rfcs["/generate-rfcs"] --> tests["/test-strategy"] --> g2{{"⚔️ /gauntlet plan"}}
     end
     subgraph build ["3 · RFC를 하나씩 구현"]
         direction LR
-        implement["/implement-rfc"] --> review["/review-rfc"]
-        review -.->|다음 RFC| implement
+        implement["/implement-rfc"] --> review["/review-rfc"] --> g3{{"⚔️ /gauntlet rfc"}}
+        g3 -.->|다음 RFC| implement
     end
     subgraph anytime ["언제든지"]
         direction LR
@@ -118,6 +124,7 @@ flowchart TB
 | `/test-strategy` | 테스트를 작성하기 전에 RFC별 테스트를 계획합니다 | `TEST-STRATEGY.md` | [보기](testing-strategy-prompt.md) |
 | `/implement-rfc <id>` | 계획을 세우고 승인을 기다린 뒤 코드를 작성하고, 빌드와 테스트를 실행해 각 인수 기준을 증명합니다 | 코드, RFC 상태 | [보기](implementation-prompt-template.md) |
 | `/review-rfc <id>` | 새 컨텍스트에서 RFC, 규칙, 테스트 계획에 비추어 코드를 리뷰합니다 | `reviews/` | [보기](code-review-prompt.md) |
+| `/gauntlet <gate>` | 품질 게이트를 실행합니다. 먼저 추적 검사, 다음으로 다른 모델의 비평가가 파일을 깨뜨리려 합니다. Blocker가 고쳐질 때까지 다음 단계를 막습니다 | `GAUNTLET.md` | [보기](gauntlet-prompt.md) |
 | `/manage-changes` | 변경 사항을 과거의 결정과 규칙에 비추어 확인한 뒤, 영향받는 모든 파일을 함께 갱신합니다 | `changes/` | [보기](prd-change-management-prompt.md) |
 | `/workflow-status` | 무엇이 끝났고, 무엇이 어긋났으며, 다음에 무엇을 할지 보고합니다 | — | [보기](workflow-status-prompt.md) |
 
@@ -125,6 +132,7 @@ flowchart TB
 
 - **계획하고, 승인받고, 그다음에 코딩한다.** `/implement-rfc`는 계획을 제시한 뒤 멈추고 사용자를 기다립니다.
 - **새로운 눈으로 리뷰한다.** `/review-rfc`는 같은 대화에서 작성된 코드는 리뷰하지 않습니다. Claude Code에서는 자동으로 별도의 컨텍스트에서 실행됩니다.
+- **건틀릿을 통과한다.** 앞 단계가 비평가를 견뎌 낸 뒤에야 다음 단계가 시작됩니다. `/extract-features`와 `/implement-rfc`는 BLOCKED 게이트가 있으면 사용자가 고치거나 명시적으로 무시할 때까지 멈추며, 무시한 기록도 남습니다.
 - **ID는 절대 바뀌지 않는다.** 요구사항, 기능, 규칙, RFC는 ID로 서로를 참조합니다. 참조가 끊기거나 Must-have 기능에 RFC가 없으면 [`scripts/trace-check.py`](scripts/trace-check.py)가 실패하며, 각 명령어가 이를 자동으로 실행합니다.
 - **파일끼리 어긋날 때는** `PRD.md`가 `FEATURES.md`보다 우선하고, 그다음이 `RULES.md`, 마지막이 RFC입니다. 명령어는 어떤 파일을 따랐는지 밝히고, 다른 파일을 수정 대상으로 표시합니다.
 
@@ -138,12 +146,27 @@ flowchart TB
 | 계획은 세션과 함께 사라진다 | PRD, 기능, 규칙, RFC가 남는다 —— 세션, 모델, 도구, 팀원을 넘어서 |
 | 요청을 있는 그대로 받아들인다 | 먼저 인터뷰를 해서, 코드가 생기기 전에 결정을 기록으로 남긴다 |
 | "괜찮아 보이는지"로 코드를 리뷰한다 | 문서화된 인수 기준에 비추어 리뷰하고, 파일끼리 대조한다 |
+| 계획을 쓴 모델이 그 계획을 평가한다 | 다른 모델의 비평가가 PRD, 계획, 각 RFC를 공격하고, Blocker가 있으면 다음 단계를 막는다 |
 
 둘은 함께 작동합니다: `/generate-rfcs`가 다음 작업 단위를 정하고, `/implement-rfc`가 에이전트의 플래너에게 작고 명확한 작업을 넘깁니다.
 
 **이럴 때 쓰세요:** 몇 주에 걸친 개발, 그리고 AI로 진지하게 만드는 모든 것 —— 코드 품질보다 범위가 불어나는 것과 잊힌 결정이 더 큰 타격이 되는 경우입니다. **이럴 때는 필요 없습니다:** 한 줄짜리 수정.
 
 스펙 주도 개발(spec-driven development. GitHub Spec Kit, Amazon Kiro 등)을 알고 있다면, 같은 아이디어입니다. 작업 단위는 RFC이고, 도입해야 할 CLI나 프레임워크가 없습니다. 그리고 둘보다 먼저 나왔습니다.
+
+## 건틀릿
+
+작성자는 자기 명세의 구멍을 보지 못하고, 그 명세를 쓴 모델도 마찬가지입니다. 자기 작업을 확인하라고 하면 같은 추론을 다시 읽고, 역시 아무것도 찾지 못합니다. 그래서 워크플로는 세 지점에서 멈추고 파일이 다른 누군가의 검증을 견디게 합니다.
+
+| 게이트 | 시점 | 비평가의 질문 |
+|---|---|---|
+| `/gauntlet prd` | `/verify-prd` 이후 | 유능한 팀이 엉뚱한 것을 만들거나 아예 만들 수 없게 만드는 것은 무엇인가? |
+| `/gauntlet plan` | `/generate-rfcs`와 `/test-strategy` 이후 | 이 계획을 순서대로 따르면 어디서 실패하는가: 빠진 부분, 잘못된 순서, 아무도 테스트할 수 없는 기준? |
+| `/gauntlet rfc <id>` | 각 `/review-rfc` 이후 | 구현이 잘못했는데 리뷰가 통과시킨 것은 무엇인가? |
+
+각 게이트는 먼저 `trace-check.py`를 실행하므로 끊어진 ID는 비평가에게 도달하지 않습니다. 그다음 비평가는 새 컨텍스트에서 파일만 읽고, 모든 지적을 심각도, 인용, 그리고 그것이 일으키는 실패로 뒷받침해야 합니다. Blocker가 하나라도 있으면 **BLOCKED**입니다. 해당 파일을 담당하는 명령어로 고치고, 다음 라운드는 새 비평가가 맡습니다. 모든 라운드는 `GAUNTLET.md`에 기록되므로, 무엇이 검증되었고 무엇이 발견되었으며 무엇을 의도적으로 받아들였는지 나중에 확인할 수 있습니다.
+
+**Claude Code에서 비평가는 Fable 5.2입니다.** 플러그인에는 `claude-fable-5-2`로 고정된 읽기 전용 `gauntlet-critic` 서브에이전트가 포함되어 있어, 비평가는 평소 PRD와 RFC를 쓰는 모델과 다른 모델이 되고 같은 맹점을 공유하지 않습니다. 다른 도구는 새 컨텍스트의 서브에이전트를 쓰거나, 다른 모델로 새 세션을 열도록 요청합니다. 게이트를 실행하는 모델이 직접 비평가 역할을 하는 일은 없습니다.
 
 ## 근거
 
@@ -174,7 +197,7 @@ ID도 지켜졌습니다. 프로젝트 도중에 PRD가 바뀌었을 때, 새 �
 
 | 도구 | 폴더 | 명령어 실행 |
 |---|---|---|
-| Claude Code | `.claude/skills/` 또는 플러그인 | `/create-prd` |
+| Claude Code | `.claude/skills/`와 `.claude/agents/` 또는 플러그인 | `/create-prd` |
 | GitHub Copilot (VS Code, CLI) | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd` (`/` 메뉴에서) |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |

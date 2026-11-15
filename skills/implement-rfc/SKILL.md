@@ -4,8 +4,8 @@ description: "Implement one RFC: check its predecessors, present a plan for appr
 argument-hint: "<rfc-id>"
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.0.0"
-  checksum: "sha256:dc0f22ae8eebf9590cb4b8fd781b9583f32d58b34477aefa1bc8bba13fa214f7"
+  version: "3.1.0"
+  checksum: "sha256:e9a459bcb4d84ea8695d8610d40bd4a55455d5955c18b192d0dc549fbdfabdc2"
 ---
 
 Target RFC ID: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the RFC ID from my message instead. Substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.
@@ -28,6 +28,7 @@ This implementation covers RFC-[ID]. Refer to:
 - The RFC itself, `RFCs/RFC-[ID]-*.md`, for the specific requirements being implemented
 - RFCS.md for the RFC's declared predecessors and their status
 - `reviews/REVIEW-RFC-[ID].md`, if it exists: an earlier review of this RFC, whose blocking issues come before anything else
+- GAUNTLET.md, if it exists: the quality-gate ledger. Open Blockers from a `rfc [ID]` round come first, like a review's blocking issues
 - TEST-STRATEGY.md for the tests planned for this RFC -- write those tests; if one turns out to be wrong, say why and record it as a deviation rather than quietly testing something else
 
 ## WHEN ARTIFACTS CONFLICT
@@ -38,15 +39,16 @@ Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Wh
 
 ### Phase 1: Planning (No Code)
 1. Check the RFC's declared predecessors. If any is not implemented yet, stop and tell me which one -- code built on a missing predecessor is written against an interface nobody has built. Continue only if I explicitly tell you to
-2. Analyze the requirements and existing codebase
-3. Present a comprehensive implementation plan covering:
+2. Check GAUNTLET.md for the latest `plan` round. If it is BLOCKED, stop and list the open Blockers: the plan this RFC belongs to is known to be wrong somewhere, and code locks the mistake in. Continue only if I explicitly tell you to. If there is no `plan` round, say so and recommend `/gauntlet plan` before continuing
+3. Analyze the requirements and existing codebase
+4. Present a comprehensive implementation plan covering:
    - Files to create or modify
    - Key components, data structures, and APIs
    - Proposed implementation sequence
    - Technical decisions and trade-offs
    - Potential impacts on existing functionality
-4. Wait for explicit user approval before proceeding
-5. Address any feedback or modifications from the user
+5. Wait for explicit user approval before proceeding
+6. Address any feedback or modifications from the user
 
 ### Phase 2: Implementation (After Approval Only)
 Set this RFC's Status in RFCS.md to In progress when you start.
