@@ -37,6 +37,7 @@ In scope for v1:
 - Optionally (the user said "maybe"): a command to clear all done tasks. Included as a lower-priority requirement (FR-5).
 - One JSON data file in the home directory, relocatable via an environment variable.
 - Crash-safe saving.
+- Overlapping runs on the same data file take turns, so no task is lost (NFR-10).
 
 Explicitly out of scope for v1:
 
@@ -81,6 +82,7 @@ Should-have:
 - **NFR-7**: Performance. Commands respond with no perceptible delay for a personal list (assumption: up to a few thousand tasks; no explicit budget was given).
 - **NFR-8**: Privacy. All data stays on the local machine; the tool makes no network calls and sends no telemetry.
 - **NFR-9**: Text encoding. Task text is stored and printed as UTF-8 (assumption).
+- **NFR-10**: Concurrent runs. Two or more `td` runs that change data (`add`, `done`, `rm`, `clear`) on the same data file take turns: each reads the file after the previous one has saved, so no task is lost or overwritten. A run that cannot get its turn within a bounded wait fails with an error on stderr and exit 1 and changes nothing. `td list` does not wait. Guaranteed on macOS and Linux; Windows is best effort (see Open Questions 19 and 20). This serves G2 and D-9 (change request CR-001, accepted by the person running the example, not by the user).
 
 ## User Journeys
 
@@ -92,6 +94,7 @@ Should-have:
 6. **Mistake.** The user types an id that does not exist; `td` prints a clear message on stderr and exits non-zero, and no data changes.
 7. **Crash.** The process is killed during a save; the next `td list` shows the list as it was before or after that command, never a broken file.
 8. **Relocate data.** The user sets the environment variable to another path (for example inside a synced folder or a project directory) and `td` uses that file instead.
+9. **Two terminals.** The user runs `td add` in two terminals at the same moment. Both tasks appear in the next `td list`, with different ids.
 
 ## Success Metrics
 
@@ -113,6 +116,7 @@ Should-have:
 - **D-6: Single user, single machine; no accounts, sync or server.** Reason: stated by the user. Rejected: any sync or multi-user design.
 - **D-7: v1 feature set is add, list, done, remove (clear-done optional).** Due dates, priorities, tags, colors and multiple lists are deferred. Reason: the user finds other apps "too much".
 - **D-8: macOS and Linux are the supported platforms; Windows is best effort and untested.** Reason: stated by the user.
+- **D-9: Overlapping runs are serialized by a lock (NFR-10); goal G2 stands as written.** Decided 2026-11-15 in CHANGE-REQUEST-001, **accepted by the person running the example on the user's behalf, not by the user in IDEA.md** (not available; the user has not seen it). Reason: G2 and IDEA.md ("It must never lose my tasks") say never, and without a lock two terminals lose a task; this was PRD-REVIEW.md finding F-1 and RFCS.md Open conflict 1. Replaced: the assumption in Open Question 9 (atomic replace only, last writer wins). Rejected: rewording G2 to "never lose tasks to a crash" (safe to write, but it weakens the stated goal to fit the code); a re-read-and-fail check at save time (turns a lost task into a failed command).
 
 ## Open Questions/Assumptions
 
@@ -126,7 +130,7 @@ Open questions (not answered by the user):
 6. **Exit codes.** Only zero versus non-zero was specified; distinct codes for usage errors, not-found and data-file errors are undecided. **(assumption: 0 success, 1 runtime error, 2 usage error)**
 7. **Existing prototype or code to extract from.** IDEA.md mentions none, so the project is assumed to start from scratch. Confirm no prior version exists. **(assumption)**
 8. **Distribution and install (finding F-9).** How `td` is installed (copy a single script onto PATH, a package, an entry point) and upgraded was not discussed, and the release check "works on macOS and Linux" cannot be run without it. Assumed: a single Python file with a `#!/usr/bin/env python3` shebang, runnable as `td` once on PATH; upgrading means replacing the file, and the data file format must stay readable across versions. **(assumption)**
-9. **Concurrent runs. (High, finding F-1)** G2 says tasks are never lost, but with atomic replace only and last-writer-wins, two overlapping `td add` runs (two terminals) silently drop one task. The user must say whether a lock around the read-modify-write is wanted. **(assumption: atomic replace only; last writer wins, which contradicts G2 for overlapping writes. Changing it to an advisory lock would add a requirement and a non-portable dependency on `fcntl`/`msvcrt`.)**
+9. **Concurrent runs. (High, finding F-1) Settled by D-9 (accepted by the person running the example, not by the user).** Overlapping runs take turns through a lock, NFR-10. The earlier assumption (atomic replace only, last writer wins) is replaced. If the user disagrees, the alternative is to reword G2 to "never lose tasks to a crash".
 10. **Behavior on `td add` with empty text, multi-word text without quotes, or very long text.** Assumed: arguments after `add` are joined with spaces; empty text is an error. **(assumption)**
 11. **Backup of the data file.** Not requested; atomic writes are the only protection assumed. **(assumption)**
 12. **Timeline detail.** Only "a weekend" was given; no milestones or owner dates. **(assumption: none needed for a one-person weekend project; finding F-13)**
@@ -136,5 +140,7 @@ Open questions (not answered by the user):
 16. **Environment variable edge cases (finding F-7).** Empty value, relative path, `~` in the value, a parent directory that does not exist, and the target being a symlink (an atomic replace swaps the symlink itself for a regular file). **(assumption: an empty value counts as unset; `~` is expanded; a missing parent directory is an error; the temporary file is created next to the resolved target so a symlink keeps working)**
 17. **Output encoding (finding F-8).** NFR-9 covers the file, but stdout under a non-UTF-8 locale (for example `LANG=C` on older systems) can raise `UnicodeEncodeError` on non-ASCII task text. **(assumption: the data file is always read and written as UTF-8 explicitly, and output falls back to replacement characters rather than crashing)**
 18. **Closed pipe (finding F-10).** `td list | head -1` or `grep -q` closes stdout early; Python by default prints a `BrokenPipeError` traceback. **(assumption: a closed stdout exits quietly and is not treated as an error)**
+19. **Lock wait limit (CR-001).** How long a run waits for its turn before giving up. **(assumption: 10 seconds, then exit 1 with one `td:` line naming the data file; the lock is held for one read-modify-write, which takes milliseconds, so only a stuck process reaches the limit)**
+20. **Locking on Windows (CR-001).** The lock uses the standard library's `fcntl`, which Windows lacks. **(assumption: on a platform without `fcntl` `td` runs without a lock; the never-lose guarantee of NFR-10 is stated for macOS and Linux only, because Windows is best effort and untested, D-8)**
 
 Assumptions made in requirements above (each also tagged inline): bare `td` runs `list` (FR-2); marking done is idempotent (FR-3); ids are stable and never reused (FR-6); corrupt files are never overwritten (NFR-2); performance target of a few thousand tasks (NFR-7); UTF-8 text (NFR-9); suggested build order (Timeline).

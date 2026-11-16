@@ -10,19 +10,19 @@ Items marked **(assumption)** come from PRD.md and are listed under Open Questio
 
 | Priority | Count |
 |---|---|
-| Must | 14 |
+| Must | 15 |
 | Should | 2 |
 | Could | 0 |
-| Won't | 7 |
+| Won't | 6 |
 | **Total** | **23** |
 
 | Category | Count |
 |---|---|
-| Storage and data safety | 5 |
+| Storage and data safety | 6 |
 | Commands | 5 |
 | Output and errors | 2 |
 | Platform and constraints | 4 |
-| Out of scope (Won't Have) | 7 |
+| Out of scope (Won't Have) | 6 |
 | **Total** | **23** |
 
 ## Storage and data safety
@@ -34,6 +34,7 @@ Items marked **(assumption)** come from PRD.md and are listed under Open Questio
 | F3 | Crash-safe save: a kill or power loss at any point leaves the complete old file or the complete new file | Must | NFR-1 | High | Save writes a temporary file in the same directory as the target, flushes and fsyncs it, atomically replaces the target, then fsyncs the directory where the platform allows. A test that kills the process at each step of a save leaves a parseable file holding either the previous or the new task list. Data is read and written as UTF-8 explicitly. Addresses review finding F-3 (High). |
 | F4 | Corrupt data file is never overwritten | Must | NFR-2, FR-9 | Medium | If the file exists but does not parse as the expected structure, every command (including `add`) exits non-zero, writes an error naming the file path and the parse error to stderr, writes nothing to stdout, and leaves the file byte-for-byte unchanged. |
 | F5 | Stable, never-reused task ids, backed by a stored next-id counter and a schema version | Must | FR-6 | Medium | The file stores a format version, a next-id counter and the task list. Ids are sequential integers (assumption). Adding task 3 after tasks 1 and 2 exist gives 3. After removing the highest-numbered task, the next `td add` still gets a new, higher id. Completing or removing other tasks never changes an existing id. A file written by an earlier v1 build stays readable. Addresses review finding F-2 (High). |
+| F17 | Locking for concurrent runs: overlapping `add`, `done`, `rm` and `clear` runs on the same data file take turns (ID kept from the Won't Have list; moved here by CR-001) | Must | G2, NFR-10, D-9 | Medium | While one mutating run holds the lock, a second waits, then reads the file as the first saved it. Two overlapping `add` runs leave both tasks, with different ids; the same for `done`, `rm`, `clear` against `add`. A run that cannot get its turn within 10 seconds (assumption) exits 1 with one `td:` line and changes nothing. `td list` does not wait. A killed holder does not leave a stuck lock. Windows: no lock (assumption). Built in RFC-006. Settles review finding F-1 (High); accepted by the person running the example, not by the user. |
 
 ## Commands
 
@@ -65,7 +66,6 @@ Items marked **(assumption)** come from PRD.md and are listed under Open Questio
 
 | ID | Feature | Priority | Source | Complexity | Acceptance Criteria |
 |---|---|---|---|---|---|
-| F17 | Locking for concurrent runs: PRD Open Question 9 | Won't | G2, Open Question 9 | Medium | Not built in v1 (assumption: atomic replace only, last writer wins). Known gap: two overlapping `td add` runs can drop one task, which conflicts with G2. This is listed as an open question for PRD.md rather than settled here. Addresses review finding F-1 (High). If the user wants a lock, PRD.md gains a requirement and this row becomes a Must. |
 | F18 | Due dates | Won't | PRD Scope | Low | No due-date field, flag or output in v1. |
 | F19 | Priorities | Won't | PRD Scope | Low | No priority field, flag or sorting in v1. |
 | F20 | Tags | Won't | PRD Scope | Low | No tag field or filtering in v1. |
@@ -95,12 +95,13 @@ Items marked **(assumption)** come from PRD.md and are listed under Open Questio
 | NFR-7 | F16 |
 | NFR-8 | F16 |
 | NFR-9 | F12 |
+| NFR-10 | F17 |
 
 ## Open Questions
 
 All of these are assumptions made because nobody could be asked (non-interactive run). `/implement-rfc` should put them in front of the user before code depends on them.
 
-1. **Concurrent runs (High).** F17 is Won't Have, which leaves last-writer-wins and contradicts PRD goal G2 ("never lose tasks") for overlapping writes. For PRD.md: either add a locking requirement or reword G2 to "never lose tasks to a crash". The user must decide.
+1. **Concurrent runs (High): settled by CR-001.** F17 is now a Must (lock, NFR-10, D-9), accepted by the person running the example, not by the user. Still open for the user: the 10 second wait limit and no lock on Windows (PRD Open Questions 19 and 20).
 2. **Environment variable name** `TD_FILE` and **default file name** `~/.td.json` (F1).
 3. **Id scheme**: sequential integers, never reused (F5).
 4. **`td clear` timing**: Should, built only if time allows (F10).

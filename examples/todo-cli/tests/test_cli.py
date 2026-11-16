@@ -93,7 +93,8 @@ class Basics(unittest.TestCase):
 
 class Usage(unittest.TestCase):
     def test_c6_usage_errors(self):  # criterion 6
-        cases = [["frob"], ["li"], ["list", "--bogus"], ["--bogus"], ["5"], ["list", "x"], ["a\nb"]]
+        cases = [["frob"], ["li"], ["list", "--bogus"], ["--bogus"], ["5"], ["list", "x"], ["a\nb"],
+                 ["--he"], ["--hel"], ["list", "--he"], ["list", "a\nb"]]
         with helpers.temp_env():
             write_store(THREE)
             for argv in cases:
@@ -108,12 +109,27 @@ class Usage(unittest.TestCase):
             self.assertEqual((code, err), (0, ""))
             self.assertIn("list", out)
 
+    def test_c6_help_text_says_what_commands_do(self):  # RFC-002 round 2 follow-up F1
+        with helpers.temp_env():
+            code, out, err = run(["--help"])
+            self.assertEqual(code, 0)
+            for bad in ("done tasks", "rm tasks", "add tasks", "list tasks", "clear tasks"):
+                self.assertNotIn(bad, out)
+            self.assertIn("mark a task done", out)
+
+    def test_c15_keyboard_interrupt(self):  # follow-up F2: pinned by the RFC, assumption in RFCS.md conflict 5
+        with helpers.temp_env():
+            write_store(THREE)
+            with mock.patch.dict(td.COMMANDS, {"list": mock.Mock(side_effect=KeyboardInterrupt)}):
+                self.assertEqual(run(["list"]), (1, "", "td: interrupted\n"))
+
     def test_c7_corrupt(self):  # criterion 7
         corrupt = [
             b"{not json",
             json.dumps({"version": 1, "next_id": 2, "tasks": [{"id": 1, "text": 5, "done": False}]}).encode(),
             json.dumps({"version": 1, "tasks": []}).encode(),
             json.dumps({"version": 2, "next_id": 1, "tasks": []}).encode(),
+            b"[" * 200000,
         ]
         with helpers.temp_env():
             for data in corrupt:
@@ -191,6 +207,38 @@ class Output(unittest.TestCase):
             code = proc.wait(timeout=30)
             self.assertTrue(first.startswith(b"1 [ ] "))
             self.assertEqual((code, err), (0, b""))
+
+    def test_c11_reader_closed_first(self):  # criterion 11, deterministic: nobody reads at all
+        # why: the test above can finish its write before the reader closes, so it never sees a
+        # broken pipe; here the pipe is closed before td starts to write, so one always happens.
+        with helpers.temp_env():
+            write_store([(i, "x" * 60, False) for i in range(1, 20001)])
+            proc = subprocess.Popen([sys.executable, str(helpers.TD_PATH), "list"],
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ.copy())
+            proc.stdout.close()
+            err = proc.stderr.read()
+            proc.stderr.close()
+            self.assertEqual((proc.wait(timeout=30), err), (0, b""))
+
+    def test_c11_write_lines_redirects_to_devnull(self):  # criterion 11: guards the dup2 on any Python version
+        class Broken:
+            def write(self, _):
+                raise BrokenPipeError
+
+            def flush(self):
+                pass
+
+            def fileno(self):
+                return 97
+
+        with mock.patch.object(td.sys, "stdout", Broken()), \
+                mock.patch.object(td.os, "open", return_value=96) as opened, \
+                mock.patch.object(td.os, "dup2") as dup2, \
+                mock.patch.object(td.os, "close") as close:
+            td._write_lines(["1 [ ] a"])
+        opened.assert_called_once_with(os.devnull, os.O_WRONLY)
+        dup2.assert_called_once_with(96, 97)
+        close.assert_called_once_with(96)
 
     def test_c12_ascii_stdout(self):  # criterion 12
         with helpers.temp_env():

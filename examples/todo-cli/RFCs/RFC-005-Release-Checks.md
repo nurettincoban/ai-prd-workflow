@@ -52,38 +52,42 @@ Run non-interactively, so the plan was not shown to the user and **nobody confir
 
 None from the RFC. One interpretation: criterion 3 says the bare name `td` is looked up on `PATH`; the test also asserts the install directory holds only the file `td`.
 
-### Verification
+### Verification (rerun 2026-11-16 on the current code)
 
-Command: `python3 -m unittest discover tests` on Python 3.13 Linux: `Ran 66 tests`, `OK` (58 before this RFC, 8 added; criteria 5 and 6 run in the top-level run and are skipped in the nested run by design). The scans were also checked to fail: appending `X = "a/b"` and `import socket` to a copy of `td` made criteria 2 and 9 fail; `td` was restored.
+Rerun because RFC-001 to RFC-004 had fix rounds and RFC-006 added the lock after the first run. `td` and the tests were not changed in this rerun. Nobody could approve the plan (non-interactive); no open High conflict touches this RFC, so it proceeded. The plan and assumptions in the Plan section above still stand and are still unconfirmed.
+
+Command: `python3 -m unittest discover tests` (the nested run in criterion 6 repeats it with a fresh `HOME`), once per interpreter, with a temp directory holding a `python3` symlink put first on PATH so the suite and the `#!/usr/bin/env python3` shebang of the installed `td` resolve to that interpreter:
+
+| Interpreter | OS | Result |
+|---|---|---|
+| Python 3.10.20 | Linux | `Ran 85 tests`, `OK (skipped=1)` |
+| Python 3.11.18 | Linux | `Ran 85 tests`, `OK (skipped=1)` |
+| Python 3.12.3 | Linux | `Ran 85 tests`, `OK (skipped=1)` |
+| Python 3.13.18 | Linux | `Ran 85 tests`, `OK (skipped=1)` |
+
+The one skip is RFC-006's `test_11_unreadable_directory` ("root can read any directory"), not a RFC-005 check. No `~/.td.json` was created. All criteria 1 to 7 and 9 pass on all four versions (criteria 5 and 6 ran in the top-level run; the nested run skips them by design).
 
 | Criterion | Result |
 |---|---|
-| 1 imports stdlib only | demonstrated (`test_1_imports_are_stdlib`) |
-| 2 banned imports and names | demonstrated (`test_2_no_banned_imports_or_names`) |
-| 3 install check | demonstrated (`test_3_install_check`) |
-| 4 fixture check | demonstrated (`test_4_fixture_check`) |
-| 5 speed check | demonstrated, each of the four commands under 1 second median here (`test_5_speed_check`) |
-| 6 nested run | demonstrated (`test_6_nested_suite_run`) |
-| 7 syntax floor via `feature_version=(3, 10)` | demonstrated, partial check as the RFC says (`test_7_syntax_floor`) |
-| 8 manual release run | **not met**, see below |
-| 9 separators | demonstrated (`test_9_no_path_separators`) |
+| 1, 2, 3, 4, 5, 6, 7, 9 | demonstrated on 3.10, 3.11, 3.12, 3.13 (Linux) |
+| 8 manual release run | Python 3.10 floor, a newer Python and Linux recorded; **macOS not run**, moved to the release checklist in RFCS.md |
 
 ### Manual release run (criterion 8)
 
 | Interpreter | OS | Date | Result |
 |---|---|---|---|
-| Python 3.13 | Linux | 2026-11-15 | passed (66 tests, OK) |
-| Python 3.10.20 | Linux | 2026-11-15 | passed (66 tests, OK) |
-| Python 3.11.18 | Linux | 2026-11-15 | passed (66 tests, OK) |
-| Python 3.12.3 | Linux | 2026-11-15 | passed (66 tests, OK) |
-| any | macOS | not run | **not run**: no macOS machine available here |
+| Python 3.10.20 | Linux | 2026-11-16 | passed (85 tests, OK, 1 skip) |
+| Python 3.11.18 | Linux | 2026-11-16 | passed (85 tests, OK, 1 skip) |
+| Python 3.12.3 | Linux | 2026-11-16 | passed (85 tests, OK, 1 skip) |
+| Python 3.13.18 | Linux | 2026-11-16 | passed (85 tests, OK, 1 skip) |
+| any | macOS | not run | **moved to the release checklist** (needs a macOS machine; none here) |
 
-How 3.10 was obtained: the coordinator supplied a uv-managed interpreter at `/root/.local/share/uv/python/cpython-3.10-linux-x86_64-gnu/bin/python3.10` (3.11 and 3.12 are `/usr/bin/python3.11` and `/usr/bin/python3.12`). For each run a temp directory holding a `python3` symlink to that interpreter was put first on PATH, so both `python3 -m unittest discover tests` and the `#!/usr/bin/env python3` shebang of the installed `td` resolved to it (`python3 --version` confirmed each version). Criterion 8 now has the Python 3.10 fact, a newer Python and Linux recorded; **macOS is still not run**, so criterion 8 is not fully met and the release must not be called done yet. Status stays In progress for that reason.
+Earlier runs (2026-11-15, 66 tests, before the fix rounds and RFC-006) are superseded by the table above. The macOS fact is a check that needs another machine, so it does not keep this RFC In progress: it is item 1 of the release checklist in RFCS.md, and the release must not be called done until it is recorded. Status is Implemented (waiting for review).
 
 ### FILES CHANGED
 
-- `tests/test_release.py` (created)
+- `tests/test_release.py` (created in the first run; unchanged in this rerun)
 - `RFCs/RFC-005-Release-Checks.md` (this section)
-- `RFCS.md` (RFC-005 Status: left In progress because criterion 8 is not met: the macOS run was not done)
+- `RFCS.md` (RFC-005 Status Implemented; `## Release checklist` added)
 
-Commit: `/implement-rfc RFC-005` (on the current branch).
+Commit: `/implement-rfc RFC-005 (rerun)` (on the current branch).

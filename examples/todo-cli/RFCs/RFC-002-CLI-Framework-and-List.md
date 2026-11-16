@@ -15,7 +15,7 @@ Scope: F11 here covers unknown commands, usage errors from argparse, the single 
 
 - `td` gains `main(argv=None) -> int` and ends with `if __name__ == "__main__": sys.exit(main())` (ARCH-2). The first line is `#!/usr/bin/env python3`, and the file has the executable bit set (ARCH-1).
 - Handler contract (RFC-003 and RFC-004 code against this): `COMMANDS` is a module-level dict `{name: handler}`, read when `main` builds the parser and again when it dispatches, so a test can replace an entry with `unittest.mock.patch.dict`. A handler is `handler(args, store, path) -> list[str]`: `args` is the argparse namespace, `store` is the dict `load_store` returned, `path` is the data file path. It returns the lines to print, each without a trailing newline; an empty list prints nothing. A handler that changes data calls `save_store(path, store)` itself, once, and only after all its validation. It raises `TdError` or `UsageError` for expected failures and never prints or calls `sys.exit`. Why handlers return text: output is written only after the command succeeded, so a failed command never writes to stdout (OUT-1). Each `build_parser()` subparser is created by iterating `COMMANDS`. A command's arguments are declared through a second module-level dict `ARGUMENTS = {name: callable(subparser) -> None}`, read at the same time as `COMMANDS`; the callable adds that command's positionals with `subparser.add_argument`. A name with no `ARGUMENTS` entry gets a subparser with no arguments (`list` and `clear`), and any extra argument is then an argparse error. RFC-003 and RFC-004 register their arguments only this way. Subparsers are created from the same `ArgumentParser` subclass as the main parser (the default of `add_subparsers`, which the `error()` override below relies on), so every parse error, subparser ones included, is one `td:` line.
-- Order of events in `main`, and so which error wins: (1) set up output; (2) parse arguments, a parse failure is exit 2 and nothing is read from disk; (3) `path = resolve_path()`, called once (CLI-7); (4) `store = load_store(path)`, called once (PERF-1), failure is exit 1; (5) run the handler (its own usage errors are exit 2, its runtime errors exit 1); (6) write each returned line plus `"\n"` to stdout and flush inside the error-handling block; (7) return 0. So a corrupt data file beats a handler-level usage error such as an empty `add` text, but never beats an argparse error.
+- Order of events in `main`, and so which error wins: (1) set up output; (2) parse arguments, a parse failure is exit 2 and nothing is read from disk; (3) `path = resolve_path()`, called once (CLI-7); (4) `store = load_store(path)`, called once (PERF-1), failure is exit 1; (5) run the handler (its own usage errors are exit 2, its runtime errors exit 1); (6) write each returned line plus `"\n"` to stdout and flush inside the error-handling block; (7) return 0. So a corrupt data file beats a handler-level usage error such as an empty `add` text, but never beats an argparse error. RFC-006 (CR-001) adds a step between 3 and 4 for the commands in its `MUTATING` set (`add`, `done`, `rm`, `clear`): steps 4 and 5 run inside `with data_lock(path):`, so overlapping runs take turns. `list` is not in the set and takes no lock, so none of this RFC's criteria change.
 - Parser: `argparse` with `allow_abbrev=False` on the parser and every subparser (NAME-2: `td --he`, `td li` are errors). A subclass of `ArgumentParser` overrides `error(message)` to write the single line `td: <message>` to stderr, with the same control-character replacement as every other message (so `td $'a\nb'` still gives one line) and raise `SystemExit(2)`, so even usage errors start with `td:` (OUT-7) and no usage dump is written. `-h`/`--help` is not an error: argparse prints help to stdout and exits 0, and `main` returns that code. `main` converts every `SystemExit` raised during parsing into the returned int (`e.code`, 0 or 2) so `main` always returns an int.
 - `format_task(task) -> str`: returns `"<id> [ ] <text>"` or `"<id> [x] <text>"` (id in decimal with no padding, one space, marker, one space, text), with every character in Unicode category `Cc`, `Zl` or `Zp` (so `\x1b`, `\n`, `\r`, `\t`, `\x7f`, U+2028, U+2029) replaced by one space. RFC-003 reuses it for `add`'s output. Worked example, tasks 1 open "buy milk", 2 done "write notes", 10 open "x":
 
@@ -76,7 +76,7 @@ Resting on assumptions nobody confirmed (all taken as written in the RFC):
 - Exit codes 0, 1, 2; Ctrl-C exits 1 with `td: interrupted` (RFCS.md Open conflict 5).
 - Control characters and U+2028/U+2029 print as one space; a broken pipe exits 0 quietly; a closed or missing stdout with output pending exits 1 (PRD Open Questions 13, 18).
 - The `td: ` prefix on every stderr error, including argparse errors; an argument error beats a corrupt file, a corrupt file beats a handler-level usage error.
-- From RFC-001, unchanged: the environment variable and default file names, the key names, no lock (RFCS.md Open conflict 1). RFCS.md Open conflict 8 (RFC-002's Features line omits F2 and F4, cited by criteria 4 and 7) was followed as stated: the tests follow the criteria.
+- From RFC-001, unchanged: the environment variable and default file names, the key names. (No lock at the time of this RFC; RFC-006 has since added one in `main` for `add`, `done`, `rm` and `clear`, after step 3 of the order of events; `list` still takes none. RFCS.md Open conflict 1 is closed.) RFCS.md Open conflict 8 (RFC-002's Features line omits F2 and F4, cited by criteria 4 and 7) was followed as stated: the tests follow the criteria.
 
 ### Deviations
 
@@ -95,3 +95,27 @@ Modified: `td` (shebang, executable bit, CLI framework), `RFCs/RFC-002-CLI-Frame
 ### Future
 
 `--help` lists only registered commands; RFC-003 and RFC-004 get usage text by registering in `COMMANDS` and `ARGUMENTS`.
+
+### Fix round (after review round 2, Changes requested)
+
+Plan not approved by a user (nobody available); the fixes are test additions plus one wording change, no open High conflict touches RFC-002 (conflict 1 is about concurrent writers; `list` writes nothing).
+
+Blocking issues fixed (each was broken on purpose, the suite failed, then the code was restored byte for byte):
+- **B1 (criterion 11, pipe handling):** new `test_c11_reader_closed_first` closes the pipe before `td` writes, so a `BrokenPipeError` always happens; new `test_c11_write_lines_redirects_to_devnull` calls `_write_lines` with a stdout stub that raises `BrokenPipeError` and asserts `os.dup2(devnull_fd, stdout_fd)`. Breaks: `dup2` replaced by `pass` fails the stub test; `except BrokenPipeError` swapped for another exception fails both.
+- **B2 (`allow_abbrev`):** criterion 6 gained `--he`, `--hel` and `list --he`. Removing `allow_abbrev=False` from the parser fails the first two; from the subparsers fails the third.
+- **B3 (argparse error sanitizing):** criterion 6 gained `["list", "a\nb"]` (one stderr line). Removing `_one_line` from `_Parser.error` fails it.
+
+Follow-ups closed: F1 (`--help` wording: new `HELP` dict in `td`, test `test_c6_help_text_says_what_commands_do`; breaking it fails the test) and F2 (`test_c15_keyboard_interrupt`; changing the exit code to 0 fails it). F3 left open (contrived, output setup not touched).
+
+### Deviations (fix round)
+
+1. `td` changed, not only tests: the `HELP` dict and `help=HELP.get(...)` in `build_parser` (follow-up F1). It touches the text of `--help` for RFC-003 and RFC-004's commands; no criterion pins that text. Not approved by a user (nobody available).
+2. The original `test_c11_broken_pipe` is kept unchanged; the two new tests do the guarding.
+
+### FILES CHANGED (fix round)
+
+Modified: `td`, `tests/test_cli.py`, `RFCs/RFC-002-CLI-Framework-and-List.md`, `RFCS.md`. Commit: `/implement-rfc RFC-002 (fix round)` on the current branch.
+
+### Verification (fix round)
+
+`python3 -m unittest discover tests`: before `Ran 69 tests ... OK`; after `Ran 73 tests ... OK` (4 new: reader-closed-first, dup2 stub, help text, KeyboardInterrupt). Not verified: Python 3.10, macOS (RFC-005).

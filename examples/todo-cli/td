@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-# td: a tiny command-line to-do list. Storage core (RFC-001), CLI framework and `list` (RFC-002), `add`, `done`, `rm` (RFC-003), `clear` (RFC-004).
+# td: a tiny command-line to-do list. Storage core (RFC-001), CLI framework and `list` (RFC-002), `add`, `done`, `rm` (RFC-003), `clear` (RFC-004), lock (RFC-006).
 import argparse
+import errno
 import json
 import os
 import pathlib
 import re
 import sys
+import time
 import unicodedata
 import uuid
+
+try:
+    import fcntl
+except ImportError:  # assumption: PRD Open Question 20, no lock where fcntl is missing (Windows)
+    fcntl = None
 
 # assumption: PRD Open Questions 1 and 2, variable name and default file
 ENV_VAR = "TD_FILE"
@@ -94,6 +101,16 @@ def _check_parent(path):
         raise TdError(f"{path}: directory {parent} does not exist or is not a directory")
 
 
+def _no_duplicate_keys(pairs):
+    # why: json keeps the last of two equal keys silently, which would hide a damaged or hand-edited file
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate key '{key}'")
+        result[key] = value
+    return result
+
+
 def load_store(path):
     """Return the validated store at path (empty store if missing); raise TdError if unreadable or corrupt."""
     _check_parent(path)
@@ -109,7 +126,10 @@ def load_store(path):
     if text == "":
         raise TdError(f"{path}: empty file")
     try:
-        store = json.loads(text)
+        store = json.loads(text, object_pairs_hook=_no_duplicate_keys)
+    except RecursionError:
+        # why: a deeply nested file must be reported as corrupt with its path (SAFE-3), not as an unexpected error
+        raise TdError(f"{path}: invalid JSON: nesting too deep") from None
     except ValueError as exc:
         raise TdError(f"{path}: invalid JSON: {exc}") from None
     _validate(path, store)
@@ -123,7 +143,10 @@ def save_store(path, store):
     directory = os.path.dirname(target)
     if not os.path.isdir(directory):
         raise TdError(f"{path}: directory {directory} does not exist or is not a directory")
-    data = json.dumps(store, indent=2)
+    try:
+        data = json.dumps(store, indent=2)
+    except ValueError as exc:  # e.g. an integer beyond Python's digit limit
+        raise TdError(f"{path}: cannot save: {exc}") from None
     tmp_path = os.path.join(directory, f".{os.path.basename(target)}.{uuid.uuid4().hex}.tmp")
     try:
         fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)  # umask decides mode (SEC-3)
@@ -291,6 +314,58 @@ def cmd_clear(args, store, path):
     return []
 
 
+# ---- lock for concurrent runs (RFC-006) ----
+
+# assumption: PRD Open Question 19, how long a run waits for another run
+LOCK_WAIT_SECONDS = 10
+# the commands that take the lock; a command added to COMMANDS later is read-only unless listed here
+MUTATING = frozenset({"add", "done", "rm", "clear"})
+_LOCK_POLL_SECONDS = 0.05
+
+
+class data_lock:
+    """Context manager: hold an exclusive lock on the data file's directory; raise TdError if it cannot be had."""
+
+    def __init__(self, path):
+        self.path = path
+        self.fd = None
+
+    def __enter__(self):
+        path = self.path
+        _check_parent(path)  # why: a missing directory is reported the same way with or without the lock
+        if fcntl is None:
+            return self
+        directory = os.path.dirname(os.path.realpath(path))  # the directory save_store writes into
+        try:
+            fd = os.open(directory, os.O_RDONLY)  # never retried: an unreadable directory is not "held"
+        except OSError as exc:
+            raise TdError(f"{path}: cannot lock: {exc.strerror or exc}") from None
+        deadline = time.monotonic() + LOCK_WAIT_SECONDS
+        try:
+            while True:
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as exc:
+                    # held by another run; some platforms raise EACCES instead of EAGAIN for a held lock
+                    if exc.errno not in (errno.EACCES, errno.EAGAIN):
+                        raise TdError(f"{path}: cannot lock: {exc.strerror or exc}") from None
+                if time.monotonic() >= deadline:
+                    raise TdError(f"{path}: data file is in use by another td run (waited {LOCK_WAIT_SECONDS} seconds)")
+                time.sleep(_LOCK_POLL_SECONDS)
+        except BaseException:
+            os.close(fd)
+            raise
+        self.fd = fd
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        if self.fd is not None:
+            os.close(self.fd)  # closing releases the lock; the OS does it too if the process dies
+            self.fd = None
+        return False
+
+
 # Handler contract: handler(args, store, path) -> list of lines to print (no newline).
 # Handlers that change data call save_store themselves, once, after validation, and never print.
 COMMANDS = {"list": cmd_list, "add": cmd_add, "done": cmd_done, "rm": cmd_rm, "clear": cmd_clear}
@@ -310,12 +385,22 @@ class _Parser(argparse.ArgumentParser):
         raise SystemExit(2)
 
 
+# what each command does, for `td --help`
+HELP = {
+    "list": "show every task",
+    "add": "add a task",
+    "done": "mark a task done",
+    "rm": "remove a task",
+    "clear": "remove every done task",
+}
+
+
 def build_parser():
     """Build the parser from COMMANDS and ARGUMENTS as they are right now."""
     parser = _Parser(prog="td", allow_abbrev=False, description="A tiny command-line to-do list.")
     sub = parser.add_subparsers(dest="command", metavar="command")
     for name in COMMANDS:
-        child = sub.add_parser(name, allow_abbrev=False, help=f"{name} tasks")
+        child = sub.add_parser(name, allow_abbrev=False, help=HELP.get(name, f"run {name}"))
         declare = ARGUMENTS.get(name)
         if declare is not None:
             declare(child)
@@ -366,9 +451,16 @@ def main(argv=None):
         except SystemExit as exc:
             return exc.code if isinstance(exc.code, int) else 0
         path = resolve_path()
-        store = load_store(path)
-        handler = COMMANDS[args.command or "list"]
-        _write_lines(handler(args, store, path))
+        name = args.command or "list"
+        handler = COMMANDS[name]
+        if name in MUTATING:
+            # why: the lock comes before the load so no run reads a file another is about to replace (SAFE-8)
+            with data_lock(path):
+                store = load_store(path)
+                lines = handler(args, store, path)
+        else:
+            lines = handler(args, load_store(path), path)
+        _write_lines(lines)
         return 0
     except TdError as exc:
         _report(exc)

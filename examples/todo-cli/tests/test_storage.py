@@ -183,6 +183,16 @@ class CorruptTest(unittest.TestCase):  # criterion 6
             ("done int", with_task({"id": 1, "text": "a", "done": 1}), "'done'"),
             ("id bool", with_task({"id": True, "text": "a", "done": False}), "'id'"),
             ("dup ids", json.dumps({"version": 1, "next_id": 3, "tasks": [task(1), task(1)]}), "'id'"),
+            ("version -1", j(version=-1), "'version'"),
+            ("next_id -1", j(next_id=-1), "'next_id'"),
+            ("id 0", with_task({"id": 0, "text": "a", "done": False}), "'id'"),
+            ("id -1", with_task({"id": -1, "text": "a", "done": False}), "'id'"),
+            ("nesting too deep", "[" * 200000, None),
+            # round 3 B3: no tasks, so only the positivity check can reject these (the next_id <= id check cannot fire)
+            ("next_id 0, no tasks", json.dumps({"version": 1, "next_id": 0, "tasks": []}), "'next_id'"),
+            ("next_id -1, no tasks", json.dumps({"version": 1, "next_id": -1, "tasks": []}), "'next_id'"),
+            ("duplicate top-level key", '{"version": 1, "version": 1, "next_id": 1, "tasks": []}', "duplicate key 'version'"),
+            ("duplicate task key", '{"version": 1, "next_id": 3, "tasks": [{"id": 1, "id": 2, "text": "a", "done": false}]}', "duplicate key 'id'"),
             ("next_id = max id", json.dumps({"version": 1, "next_id": 2, "tasks": [task(1), task(2)]}), "'next_id'"),
         ]
         with helpers.temp_env() as tmp:
@@ -223,6 +233,13 @@ class IdTest(unittest.TestCase):  # criterion 8
         td.remove_task(s, 1)
         td.remove_task(s, 2)
         self.assertEqual(td.add_task(s, "n")["id"], 3)
+
+    def test_next_id_far_above_highest_after_remove_all(self):  # follow-up F4
+        s = store_of(task(1), task(2), next_id=50)
+        td.remove_task(s, 1)
+        td.remove_task(s, 2)
+        self.assertEqual(td.add_task(s, "n")["id"], 50)
+        self.assertEqual(s["next_id"], 51)
 
     def test_missing_id(self):
         s = store_of(task(1))
@@ -323,6 +340,32 @@ class KillTest(unittest.TestCase):  # criterion 9
                         self.assertEqual(td.load_store(path), expected)
                         if point != "after_replace":
                             self.assertEqual(sorted(os.listdir(tmp)), sorted(before))  # criterion 10
+
+
+class TempFileTest(unittest.TestCase):  # follow-up F3: O_EXCL on the temp file
+    def test_existing_temp_name_is_not_clobbered(self):
+        with helpers.temp_env() as tmp:
+            path = os.path.join(tmp, "tasks.json")
+            td.save_store(path, OLD)
+            fixed = mock.Mock(hex="f" * 32)
+            tmp_path = os.path.join(tmp, ".tasks.json." + "f" * 32 + ".tmp")
+            write(tmp_path, b"precious")
+            with mock.patch.object(td.uuid, "uuid4", return_value=fixed):
+                with self.assertRaises(td.TdError) as cm:
+                    td.save_store(path, NEW)
+            self.assertTrue(str(cm.exception).startswith(path))
+            self.assertEqual(td.load_store(path), OLD)
+
+
+class OversizedSaveTest(unittest.TestCase):  # follow-up F5
+    def test_oversized_next_id_is_tderror(self):
+        with helpers.temp_env() as tmp:
+            path = os.path.join(tmp, "tasks.json")
+            big = {"version": 1, "next_id": 10 ** 5000, "tasks": []}
+            with self.assertRaises(td.TdError) as cm:
+                td.save_store(path, big)
+            self.assertTrue(str(cm.exception).startswith(path))
+            self.assertFalse(os.path.exists(path))
 
 
 class StrayAndSymlinkTest(unittest.TestCase):  # criteria 10, 11
