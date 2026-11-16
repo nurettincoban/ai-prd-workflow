@@ -269,3 +269,87 @@ The fix round did what Round 2 asked: three test additions that fail when pipe h
 ### FEATURES.md
 
 No Status column, so nothing to update.
+
+## Round 4 -- 2026-11-16
+
+**Overall verdict**: NEEDS WORK
+
+**Overall Risk Level**: Medium (no task is lost; Ctrl-C can still print a traceback, and a closed stdout makes a saved task look failed).
+
+Status set: Changes requested.
+
+Re-review after `2494db3 /implement-rfc RFC-002 (fix round 2)`, which answered the blocking follow-up from `changes/BUG-REPORT-001.md` item 5 (early Ctrl-C prints a traceback). Judged against that follow-up, against Rounds 1 to 3, and against the open conflicts that now touch this RFC. Reviewer context: fresh session, did not write the code. `td` was restored byte for byte after each break (`cmp` against a saved copy).
+
+Product type (PRD.md): CLI, Small. Same checks as earlier rounds; nothing added to the PRD's skip list.
+
+### Open conflicts and pending changes: what blocks this RFC
+
+- **Conflict 12 (RFC-002 against SAFE-6 and F11 for `add`, `done`, `rm`): blocking for RFC-002.** SAFE-6 ("a failed command never modifies the data file") is a rule and outranks the RFC; RFC-002 Open Question 3 and its step order (save, then print) make the code break it. I reproduced it: `TD_FILE=<new> td add x >&-` prints `td: unexpected error: AttributeError: 'NoneType' object has no attribute 'write'`, exits 1, and `td list` then shows `1 [ ] x`. A script that retries on exit 1 adds the task twice. The code follows the RFC exactly, so this is not a coding slip, but nobody has accepted it in writing and CHANGE-REQUEST-002 Change 3 is still **Decision: pending**. The conflict touches RFC-002 (the RFC states the behavior and owns the output path in `main`), so the review cannot certify the code against a rule it breaks. It stays blocking until the user decides Change 3, or accepts the contradiction in writing. The `list` half (closed stdout exits 1) is unaffected: `list` saves nothing, and that behavior matches SAFE-6.
+- **Conflict 11 (Ctrl-C before the first line of `td` runs): not blocking, as far as it goes.** The interpreter's own start-up cannot be caught by a one-file program, and the fix round recorded that for the user instead of weakening OUT-7, which is what the follow-up asked for. But see B1: not all of the remaining tracebacks fall in that window.
+- **Conflict 1 (lock) is closed; conflicts 2 to 10: unchanged, none blocks.** Conflict 8 (Features line) and 5 (exit 1 for Ctrl-C) followed as before.
+- **CHANGE-REQUEST-002 Changes 1, 2 and 4 (pending): not blocking.** They change what the product does (`add -h`, file mode, help text naming the data file). The RFCs and RULES.md say what the code does today, no higher artifact is contradicted, and nobody accepted them, so the code is judged against the RFC as written. Change 2 touches RFC-001 and Change 1 RFC-003; Change 4 would touch RFC-002's help text and is a Could have. Change 3 is the exception, above.
+
+### Step 0: run it
+
+No build step (single Python file).
+
+```
+$ python3 -m unittest discover tests
+..........................................s.............................................
+Ran 88 tests in 18.796s
+OK (skipped=1)
+```
+
+Python 3.13 on Linux; 3.10 and macOS not run (Release checklist item 1).
+
+### What I broke on purpose
+
+| Break | Caught? |
+|---|---|
+| SIGINT handler not installed | yes (`test_c16_interrupt_during_imports`, and the nested run) |
+| `os._exit(1)` changed to `os._exit(0)` in the handler | yes (2 failures) |
+| `KeyboardInterrupt` path returns 0 instead of 1 | yes (`test_c15_keyboard_interrupt`) |
+| `sorted` removed from `cmd_list` | yes (many failures) |
+| `_write_lines(lines)` removed from `main` (list prints nothing) | yes (many failures) |
+| Run the follow-up's own reproduction (60 Ctrl-Cs at 20 ms) on the shipped code | **no test does this**: 29 of 60 runs print a traceback while the suite is green (see B1) |
+
+The tests that exist do catch the breaks I made. What no test covers is the property the follow-up is about.
+
+### Used as the user
+
+`td`, `td list`, `td add`, `td --help` (fine), closed stdout on `add` and on `list` (see B2), and the Ctrl-C loop from RFCS.md.
+
+### 1. RFC adherence -- NEEDS WORK
+Criteria 1 to 14 hold as in Round 3. The blocking follow-up, "Ctrl-C in the first 5 to 40 ms prints a traceback", is not fixed (B1). The fix round's own notes say "0 of 60 after"; on this machine the same command gives 29 of 60.
+
+### 2. Rules compliance -- NEEDS WORK
+OUT-7 (no traceback reaches the user) is broken by B1; SAFE-6 is broken by B2 (through the RFC's own text). Others as in Round 3.
+
+### 3. Security -- PASS
+No change since Round 3. Control characters are still replaced in text and messages.
+
+### 4. Performance -- PASS
+One read, one sort, one write. The handler adds nothing at run time.
+
+### 5. Maintainability -- PASS
+The `_STARTED` flag and handler are small and commented. Tests map to criteria, but see B1 on what they leave out.
+
+### Blocking issues
+
+**B1. Early Ctrl-C still prints a traceback; the blocking follow-up (BUG-REPORT-001 item 5) is not met, and part of the window is td's own.** Reproduce with the follow-up's loop: `for i in $(seq 60); do TD_FILE=$(mktemp -u) python3 td list 2>err & sleep 0.02; kill -INT $!; wait $!; grep -l Traceback err; done`. I got 29 of 60 tracebacks. I then sent the signal at 8 to 48 ms in steps of 2 ms (12 runs each) and read each traceback. Most come from Python's own start-up (`site`, `os`, `_collections_abc`; or `td` line 0, before any of `td` runs): that part is Conflict 11 and is not blocking. But about 40 of the 72 tracebacks name `td` line 4, which is `import signal`. They run through `signal.py`, `enum`, `functools` and `collections`, so the handler is installed only after `signal` has finished importing, which is slow enough to be hit often. That window is `td`'s to close: the handler can be installed through `_signal` (a built-in module with no imports) or `signal` can be imported lazily after a cheaper first handler is in place. The follow-up said that only what `td` cannot catch should be recorded for the user; here a catchable part was not caught, and the Implementation Notes' "0 of 60 after" does not hold. The new tests do not see it: `test_c16_interrupt_during_imports` sends SIGINT at a fixed point after the handler exists, so it passes whatever happens earlier. Fix: install the handler with nothing heavy imported first (the reproduction should drop to the start-up window only), add a test that raises the interrupt during the import of `signal` itself (stand-in module on `PYTHONPATH`, as the existing test does for `argparse`), and correct the "0 of 60" claim.
+
+**B2. Conflict 12: a closed stdout makes `add`, `done`, `rm` save and then exit 1 (SAFE-6, F11).** Details above. Fix needs the user's decision on CHANGE-REQUEST-002 Change 3 (recommended there: exit 0 after a successful save, best-effort `td:` line), then RFC-002 step 6, Open Question 3 and a criterion, with RFC-003 reviewed again. Not fixable by the implementer alone.
+
+### Non-blocking (added to RFCS.md Follow-ups)
+
+- F5: `test_c16_interrupt_during_imports` and its siblings do not run the real timing loop; once B1 is fixed, consider one test that sends SIGINT at several delays and accepts only `td: interrupted` or silence from the start-up window. Folded into B1's fix; listed so it is not lost.
+- Still open from earlier rounds: F3 (closed stderr, `--help` into a closed pipe).
+- Pending (Changes 1, 2, 4) and Conflict 11 wait for the user; RFC-002's reviewer did not touch them.
+
+### Summary
+
+The fix round made `td` catch an interrupt during its imports after line 23, and the tests for that hold up when broken. But the handler is installed too late: `import signal` runs first and is slow, so about half of the early interrupts still print a traceback, which is what the blocking follow-up asked to stop. Separately, the unresolved contradiction between RFC-002 and SAFE-6 (Conflict 12, Change 3 pending) means the code is certified against a rule it breaks. RFC-002 is Changes requested.
+
+### FEATURES.md
+
+No Status column, so nothing to update.

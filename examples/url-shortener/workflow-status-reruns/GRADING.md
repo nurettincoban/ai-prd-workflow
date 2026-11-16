@@ -25,6 +25,12 @@ Seven `/workflow-status` reports on the same `before/` folder, graded against th
 | 13 | FOUND | FOUND | MISSED | MISSED | MISSED | MISSED | MISSED |
 | **Total** | **12** | **11** | **8** | **11** | **9** | **11** | **8** |
 
+## What this does and does not show
+
+- **It is in-sample.** The 3.2.0 changes were written after reading what the 3.1.0 runs missed on this same `before/` folder, and then scored on it again. It shows the new checks work where they were aimed; it is not a score on a project the prompt was never tuned against.
+- **Problem 8 got worse.** The 3.1.0 prompt found it in two of three runs, the 3.2.0 prompt in none. The new checks may crowd out the reading that found it. Problem 13 is still missed in two of three 3.2.0 runs.
+- **Some of the 13 are mechanical.** `trace-check.py`, which every run executes first, reports the missing RFCS.md and the unassigned feature by itself.
+
 Note: problem 7 is graded FOUND where the report says the blocklist check is "Optional" in RFC-003 against the PRD requirement; no report says "Could Have".
 
 ## Justifying quotes (FOUND)

@@ -62,7 +62,7 @@ Scope hand-off: this RFC has no commands, so command-level parts of TEST-3 and S
 9. Real-subprocess kill test, deterministic: a child process runs `save_store` with wrappers installed around `os.fsync` and `os.replace` that call `os._exit(9)` at a chosen point: before the temp file's fsync (step 1; a temp file may exist, its content is not specified), after the temp fsync and before `os.replace`, and after `os.replace` before the directory fsync. After each kill, `load_store` on the target succeeds and returns the previous store for the first two points and the new store for the third. When no previous file existed, the first two points leave no target file and `load_store` returns the empty store. The same three points are also run as injected `OSError`s in-process, with the same expectations (an injected non-`OSError` propagates unchanged and leaves the same files). The wrapper tells the temp file's fsync from the directory's by `stat.S_ISDIR(os.fstat(fd).st_mode)` on the descriptor, not by call count. (F3, TEST-2)
 10. After a failed save (injected exception before `os.replace`) no temp file remains in the data file's directory, compared by directory listing before and after. The test directory holds nothing else, so the listing check is exact. A stray extra file in the directory, such as a killed child leaves (criterion 9), does not affect `load_store` or a later `save_store`, and neither deletes it (a save removes only its own temp file). (SAFE-5)
 11. The temp file is created in the same directory as the resolved target: if `TD_FILE` points at a symlink (absolute, relative, and a chain of two), after a save the symlink is still a symlink and the file it points to holds the new store. (F1, SAFE-4, TEST-7)
-12. With `os.fsync` and `os.replace` wrapped to record calls, `save_store` records: fsync of the temp file, then `os.replace`, then fsync of the containing directory, in that order. When the directory fsync raises `OSError`, or an `os.open` wrapper that raises `OSError` for the directory's path (and passes every other call through) is installed, the save still succeeds; when it raises any other exception that exception propagates. (F3, F15, SAFE-2)
+12. With `os.fsync` and `os.replace` wrapped to record calls, `save_store` records: fsync of the temp file, then `os.replace`, then fsync of the containing directory, in that order. When the directory fsync raises `OSError`, or an `os.open` wrapper that raises `OSError` for the directory's path (and passes every other call through) is installed, the save still succeeds; when it raises any other exception that exception propagates. The wrapper also records the temp file's size (`os.fstat(fd).st_size`) when it is fsynced, and the test asserts that size is greater than zero and equals the size of the saved file: an fsync before the write, or before the flush, passes the order check and protects nothing (added in fix round 3, BUG-REPORT-001 item 4). (F3, F15, SAFE-1, SAFE-2)
 13. `save_store` given an invalid store (for example `next_id` as a string, or a duplicate id) raises `TdError` and leaves the existing file byte for byte unchanged, and creates no temp file. (F4, SAFE-1)
 14. `TdError("m")` has `exit_code` 1 and `str` equal to `"m"`; `TdError("m", 2).exit_code` is 2; `UsageError("m")` is a `TdError` with `exit_code` 2. (DEV-1; the error path built on it is RFC-002's F11)
 15. `helpers.temp_env()` leaves `HOME` and `TD_FILE` as they were (including unset) after it exits, and `python3 -m unittest discover tests` runs the suite with the standard library only. That no test touches the real home directory is checked for the whole suite by RFC-005 criterion 6, not here. (TEST-8, STACK-1, STACK-4)
@@ -149,3 +149,19 @@ Deviations: none from the RFC.
 Files changed in fix round 2: `tests/test_storage.py`, `RFCs/RFC-001-Storage-Core.md`, `RFCS.md`. Commit: `/implement-rfc RFC-001 (fix round 2)`.
 
 Verification: before, `python3 -m unittest discover tests` gave `Ran 74 tests ... OK`; after, `Ran 74 tests ... OK` (the two new cases are subtests inside `test_corrupt_inputs`, so the test count is unchanged). Python 3.10 and macOS were not run (RFC-005's job).
+
+### Fix round 3 (after BUG-REPORT-001 item 4) -- plan not approved, non-interactive
+
+Plan not approved: nobody was available. No open High conflict touches this RFC. Predecessors: none. Pending CHANGE-REQUEST-002 was not acted on (nobody accepted it).
+
+Blocking follow-up fixed: RFCS.md `(blocking) RFC-001 (BUG-REPORT-001 item 4)`, now `[CLOSED in the RFC-001 fix round 3]`. `FsyncOrderTest.test_order` (criterion 12) now records the temp file's size when `os.fsync` is called on it and asserts it is non-zero and equals the saved file's size. No change to `td`; `reviews/REVIEW-RFC-001.md` round 4 listed no blocking issue.
+
+Break-it check: (a) deleting `handle.flush()` in `save_store` -- `test_order` fails (it passed all 85 before); (b) moving `os.fsync` before the write and flush -- `test_order` fails. `td` was restored after each and `git diff td` is empty.
+
+Other follow-ups: F9 (empty-file wording) and F6 (4300-digit text) left open, out of scope for this fix round (not blocking). F8 needs the user.
+
+Deviations: none from the RFC; criterion 12's text was extended to describe the new assertion.
+
+Files changed in fix round 3: `tests/test_storage.py`, `RFCs/RFC-001-Storage-Core.md`, `RFCS.md`. Commit: `/implement-rfc RFC-001 (fix round 3)`.
+
+Verification: before, `python3 -m unittest discover tests` gave `Ran 85 tests ... OK (skipped=1)`; after, see the commit's final run (same count, 85, OK, skipped=1: the assertions were added to an existing test). Python 3.10 and macOS were not run (RFC-005's job).

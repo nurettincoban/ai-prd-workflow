@@ -335,3 +335,78 @@ The fix round closed B3 and the mutation now fails as it should; 19 of 20 new de
 ### FEATURES.md
 
 FEATURES.md has no Status column, so nothing to update.
+
+## Round 5 -- 2026-11-16
+
+**Overall verdict**: PASS
+
+Overall risk: Low. Status set: Reviewed.
+
+Re-review after `c2f73b3 /implement-rfc RFC-001 (fix round 3)`, judged against Rounds 1 to 4. Reviewer context: fresh session, did not write the code. Product type (PRD.md): CLI, Small; same applied and skipped checks as before, no section padded. The fix round changed only `tests/test_storage.py` (`FsyncOrderTest.test_order`), the RFC's Implementation Notes and criterion 12's text, and RFCS.md; `td` is unchanged by it (checked: `git show --stat c2f73b3`).
+
+### Blocking issue from the follow-up (BUG-REPORT-001 item 4)
+
+- **The fsync test did not check what was on disk when fsync ran: fixed.** `test_order` now records `os.fstat(fd).st_size` of the temp file when `os.fsync` is called on it, and asserts the size is above zero and equals the size of the saved file. I ran both of the bug report's mutations myself and each fails the suite (below). The same test still checks the order temp fsync, `os.replace`, directory fsync.
+
+### Open conflicts and CHANGE-REQUEST-002
+
+- **Open conflicts in RFCS.md:** conflict 1 is closed by CR-001 (accepted by the person running the example, not by the user in IDEA.md; same reading as Rounds 3 and 4, and RFC-006 now builds the lock). No open High conflict touches RFC-001. Conflicts 4 and 9 are followed as stated.
+- **`changes/CHANGE-REQUEST-002.md`: nothing in it is accepted (all four changes are Decision: pending), so none changes this RFC's criteria today.** Judged one by one against "does it make something blocking for RFC-001":
+  - Change 2 (a save keeps the mode of an existing data file; a read-only file is refused) is the only one that reaches RFC-001. It reverses RFC-001's own recorded assumption 4 and criterion 5, and SEC-3 sets nothing for existing files, so the code, the RFC and the rules agree today. It is a proposed change, not a contradiction between artifacts, so it is not an open High conflict and not blocking. Recorded as follow-up F10 so it is not lost: if the user accepts it, RFC-001 becomes Spec changed and needs a fix round (criterion 5, the save algorithm line, Open Question 4, new tests for modes 600, 640 and 444).
+  - Change 3 (a failed output write after a successful save) is a contradiction between RFC-002's Open Question 3 and RULES.md SAFE-6 for `add`, `done` and `rm`. It lives in `main` and `_write_lines` (RFC-002 and RFC-003); `save_store` and `load_store` do exactly what RFC-001 says and nothing in RFC-001 depends on the output. It does not touch this RFC, so it does not block it. It was not yet listed under Open conflicts in RFCS.md, so I added it there as conflict 12 (note that it is unresolved and that RFC-002 and RFC-003 are the ones affected).
+  - Changes 1 and 4 (`add` argument parsing, `--help` wording) touch RFC-003 and RFC-002 only.
+
+### Step 0: run it
+
+No build step (single Python file). Python 3.13.18:
+
+```
+$ python3 -m unittest discover tests
+Ran 88 tests in 18.320s
+
+OK (skipped=1)
+```
+
+The skip is the macOS-only case in RFC-005. Python 3.10 and macOS were not run (RFC-005's job). `git status` was clean after every run.
+
+Break-it results (each run against `tests/test_storage.py`, 28 tests, with `td` copied back and `cmp` clean after each):
+
+| Break | Caught? |
+|---|---|
+| `handle.flush()` deleted (bug report mutation a) | yes (1 failure, `test_order`) |
+| temp-file fsync moved before the write and flush (bug report mutation b) | yes (1, `test_order`) |
+| temp-file fsync removed | yes (7) |
+| fsync moved after `os.replace` | yes (7) |
+| directory fsync removed | yes (6) |
+| `os.replace` skipped | yes (27) |
+| `O_EXCL` dropped | yes (1) |
+| `realpath` replaced by `abspath` | yes (4) |
+| `next_id < 1` loosened to `< 0` | yes (1) |
+| `task["id"] < 1` loosened to `< 0` | yes (1) |
+| `next_id <= id` changed to `<` | yes (1) |
+| `add_task` stops incrementing `next_id` | yes (2) |
+| duplicate-key hook removed | yes (2) |
+| `bool` accepted as an integer | yes (2) |
+| empty-file check disabled | **no**, F9 from Round 4 (still rejected, exit 1, path named; only the wording changes) |
+
+14 of 15 caught; the survivor is the known wording gap F9, not a lost behavior. The two mutations the outside reviewer reported (items a and b) were the blocking ones and are now caught by one test that fails on each.
+
+Used as the user (`TD_FILE` in a temp path): `add a`, `add b`, `done 1`, `rm 2`, `add c`, `list` gave `1 [x] a` and `3 [ ] c`, exit 0; `next_id` 4 in the file (id 2 not reused, G2/F5); `td done 9` printed `td: no task with id 9`, exit 1; an empty data file gave `td: <path>: empty file`, exit 1, file untouched. G2 (crash safety and no lost write) and G4 (stderr message, exit code) hold for this RFC's part.
+
+### Dimensions
+
+1. RFC adherence: **PASS.** All 15 criteria are met; criterion 12 now carries the size assertion its new text describes, and each criterion has a test that fails when the behavior regresses (except the wording in F9).
+2. Rules compliance: **PASS.** SAFE-1, SAFE-2, SAFE-5, SEC-3, DATA-1 to 7, TEST-2 unchanged and followed.
+3. Security: **PASS.** No change; file creation still exclusive, random temp name, mode from the umask (Change 2 pending, see F10).
+4. Performance: **N/A** beyond one read and one write per call; PASS.
+5. Maintainability: **PASS.** The new assertion carries a `why:` comment; no dead code.
+
+### Blocking issues
+
+None.
+
+### Improvement suggestions (non-blocking, in RFCS.md Follow-ups)
+
+- F10 (new): CHANGE-REQUEST-002 Change 2 (file mode kept across a save; read-only data file refused) is pending and would reopen RFC-001 criterion 5 and Open Question 4; on acceptance, set RFC-001 to Spec changed.
+- F11 (new): `test_order` asserts the temp file's size only for the one small store; a store larger than the stream buffer (over 8 KiB) would also catch a partial flush. The flush mutation is caught today, so this is a hardening idea only.
+- F9, F6, F8 (carried): empty-file wording untested; the 4300-digit text is Python's; the user has not confirmed D-9.

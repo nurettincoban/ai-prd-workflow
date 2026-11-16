@@ -403,10 +403,14 @@ class StrayAndSymlinkTest(unittest.TestCase):  # criteria 10, 11
 class FsyncOrderTest(unittest.TestCase):  # criterion 12
     def test_order(self):
         calls = []
+        sizes = []  # size of the temp file on disk at the moment it is fsynced (BUG-REPORT-001 item 4)
         real_fsync, real_replace = os.fsync, os.replace
 
         def fsync(fd):
-            calls.append("dir_fsync" if stat.S_ISDIR(os.fstat(fd).st_mode) else "temp_fsync")
+            is_dir = stat.S_ISDIR(os.fstat(fd).st_mode)
+            if not is_dir:
+                sizes.append(os.fstat(fd).st_size)
+            calls.append("dir_fsync" if is_dir else "temp_fsync")
             return real_fsync(fd)
 
         def replace(a, b):
@@ -414,8 +418,14 @@ class FsyncOrderTest(unittest.TestCase):  # criterion 12
             return real_replace(a, b)
 
         with helpers.temp_env() as tmp, mock.patch.multiple(os, fsync=fsync, replace=replace):
-            td.save_store(os.path.join(tmp, "tasks.json"), NEW)
+            path = os.path.join(tmp, "tasks.json")
+            td.save_store(path, NEW)
+            with open(path, "rb") as f:
+                final_size = len(f.read())
         self.assertEqual(calls, ["temp_fsync", "replace", "dir_fsync"])
+        # why: an fsync of an empty or half-written file keeps the call order right and protects nothing
+        self.assertGreater(final_size, 0)
+        self.assertEqual(sizes, [final_size])
 
     def test_directory_open_failure_skipped(self):
         real_open = os.open

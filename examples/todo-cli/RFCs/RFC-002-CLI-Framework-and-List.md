@@ -119,3 +119,65 @@ Modified: `td`, `tests/test_cli.py`, `RFCs/RFC-002-CLI-Framework-and-List.md`, `
 ### Verification (fix round)
 
 `python3 -m unittest discover tests`: before `Ran 69 tests ... OK`; after `Ran 73 tests ... OK` (4 new: reader-closed-first, dup2 stub, help text, KeyboardInterrupt). Not verified: Python 3.10, macOS (RFC-005).
+
+### Fix round 2 (after BUG-REPORT-001 item 5, blocking follow-up in RFCS.md)
+
+Plan not approved by a user (nobody available); no open High conflict touches this change (`list` writes nothing; conflict 5 is the Ctrl-C exit code, unchanged: `td: interrupted`, exit 1). The review file `reviews/REVIEW-RFC-002.md` has no blocking issue; the only blocking item is the follow-up. CHANGE-REQUEST-002 is pending and was not acted on.
+
+Bug: the `except KeyboardInterrupt` is inside `main`, so a Ctrl-C while Python was importing modules or loading `td` (the first 5 to 40 ms) raised outside it and printed a traceback (31 of 60 tries before the fix; see Fix round 3: that claim was wrong, 19 of 60 tracebacks remained).
+
+Fix, in `td` only: at the top of the file, before the other imports, `import os, signal, sys` and, only when `td` runs as the program (`__name__ == "__main__"`, so tests that import it change no signal handler), install `_on_sigint` for SIGINT. While `_STARTED` is False the handler writes `td: interrupted` to fd 2 and calls `os._exit(1)`: the same line and code as the normal path, and nothing is half-done at that point because no data file has been touched. `main` sets `_STARTED = True` as the first statement of its `try`; from then on the handler raises `KeyboardInterrupt`, so the existing `except KeyboardInterrupt` runs and `with data_lock` and `save_store` clean up as before (an `os._exit` there would skip them).
+
+Not fixable: an interrupt before the first line of `td` runs (interpreter start-up, `site` import, reading the script) cannot be caught by `td`. The Python start-up window is a few ms; an interrupt there prints Python's own traceback or nothing. OUT-7 is not weakened; this is an open question for the user: accept that limit, or wrap the program in a launcher (not in scope of this RFC, ARCH-1 says one file).
+
+New tests in `tests/test_cli.py`: `test_c16_interrupt_during_imports` (a stand-in `argparse` module on `PYTHONPATH` sends SIGINT to itself while `td` is importing, at a fixed point, not by timing; expects exit 1, empty stdout, stderr exactly `td: interrupted\n`), `test_c16_sigint_handler_after_main_starts` (handler raises `KeyboardInterrupt` and does not `_exit` once started; writes and `_exit(1)`s before) and `test_c16_main_marks_started`.
+
+Broken on purpose, each restored byte for byte: handler not installed (caught, 1 failure); `os._exit(0)` (caught, 2 failures); `_STARTED` ignored in the handler (caught); `main` never sets `_STARTED` (not caught by the first two tests, since the output is the same; caught after adding `test_c16_main_marks_started`).
+
+### Deviations (fix round 2)
+
+1. `td` gained a module-level `_STARTED`, `_on_sigint` and a SIGINT install under the `__main__` guard, and three imports moved above the guard. No criterion covers it; RFC-002's error path ("`KeyboardInterrupt` prints `td: interrupted`") is what it implements. Not approved by a user (nobody available).
+2. The RFC's rule "no function whose body is only `pass`" and the `sys.exit` scan are unaffected (`os._exit` is not `sys.exit`).
+
+### FILES CHANGED (fix round 2)
+
+Modified: `td`, `tests/test_cli.py`, `RFCs/RFC-002-CLI-Framework-and-List.md`, `RFCS.md`. Commit: `/implement-rfc RFC-002 (fix round 2)` on the current branch.
+
+### Verification (fix round 2)
+
+`python3 -m unittest discover tests`: before `Ran 85 tests ... OK (skipped=1)`; after `Ran 88 tests in 18.1s ... OK (skipped=1)` (3 new). Reproduction from RFCS.md: **the earlier claim of 0 tracebacks in 60 tries was wrong** (see Fix round 3). Not verified: Python 3.10, macOS (RFC-005).
+
+### Fix round 3 (after review round 4, Changes requested)
+
+Plan not approved by a user (nobody available). **Open conflict 12 (High: RFC-002 against SAFE-6 for `add`, `done`, `rm`; CHANGE-REQUEST-002 Change 3 pending) touches this RFC, so by the instructions this RFC should stop and report.** I did the part that does not depend on it, B1 (the signal handler, nothing to do with the output path or `save_store`), and did **not** touch the closed-stdout behavior, Open Question 3, step 6 of the order of events or any criterion about it. B2 is therefore unfixed and this RFC stays In progress, not Implemented: sending it to review now would only hit the same blocking conflict.
+
+**Why the earlier "0 of 60" was wrong.** The fix round 2 loop used `cmd & ... kill -INT $!`. A non-interactive shell starts background jobs with SIGINT ignored, so the signal was dropped and no traceback was possible; the number measured nothing. Measured here with a Python driver (`subprocess.Popen`, `send_signal(SIGINT)` after a delay, `TD_FILE` a fresh temp name, Python 3.13.18 on Linux, 4 cores), so the child has the default SIGINT disposition. Two protocols: (a) the reviewer's sweep, 8 to 48 ms in steps of 2, 12 runs each (252 runs), counting stderr that contains `Traceback` and the first `td` line each names; (b) 60 runs at 20 ms.
+
+| | (a) sweep, tracebacks of 252 | first `td` line named | (b) 20 ms, of 60 |
+|---|---|---|---|
+| Before (commit 2494db3) | 72 | line 4 `import signal`: 27; line 0 or no `td` frame (interpreter start-up): 45 | 19 |
+| After `_signal` | 57 | line 4: 0; line 13 (`raise KeyboardInterrupt` after main returned): 1; start-up: 56 | 5 |
+| After `_signal` and ignoring SIGINT after main | 48 | none in `td`'s code; all 48 name line 0 or no `td` frame (start-up, Open conflict 11) | 3 |
+
+The 20 ms runs after the fix were not classified one by one; the sweep, which was, shows every remaining traceback is in the start-up window `td` cannot reach. The earlier (shell) loop gave 0 of 60 on both before and after, which is why it is not used.
+
+Fixes, in `td`:
+1. `import _signal` (a built-in module with no imports of its own) replaces `import signal`, and the handler is installed with `_signal.signal(_signal.SIGINT, ...)`. Only `_signal`, `os` and `sys` are imported before the handler exists.
+2. After `main` returns, SIGINT is set to ignored (only when run as the program) before `sys.exit`. The sweep found a second `td`-owned window: an interrupt after main returned raised `KeyboardInterrupt` in the handler outside any `except` (line 13).
+
+New tests in `tests/test_cli.py`: `test_c16_handler_installed_before_heavy_imports` (only `_signal`, `os`, `sys` may be imported before the install; checked on the `ast`), `test_c16_interrupt_during_import_of_signal` (stand-in `signal.py` on `PYTHONPATH` interrupts at the import; no traceback, exit 0 or `td: interrupted` exit 1) and `test_c16_interrupt_after_main_returns` (an atexit callback sends SIGINT after `main` returned; exit 0, empty stderr). The follow-up F5 (a test running the real timing loop) is **not** added: the loop is timing dependent and flaky by nature; the three deterministic tests stand in for it. F5 stays open.
+
+Broken on purpose, each restored byte for byte (`cmp`), suite run each time: `import signal as _signal` back at the top (2 new tests fail); the SIGINT-ignore after main removed (1 fails); handler install removed (2 fail); `_STARTED = True` removed from `main` (1 fails). The nested release run (`test_6_nested_suite_run`) failed alongside each, as it should.
+
+### Deviations (fix round 3)
+
+1. `td` gained the SIGINT-ignore after `main` returns, which the review did not ask for (it was found by the sweep and is the same follow-up). Wording of exit codes unchanged: a late Ctrl-C after a finished run exits with main's code. Not approved by a user (nobody available).
+2. Conflict 12 / B2 not fixed, on purpose: needs the user's decision on CHANGE-REQUEST-002 Change 3.
+
+### FILES CHANGED (fix round 3)
+
+Modified: `td`, `tests/test_cli.py`, `RFCs/RFC-002-CLI-Framework-and-List.md`, `RFCS.md`. Commit: `/implement-rfc RFC-002 (fix round 3)` on the current branch.
+
+### Verification (fix round 3)
+
+`python3 -m unittest discover tests`: before `Ran 88 tests ... OK (skipped=1)`; after `Ran 91 tests in 18.9s ... OK (skipped=1)` (3 new). Not verified: Python 3.10, macOS (RFC-005).

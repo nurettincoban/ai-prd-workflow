@@ -123,6 +123,82 @@ class Usage(unittest.TestCase):
             with mock.patch.dict(td.COMMANDS, {"list": mock.Mock(side_effect=KeyboardInterrupt)}):
                 self.assertEqual(run(["list"]), (1, "", "td: interrupted\n"))
 
+    def test_c16_interrupt_during_imports(self):  # BUG-REPORT-001 item 5: interrupt before main runs
+        # A stand-in `argparse` on PYTHONPATH interrupts the run while td is still importing, which is
+        # what a Ctrl-C in the first milliseconds does, but at a fixed point instead of by timing.
+        with helpers.temp_env() as tmp:
+            shim = os.path.join(tmp, "shim")
+            os.mkdir(shim)
+            with open(os.path.join(shim, "argparse.py"), "w") as f:
+                f.write("import os, signal, time\nos.kill(os.getpid(), signal.SIGINT)\ntime.sleep(5)\n")
+            env = dict(os.environ, PYTHONPATH=shim)
+            proc = subprocess.run([sys.executable, str(helpers.TD_PATH), "list"], env=env,
+                                  capture_output=True, text=True, timeout=30)
+            self.assertEqual((proc.returncode, proc.stdout, proc.stderr), (1, "", "td: interrupted\n"))
+
+    def test_c16_handler_installed_before_heavy_imports(self):  # reviewer B1 (round 4): `import signal` ran first
+        # Only built-in or already-loaded modules may be imported before the SIGINT handler is installed:
+        # `signal` pulls in enum, functools and collections, and a Ctrl-C during that import printed a traceback.
+        tree = ast.parse(TD_SOURCE)
+        before = []
+        for node in tree.body:
+            if isinstance(node, ast.If) and "_on_sigint" in ast.dump(node):
+                break
+            if isinstance(node, ast.Import):
+                before += [a.name for a in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                before.append(node.module)
+        else:
+            self.fail("no SIGINT install found")
+        self.assertEqual(sorted(before), ["_signal", "os", "sys"])
+
+    def test_c16_interrupt_during_import_of_signal(self):  # reviewer B1 (round 4)
+        # A stand-in `signal` on PYTHONPATH interrupts the run when it is imported. td must not import it
+        # before its handler exists (the old `import signal` at the top printed a traceback here); if some
+        # later import pulls it in, the interrupt must still end as `td: interrupted`.
+        with helpers.temp_env() as tmp:
+            shim = os.path.join(tmp, "shim")
+            os.mkdir(shim)
+            with open(os.path.join(shim, "signal.py"), "w") as f:
+                f.write("import os\nos.kill(os.getpid(), 2)\n")
+            env = dict(os.environ, PYTHONPATH=shim)
+            proc = subprocess.run([sys.executable, str(helpers.TD_PATH), "list"], env=env,
+                                  capture_output=True, text=True, timeout=30)
+            self.assertNotIn("Traceback", proc.stderr)
+            self.assertIn((proc.returncode, proc.stderr), [(0, ""), (1, "td: interrupted\n")])
+
+    def test_c16_interrupt_after_main_returns(self):  # found by a timing sweep: late Ctrl-C printed a traceback
+        # sitecustomize sends SIGINT from an atexit callback, which runs after `td` has returned from main.
+        with helpers.temp_env() as tmp:
+            shim = os.path.join(tmp, "shim")
+            os.mkdir(shim)
+            with open(os.path.join(shim, "sitecustomize.py"), "w") as f:
+                f.write("import atexit, os\natexit.register(lambda: os.kill(os.getpid(), 2))\n")
+            env = dict(os.environ, PYTHONPATH=shim)
+            proc = subprocess.run([sys.executable, str(helpers.TD_PATH), "list"], env=env,
+                                  capture_output=True, text=True, timeout=30)
+            self.assertEqual((proc.returncode, proc.stderr), (0, ""))
+
+    def test_c16_sigint_handler_after_main_starts(self):  # the handler must not hide Ctrl-C from main's own handling
+        with mock.patch.object(td, "_STARTED", True), mock.patch.object(td.os, "_exit") as ex:
+            with self.assertRaises(KeyboardInterrupt):
+                td._on_sigint(2, None)
+            ex.assert_not_called()
+        with mock.patch.object(td, "_STARTED", False), mock.patch.object(td.os, "_exit") as ex, \
+                mock.patch.object(td.os, "write") as wr:
+            td._on_sigint(2, None)
+            wr.assert_called_once_with(2, b"td: interrupted\n")
+            ex.assert_called_once_with(1)
+
+    def test_c16_main_marks_started(self):  # from then on Ctrl-C raises KeyboardInterrupt, so main cleans up (lock, temp file)
+        seen = []
+        with helpers.temp_env():
+            write_store(THREE)
+            with mock.patch.object(td, "_STARTED", False), \
+                    mock.patch.dict(td.COMMANDS, {"list": lambda a, s, p: seen.append(td._STARTED) or []}):
+                run(["list"])
+        self.assertEqual(seen, [True])
+
     def test_c7_corrupt(self):  # criterion 7
         corrupt = [
             b"{not json",

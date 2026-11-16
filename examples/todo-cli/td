@@ -1,12 +1,32 @@
 #!/usr/bin/env python3
 # td: a tiny command-line to-do list. Storage core (RFC-001), CLI framework and `list` (RFC-002), `add`, `done`, `rm` (RFC-003), `clear` (RFC-004), lock (RFC-006).
+import _signal  # why: a built-in module with no imports of its own; `import signal` pulls in enum, functools and collections, a window in which Ctrl-C printed a traceback
+import os
+import sys
+
+_STARTED = False  # why: set by main; before it, Ctrl-C cannot reach main's except KeyboardInterrupt
+
+
+def _on_sigint(signum, frame):
+    """Ctrl-C handler: before main runs (imports, module load) print the one-line message and exit 1 (OUT-7, RFC-002)."""
+    if _STARTED:
+        raise KeyboardInterrupt
+    try:
+        os.write(2, b"td: interrupted\n")
+    finally:
+        os._exit(1)
+
+
+if __name__ == "__main__":
+    # why: the default handler raises KeyboardInterrupt, which during imports escapes main and prints a traceback
+    # (BUG-REPORT-001 item 5). Only when run as the program, so importing td in tests changes no signal handler.
+    _signal.signal(_signal.SIGINT, _on_sigint)
+
 import argparse
 import errno
 import json
-import os
 import pathlib
 import re
-import sys
 import time
 import unicodedata
 import uuid
@@ -444,7 +464,9 @@ def _report(message):
 
 def main(argv=None):
     """Run one td command and return the exit code (0 ok, 1 runtime error, 2 usage error)."""
+    global _STARTED
     try:
+        _STARTED = True
         _setup_output()
         try:
             args = build_parser().parse_args(argv)
@@ -475,4 +497,8 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    _code = main()
+    # why: main is done and everything is saved or printed; a late Ctrl-C would raise KeyboardInterrupt
+    # outside main's except and print a traceback over a finished run (seen at about 45 ms in a timing sweep)
+    _signal.signal(_signal.SIGINT, _signal.SIG_IGN)
+    sys.exit(_code)
