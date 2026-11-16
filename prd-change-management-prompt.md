@@ -4,7 +4,7 @@ Analyze the original PRD, the current development status, and the proposed chang
 
 Scale the assessment to the change. A change that touches one feature or one RFC needs sections 1, 2 and 4 in a few lines each; leave out the sections with nothing to say rather than filling them. A change to a product with no team has no stakeholders to brief.
 
-A bug in an RFC that is already Reviewed is not a requirement change: the spec was right and the code is wrong. Do not use this command for it. Add it to `## Follow-ups` in RFCS.md and set the RFC to Changes requested, so `/implement-rfc` fixes it and `/review-rfc` checks the fix.
+A bug in an RFC that is already Reviewed is not a requirement change: the spec was right and the code is wrong. Do not use this command for it. Add it to `## Follow-ups` in RFCS.md marked **(blocking)**, with the steps that reproduce it, and set the RFC to Changes requested, so `/implement-rfc` fixes it and `/review-rfc` checks the fix. Follow-ups are otherwise non-blocking; the mark is what keeps this one from waiting behind them.
 
 ## WHEN A QUESTION HAS NO ANSWER
 

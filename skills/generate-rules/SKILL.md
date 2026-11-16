@@ -4,7 +4,7 @@ description: "Write RULES.md, the project standards the AI must follow, with reg
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
   version: "3.2.0"
-  checksum: "sha256:10e7bed7f2b79fe005d1255f7161d4716a98eddfe5e38ac4e465e1110307ee0a"
+  checksum: "sha256:bcd2d9f8e491fb60c2c1d631558b3dd6ca77cb4ac0f58e96a4990624a76b65ba"
 ---
 
 You are an expert software architect and technical lead tasked with writing RULES.md based on the Product Requirements Document (PRD.md) and features list (FEATURES.md), or the documents provided in the conversation. If PRD-REVIEW.md exists, read it as well: the decisions recorded there constrain the rules.
@@ -17,7 +17,7 @@ If critical information is missing or unclear, ask specific questions before pro
 
 ## PRODUCT TYPE
 
-Read the `## Product Type` section of PRD.md and apply only the checks that fit that type. Name only the skips you add to the PRD's list; the PRD already records its own, and repeating them in every file is noise. Read the **Size** there too and scale what you write to it, following this prompt's own notes on size; a section that does not apply at that size is left out, not filled in. If PRD.md has no such section, classify the product and its Size yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game; Small, Medium or Large), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
+Read the `## Product Type` section of PRD.md and apply only the checks that fit that type. Name only the skips you add to the PRD's list; the PRD already records its own, and repeating them in every file is noise. Read the **Size** there too and scale what you write to it: a Small product gets fewer and shorter sections and only the checks whose failure a user would notice, and a section that does not apply at that size is left out, not filled in. If PRD.md has no such section, or the section records no Size, classify the product and its Size yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game; Small, Medium or Large), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
 
 ## GROUND THE RULES IN EXISTING CODE
 

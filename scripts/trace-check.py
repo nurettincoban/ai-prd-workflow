@@ -4,7 +4,8 @@
 Checks what a script can check reliably -- that IDs exist, that every
 requirement and Must-have feature is covered, that RFC dependencies point
 backwards, that the index and the review records agree with the files on
-disk. Whether a reference points at the RIGHT thing is still a judgement
+disk, and that no RFC is marked Reviewed while its last review round says
+NEEDS WORK or a High conflict touching it is still open. Whether a reference points at the RIGHT thing is still a judgement
 call for the reviewer; this only guarantees it points at SOMETHING.
 
 Usage:  python3 trace-check.py [project-dir]
@@ -261,8 +262,12 @@ def check_rfcs(root, features, rule_ids):
                 fail(f"{r['file']}: depends on RFC-{dep}, which does not exist")
             elif int(dep) >= int(num):
                 fail(f"{r['file']}: depends on RFC-{dep}, which is not lower-numbered -- numbering must be a valid implementation order")
+        # Only tokens with a prefix RULES.md uses are rule IDs: "SHA-256" or
+        # "UTF-8" on a Rules line is prose, not a citation of a missing rule.
+        prefixes = {rid.rsplit("-", 1)[0] for rid in rule_ids}
         for rid in sorted(r["rules"] - rule_ids) if rule_ids else []:
-            fail(f"{r['file']}: cites rule {rid}, which RULES.md does not define")
+            if rid.rsplit("-", 1)[0] in prefixes:
+                fail(f"{r['file']}: cites rule {rid}, which RULES.md does not define")
     owners = {}
     for num, r in rfcs.items():
         for fid in r["features"]:
@@ -281,6 +286,23 @@ def check_rfcs(root, features, rule_ids):
 
 
 # --------------------------------------------- RFCS.md, reviews, other files
+def open_high_conflicts(text):
+    """Entries under '## Open conflicts' written as '**C1** (High, open): ...'.
+    Returns (id, set of RFC numbers the entry names) for each open High one."""
+    m = re.search(r"^##\s+Open conflicts\s*$(.*?)(?=^##\s|\Z)", text, re.M | re.S | re.I)
+    if not m:
+        return []
+    found = []
+    for entry in re.split(r"\n(?=\s*(?:[-*]|\d+\.)\s)", m.group(1)):
+        head = re.search(r"\*\*(C\d+)\*\*\s*\(([^)]*)\)", entry)
+        if not head:
+            continue
+        words = set(re.findall(r"[a-z]+", head.group(2).lower()))
+        if "high" in words and "open" in words:
+            found.append((head.group(1), set(re.findall(r"RFC-(\d+)", entry))))
+    return found
+
+
 def check_index(root, rfcs):
     if not rfcs:
         return
@@ -293,9 +315,12 @@ def check_index(root, rfcs):
         return
     text = read(index)
     listed = set(re.findall(r"RFC-(\d+)", text))
+    # The index is the tables; prose and Open conflicts may name an RFC that is
+    # only planned, so only a table row claims that an RFC file exists.
+    in_tables = {n for _, rows, _ in tables(text) for row in rows for n in re.findall(r"RFC-(\d+)", row[0] if row else "")}
     for num in sorted(set(rfcs) - listed):
         fail(f"RFCS.md does not list RFC-{num}")
-    for num in sorted(listed - set(rfcs)):
+    for num in sorted((in_tables or listed) - set(rfcs)):
         fail(f"RFCS.md lists RFC-{num}, which has no file in RFCs/")
     if not (root / "TEST-STRATEGY.md").exists():
         warn("RFCs exist but TEST-STRATEGY.md does not -- run /test-strategy before implementing")
@@ -314,6 +339,15 @@ def check_index(root, rfcs):
                 fail(f"RFCS.md marks RFC-{m.group(1)} as {row[cols['status']]}, but {review.relative_to(root).as_posix()} does not exist")
             elif "implemented" in status and not review.exists():
                 warn(f"RFC-{m.group(1)} is implemented but not reviewed -- run /review-rfc {m.group(1)}")
+            elif status.startswith("reviewed") and review.exists():
+                # The last round decides: an RFC marked Reviewed whose latest
+                # review still has blocking issues was never re-reviewed.
+                verdicts = re.findall(r"overall verdict\W*(pass|needs work|fail)", read(review), re.I)
+                if verdicts and verdicts[-1].lower() != "pass":
+                    fail(f"RFCS.md marks RFC-{m.group(1)} as Reviewed, but the last verdict in {review.relative_to(root).as_posix()} is {verdicts[-1].upper()}")
+                for c in open_high_conflicts(text):
+                    if m.group(1) in c[1]:
+                        fail(f"RFCS.md marks RFC-{m.group(1)} as Reviewed while High conflict {c[0]} that touches it is still open")
     if (root / "FEATURES.md").exists() and not (root / "PRD-REVIEW.md").exists():
         warn("PRD-REVIEW.md does not exist -- was the PRD verified with /verify-prd?")
 

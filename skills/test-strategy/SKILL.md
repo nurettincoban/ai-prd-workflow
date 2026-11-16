@@ -4,7 +4,7 @@ description: "Write TEST-STRATEGY.md, a test plan per RFC, before the tests are 
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
   version: "3.2.0"
-  checksum: "sha256:85281e409484a89f36b4190c011bb3ed508778996dbf060bee0ad7b8552a23d2"
+  checksum: "sha256:aa92430898b35b00cf8d0095d7c28cc7f8a55ee937efe4326b55f5ca3b0748fa"
 ---
 
 You are an expert QA engineer and test architect tasked with planning the tests based on the project's features and RFCs.
@@ -36,7 +36,7 @@ If critical information is missing or unclear, ask specific questions before pro
 
 ## PRODUCT TYPE
 
-Read the `## Product Type` section of PRD.md and apply only the checks that fit that type. Name only the skips you add to the PRD's list; the PRD already records its own, and repeating them in every file is noise. Read the **Size** there too and scale what you write to it, following this prompt's own notes on size; a section that does not apply at that size is left out, not filled in. If PRD.md has no such section, classify the product and its Size yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game; Small, Medium or Large), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
+Read the `## Product Type` section of PRD.md and apply only the checks that fit that type. Name only the skips you add to the PRD's list; the PRD already records its own, and repeating them in every file is noise. Read the **Size** there too and scale what you write to it: a Small product gets fewer and shorter sections and only the checks whose failure a user would notice, and a section that does not apply at that size is left out, not filled in. If PRD.md has no such section, or the section records no Size, classify the product and its Size yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game; Small, Medium or Large), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
 
 ## THE PLAN, ONE SECTION PER RFC
 

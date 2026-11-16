@@ -19,7 +19,7 @@ Order of authority: PRD.md > FEATURES.md > RULES.md > RFCs > generated plans. Wh
 
 ## STEP 0: RUN IT
 
-The RFC's Status must be Implemented. If it is In progress or Not started, say so and stop: there is nothing finished to review.
+The RFC's Status must be Implemented, or Reviewed when the user asks for it to be reviewed again (a new round, for example after the instructions or a predecessor changed). If it is In progress or Not started, say so and stop: there is nothing finished to review.
 
 Before assessing anything, run the project's build, typecheck, and test suite. Paste the actual output. Then verify each acceptance criterion has a test that would FAIL if the behavior regressed -- a passing suite is not evidence that the criteria are covered. Reading code cannot distinguish "this test asserts the right thing" from "this test passes," so do not judge it by reading: for each criterion, and for each property a user relies on (no data lost, no partial write, the right exit code), break the code on purpose -- delete the line, flip the condition -- run the tests, confirm one fails, and restore it. List what you broke and whether a test caught it.
 
@@ -29,7 +29,7 @@ If you cannot execute commands in this environment, say so explicitly and mark e
 
 ## PRODUCT TYPE
 
-Read the `## Product Type` section of PRD.md and apply only the checks that fit that type. Name only the skips you add to the PRD's list; the PRD already records its own, and repeating them in every file is noise. Read the **Size** there too and scale what you write to it, following this prompt's own notes on size; a section that does not apply at that size is left out, not filled in. If PRD.md has no such section, classify the product and its Size yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game; Small, Medium or Large), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
+Read the `## Product Type` section of PRD.md and apply only the checks that fit that type. Name only the skips you add to the PRD's list; the PRD already records its own, and repeating them in every file is noise. Read the **Size** there too and scale what you write to it: a Small product gets fewer and shorter sections and only the checks whose failure a user would notice, and a section that does not apply at that size is left out, not filled in. If PRD.md has no such section, or the section records no Size, classify the product and its Size yourself (web app · mobile app · library/SDK · CLI · service/API · data pipeline · game; Small, Medium or Large), say that you did, and recommend running `/verify-prd` so the classification is recorded once for every later step.
 
 ## Review Dimensions
 
@@ -73,9 +73,10 @@ For each review dimension, provide:
 - **Suggestions**: Concrete fixes or improvements
 
 Then provide:
+- **Overall verdict**: PASS or NEEDS WORK, on a line of its own written `**Overall verdict**: PASS`. NEEDS WORK whenever a blocking issue remains. `trace-check.py` reads the last such line in the review file and fails an RFC marked Reviewed whose last verdict is not PASS
 - **Overall Risk Level**: Low / Medium / High / Critical
 - **Summary**: 2-3 sentence overall assessment
 - **Blocking Issues**: an unmet acceptance criterion, a broken rule, a PRD goal the code breaks, an open High conflict as above, or a test that still passes when the behavior it covers is broken. Anything that fits this definition is blocking however small the fix is
-- **Improvement Suggestions**: non-blocking findings. Add each one to a `## Follow-ups` list in RFCS.md with this RFC's ID, so it is not lost when the review is filed: a finding that exists only in a review file is read by nobody
+- **Improvement Suggestions**: non-blocking findings. Add each one to a `## Follow-ups` list in RFCS.md with this RFC's ID, so it is not lost when the review is filed: a finding that exists only in a review file is read by nobody. A follow-up marked **(blocking)** -- a bug filed against a Reviewed RFC -- is a blocking issue until the code fixes it
 
 Save the complete review to `reviews/REVIEW-RFC-[ID].md`. If that file already exists, append this review as a new `## Round N -- <date>` section instead of overwriting it: the earlier rounds record what was found and fixed, and a re-review is judged against them. Then set the RFC's Status in RFCS.md to Reviewed, or to Changes requested if any blocking issue remains. If you set Reviewed and FEATURES.md has a Status column, set each of this RFC's features to Implemented there once every RFC that lists that feature is Reviewed; a built feature left as Planned gets planned again by the next `/generate-rfcs`. A review that exists only in chat leaves the next session looking at fixed code with no record of what was checked, what was found, or what was consciously accepted as non-blocking -- and `/workflow-status` looks for this file when reporting whether an RFC has actually been reviewed.

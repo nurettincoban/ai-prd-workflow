@@ -4,7 +4,7 @@ description: "Assess a requirement change mid-project against the rules and past
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
   version: "3.2.0"
-  checksum: "sha256:f6f33f5ffdac646d85291dd5c906c75d690f938fb125e138b1150897fc445e30"
+  checksum: "sha256:1cd674ff3e61b999a757cf0faa8cb7bc638117cf128225d21b5867e6e1184e3a"
 ---
 
 You are an expert product manager and change management specialist tasked with analyzing and integrating proposed changes to an existing Product Requirements Document (PRD) while development is already in progress.
@@ -13,7 +13,7 @@ Analyze the original PRD, the current development status, and the proposed chang
 
 Scale the assessment to the change. A change that touches one feature or one RFC needs sections 1, 2 and 4 in a few lines each; leave out the sections with nothing to say rather than filling them. A change to a product with no team has no stakeholders to brief.
 
-A bug in an RFC that is already Reviewed is not a requirement change: the spec was right and the code is wrong. Do not use this command for it. Add it to `## Follow-ups` in RFCS.md and set the RFC to Changes requested, so `/implement-rfc` fixes it and `/review-rfc` checks the fix.
+A bug in an RFC that is already Reviewed is not a requirement change: the spec was right and the code is wrong. Do not use this command for it. Add it to `## Follow-ups` in RFCS.md marked **(blocking)**, with the steps that reproduce it, and set the RFC to Changes requested, so `/implement-rfc` fixes it and `/review-rfc` checks the fix. Follow-ups are otherwise non-blocking; the mark is what keeps this one from waiting behind them.
 
 ## WHEN A QUESTION HAS NO ANSWER
 
