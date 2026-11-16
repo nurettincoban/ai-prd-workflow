@@ -29,7 +29,7 @@ Cada paso escribe un archivo markdown que lee el siguiente, así que las decisio
 
 ## Lo que produjo una ejecución
 
-Tomamos la especificación de un pequeño acortador de URL que habían producido nuestros propios prompts de la v2.0. Parece terminada. Ejecutamos sobre ella los comandos actuales, y tres de las cosas que detectaron antes de que existiera código fueron:
+Tomamos la especificación de un pequeño acortador de URL que habían producido nuestros propios prompts de la v2.0. Parece terminada. Ejecutamos sobre ella los comandos, y tres de las cosas que detectaron antes de que existiera código fueron:
 
 | Lo que había | Lo que hizo el flujo de trabajo |
 |---|---|
@@ -37,7 +37,7 @@ Tomamos la especificación de un pequeño acortador de URL que habían producido
 | Sin cuentas de usuario, y cualquiera puede «borrar una URL corta» | `/verify-prd`: cualquiera puede borrar el enlace de cualquiera. No había nadie para decidir, así que escribió la solución que proponía como una pregunta abierta marcada **(assumption)** (supuesto), no como una decisión. |
 | [RFC-002](examples/url-shortener/before/RFCs/RFC-002-Click-Analytics.md) afirma cubrir las funcionalidades F5, F6 y F11 | `/workflow-status`: sus criterios de aceptación solo prueban la API, así que nada obligaba a nadie a construir la página de analítica y el gráfico que esas funcionalidades exigen. Todos los ID estaban citados, así que un script no podía verlo. |
 
-**10 de 10** problemas que habíamos listado a mano, encontrados por `/verify-prd` sin ver la lista. **11 de 13** problemas entre documentos, encontrados por `/workflow-status` en cada una de tres ejecuciones, calificadas a ciegas ([el prompt de la 3.1.0 encontró 8, 9 y 8](examples/url-shortener/workflow-status-reruns/GRADING.md), y por eso cambió). **12 RFC** y **203 pruebas planificadas** generados, y cada RFC leído en frío por un segundo modelo, con los lectores lanzados a mano. Alrededor de una hora de tiempo de agente con Claude Opus 5.5, y nadie respondió a las preguntas de los comandos. **[Explora la ejecución completa →](examples/url-shortener/)**
+**10 de 10** problemas que habíamos listado a mano, encontrados por `/verify-prd` sin ver la lista. **11 de 13** problemas entre documentos, encontrados por el `/workflow-status` actual en cada una de tres ejecuciones, calificadas a ciegas. El prompt de la 3.1.0 encontró 8, 9 y 8, y las nuevas comprobaciones se escribieron a partir de lo que se le escapó en este mismo plan, así que [léelo como una comprobación de regresión](examples/url-shortener/workflow-status-reruns/GRADING.md), no como una puntuación sobre datos no vistos. **12 RFC** y **203 pruebas planificadas**, generados por los comandos de la 3.1.0, y cada RFC leído en frío por un segundo modelo, con los lectores lanzados a mano. Alrededor de una hora de tiempo de agente con Claude Opus 5.5, y nadie respondió a las preguntas de los comandos. **[Explora la ejecución completa →](examples/url-shortener/)**
 
 ## Inicio rápido
 
@@ -87,7 +87,7 @@ La secuencia completa, con los nombres cortos que `install.sh` da a los comandos
 
 Ejecuta `/workflow-status` cuando no sepas qué viene después, y `/manage-changes` cuando cambien los requisitos.
 
-**No todos los proyectos necesitan todos los pasos.** La entrevista registra el tamaño del proyecto, y cada comando se ajusta a él: una herramienta de fin de semana recibe un puñado de reglas y uno o dos RFC. Para añadir una funcionalidad a una base de código que ya tienes, ejecuta `/document-existing` una vez, después `/manage-changes` para la funcionalidad, `/generate-rfcs` (amplía el plan existente) e `/implement-rfc`. `/test-strategy` es opcional cuando los criterios del RFC ya dicen cómo probarlos.
+**No todos los proyectos necesitan todos los pasos.** La entrevista registra el tamaño del proyecto, y los comandos que escriben documentos tienen instrucciones de ajustarse a él: unas diez reglas y de uno a tres RFC para una herramienta de fin de semana. Todavía ningún ejemplo lo muestra: las reglas y los RFC de la ejecución de todo-cli se escribieron antes de este cambio, y muestra lo que pasa sin él (56 reglas para 478 líneas). Para añadir una funcionalidad a una base de código que ya tienes, ejecuta `/document-existing` una vez, después `/manage-changes` para la funcionalidad, `/generate-rfcs` (amplía el plan existente) e `/implement-rfc`. `/test-strategy` es opcional cuando los criterios del RFC ya dicen cómo probarlos.
 
 **O pruébalo con el ejemplo.** La carpeta `before/` parece completa, y no lo está. Cópiala, para que el original quede para comparar:
 
@@ -168,7 +168,7 @@ Si conoces el desarrollo guiado por especificaciones (spec-driven development: G
 Todo lo que en esta sección se puede comprobar, lo puedes comprobar aquí:
 
 - **[El ejemplo url-shortener](examples/url-shortener/)**: la especificación v2.0, los problemas que encontramos en ella a mano y una ejecución completa de los comandos de la 3.1.0 sobre ella (los prompts han cambiado desde entonces; el ejemplo explica cómo). Ejecuciones en un contexto nuevo, que nunca vieron nuestra lista, encontraron 10 de 10 problemas del PRD (`/verify-prd`) y 11 de 13 problemas entre documentos en tres de tres ejecuciones de `/workflow-status`, además de varios que se nos habían escapado. Las lecturas en frío de un segundo modelo, lanzadas a mano en este ejemplo, encontraron más de 150 puntos en los que los RFC generados habrían obligado a quien los implementara a adivinar; los [informes](examples/url-shortener/cold-reads/) también están ahí. Salvo las tres ejecuciones de `/workflow-status`, son ejecuciones únicas de un solo modelo.
-- **[El ejemplo todo-cli](examples/todo-cli/)**: una idea de diez líneas para una lista de tareas en la terminal, llevada hasta 478 líneas de código revisado y 85 pruebas que pasan, con cada paso en Claude Sonnet 5.5 y sin nadie que respondiera preguntas. Muestra qué devolvieron las revisiones y por qué, la decisión que la ejecución tomó en nombre del usuario y lo dice, y tres errores que encontró un crítico externo y que todas las revisiones pasaron por alto.
+- **[El ejemplo todo-cli](examples/todo-cli/)**: una idea de diez líneas para una lista de tareas en la terminal, llevada hasta código revisado y 91 pruebas que pasan, con cada paso en Claude Sonnet 5.5 y sin nadie que respondiera preguntas. Muestra qué devolvieron las revisiones y por qué, la única decisión que la ejecución tomó en nombre del usuario, y el informe de errores de un crítico externo llevado a través de `/manage-changes`: los errores volvieron a sus RFC, y los cuatro cambios sobre lo que debería hacer `td` esperan al usuario.
 - **[La batería de evaluaciones](evals/)**: ejecuta las mismas comprobaciones con y sin el flujo de trabajo, con tu propia cuenta, para que puedas medir la diferencia tú mismo. Califica los diez problemas del PRD y siete de los trece entre documentos: los que una expresión regular puede reconocer de forma fiable.
 
 <p align="center">

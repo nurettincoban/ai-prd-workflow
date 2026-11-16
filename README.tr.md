@@ -29,7 +29,7 @@ Her adım, bir sonraki adımın okuyacağı bir markdown dosyası yazar; böylec
 
 ## Bir çalıştırmanın ürettikleri
 
-Kendi v2.0 prompt'larımızın ürettiği küçük bir URL kısaltıcının spesifikasyonunu aldık. Bitmiş görünüyor. Güncel komutları onun üzerinde çalıştırdık; daha hiç kod yokken yakaladıklarından üçü şunlar:
+Kendi v2.0 prompt'larımızın ürettiği küçük bir URL kısaltıcının spesifikasyonunu aldık. Bitmiş görünüyor. Komutları onun üzerinde çalıştırdık; daha hiç kod yokken yakaladıklarından üçü şunlar:
 
 | Orada ne vardı | İş akışının yaptığı |
 |---|---|
@@ -37,7 +37,7 @@ Kendi v2.0 prompt'larımızın ürettiği küçük bir URL kısaltıcının spes
 | Kullanıcı hesabı yok ve herkes "kısa bir URL'yi silebilir" | `/verify-prd`: herkes herkesin bağlantısını silebilir. Karar verecek kimse yoktu; bu yüzden önerdiği çözümü bir karar olarak değil, **(assumption)** (varsayım) işaretli açık bir soru olarak yazdı. |
 | [RFC-002](examples/url-shortener/before/RFCs/RFC-002-Click-Analytics.md), F5, F6 ve F11 özelliklerini karşıladığını iddia ediyor | `/workflow-status`: kabul kriterleri yalnızca API'yi test ediyor; bu yüzden o özelliklerin gerektirdiği analiz sayfasını ve grafiği kimseye yaptıracak hiçbir şey yoktu. Her ID'ye atıf yapılmıştı, bu yüzden bir betik bunu göremezdi. |
 
-Elle listelediğimiz **10 problemin 10'u**, listeyi hiç görmeyen `/verify-prd` tarafından bulundu. Dokümanlar arası **13 problemin 11'i**, üç çalıştırmanın her birinde `/workflow-status` tarafından bulundu; körlemesine puanlandı ([3.1.0 prompt'u 8, 9 ve 8 buldu](examples/url-shortener/workflow-status-reruns/GRADING.md), prompt bu yüzden değişti). **12 RFC** ve **203 planlanmış test** üretildi; her RFC ikinci bir model tarafından bağlamsız olarak (cold read) okundu, okuyucular elle başlatıldı. Claude Opus 5.5 üzerinde yaklaşık bir saatlik ajan süresi ve komutların sorularını kimse yanıtlamadı. **[Çalıştırmanın tamamına göz atın →](examples/url-shortener/)**
+Elle listelediğimiz **10 problemin 10'u**, listeyi hiç görmeyen `/verify-prd` tarafından bulundu. Dokümanlar arası **13 problemin 11'i**, üç çalıştırmanın her birinde güncel `/workflow-status` tarafından bulundu; körlemesine puanlandı. 3.1.0 prompt'u 8, 9 ve 8 buldu; yeni kontroller onun aynı plan üzerinde kaçırdıklarına göre yazıldı, bu yüzden bunu [bir gerileme kontrolü olarak okuyun](examples/url-shortener/workflow-status-reruns/GRADING.md), bağımsız bir test skoru olarak değil. **12 RFC** ve **203 planlanmış test**, 3.1.0 komutlarıyla üretildi; her RFC ikinci bir model tarafından bağlamsız olarak (cold read) okundu, okuyucular elle başlatıldı. Claude Opus 5.5 üzerinde yaklaşık bir saatlik ajan süresi ve komutların sorularını kimse yanıtlamadı. **[Çalıştırmanın tamamına göz atın →](examples/url-shortener/)**
 
 ## Hızlı başlangıç
 
@@ -87,7 +87,7 @@ Tam sıra, `install.sh`'nin komutlara verdiği kısa adlarla gösteriliyor. Ekle
 
 Sıradaki adımdan emin olmadığınızda `/workflow-status`, gereksinimler değiştiğinde `/manage-changes` çalıştırın.
 
-**Her projenin her adıma ihtiyacı yok.** Mülakat projenin boyutunu kaydeder ve her komut buna göre ölçeklenir: bir hafta sonu aracı birkaç kural ve bir ya da iki RFC alır. Elinizdeki bir kod tabanına tek bir özellik eklemek için `/document-existing`'i bir kez çalıştırın, ardından özellik için `/manage-changes`, `/generate-rfcs` (mevcut planı genişletir) ve `/implement-rfc` çalıştırın. RFC'nin kriterleri nasıl test edileceklerini zaten söylüyorsa `/test-strategy` isteğe bağlıdır.
+**Her projenin her adıma ihtiyacı yok.** Mülakat projenin boyutunu kaydeder ve doküman yazan komutlara buna göre ölçeklenmeleri söylenir: bir hafta sonu aracı için yaklaşık on kural ve bir ila üç RFC. Bunu gösteren bir örnek henüz yok: todo-cli çalıştırmasının kuralları ve RFC'leri bu değişiklikten önce yazıldı ve o olmadan ne olduğunu gösteriyor (478 satır için 56 kural). Elinizdeki bir kod tabanına tek bir özellik eklemek için `/document-existing`'i bir kez çalıştırın, ardından özellik için `/manage-changes`, `/generate-rfcs` (mevcut planı genişletir) ve `/implement-rfc` çalıştırın. RFC'nin kriterleri nasıl test edileceklerini zaten söylüyorsa `/test-strategy` isteğe bağlıdır.
 
 **Ya da örnek üzerinde deneyin.** `before/` klasörü eksiksiz görünüyor, ama değil. Orijinali karşılaştırma için kalsın diye onu kopyalayın:
 
@@ -168,7 +168,7 @@ Spesifikasyon odaklı geliştirmeyi (spec-driven development; GitHub Spec Kit, A
 Bu bölümde doğrulanabilecek her şeyi burada doğrulayabilirsiniz:
 
 - **[url-shortener örneği](examples/url-shortener/)** — v2.0 spesifikasyonu, içinde elle bulduğumuz problemler ve 3.1.0 komutlarının onun üzerinde tam bir çalıştırması (prompt'lar o zamandan beri değişti; örnek nasıl değiştiğini anlatıyor). Listemizi hiç görmeden temiz bir bağlamda çalışan komutlar PRD'deki 10 problemin 10'unu (`/verify-prd`) ve dokümanlar arası 13 problemin 11'ini, üç `/workflow-status` çalıştırmasının üçünde de buldu; üstüne bizim kaçırdığımız birkaç problemi de. Bu örnekte elle çalıştırılan, ikinci bir modelin bağlamsız okumaları, üretilen RFC'lerin uygulayıcıyı tahmin yürütmeye zorlayacağı 150'den fazla yer buldu; [raporlar](examples/url-shortener/cold-reads/) da orada. Üç `/workflow-status` çalıştırması dışında, bunlar tek bir modelin tekil çalıştırmalarıdır.
-- **[todo-cli örneği](examples/todo-cli/)** — terminal için bir yapılacaklar listesinin on satırlık fikri, incelenmiş 478 satır koda ve geçen 85 teste kadar götürüldü. Her adım Claude Sonnet 5.5 ile çalıştı ve soruları yanıtlayan kimse yoktu. İncelemelerin neyi geri gönderdiğini ve nedenini, çalıştırmanın kullanıcı adına verdiği ve bunu açıkça söylediği kararı, ve dışarıdan bir eleştirmenin bulduğu, her incelemenin kaçırdığı üç hatayı gösterir.
+- **[todo-cli örneği](examples/todo-cli/)** — terminal için bir yapılacaklar listesinin on satırlık fikri, incelenmiş koda ve geçen 91 teste kadar götürüldü. Her adım Claude Sonnet 5.5 ile çalıştı ve soruları yanıtlayan kimse yoktu. İncelemelerin neyi geri gönderdiğini ve nedenini, çalıştırmanın kullanıcı adına verdiği tek kararı ve dışarıdan bir eleştirmenin hata raporunun `/manage-changes` üzerinden geçişini gösterir: hatalar kendi RFC'lerine geri gitti, `td`'nin ne yapması gerektiğine dair dört değişiklik ise kullanıcıyı bekliyor.
 - **[Değerlendirme seti](evals/)** — aynı kontrolleri iş akışıyla ve iş akışı olmadan, kendi hesabınızda çalıştırır; böylece farkı kendiniz ölçebilirsiniz. On PRD problemini ve dokümanlar arası on üç problemin yedisini, yani bir düzenli ifadenin güvenilir biçimde tanıyabildiklerini puanlar.
 
 <p align="center">

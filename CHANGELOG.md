@@ -10,7 +10,7 @@ A second gauntlet round. Fable 5.2 critics attacked the prompts, the README and 
 
 ### Fixed
 - Assumptions no longer pass review. An assumption may fill a gap but never contradict a requirement or goal; when the only way forward contradicts one, it is recorded as a High conflict in RFCS.md, nothing is built on it until the user accepts it in writing, and `/review-rfc` blocks on it. In the first todo-cli run, "never lose my tasks" was recorded as contradicted in six files and the code that loses tasks still passed four reviews
-- `/workflow-status` reads the RFCs against each other: undeclared predecessors, an RFC whose approach contradicts its own criteria, and features claimed but never tested. On the url-shortener `before/` plan, three runs of the 3.1.0 prompt found 8, 9 and 8 of 13 known problems; three runs of this one found 11 each, graded blind
+- `/workflow-status` reads the RFCs against each other: undeclared predecessors, an RFC whose approach contradicts its own criteria, and features claimed but never tested. On the url-shortener `before/` plan, three runs of the 3.1.0 prompt found 8, 9 and 8 of 13 known problems; three runs of this one found 11 each, graded blind. That is in-sample: the checks were written against what 3.1.0 missed on the same plan. One problem 3.1.0 found in two runs of three, the new prompt found in none
 - `/review-rfc` breaks the code on purpose for each criterion and property and lists what it broke; a test that still passes with the behavior broken is blocking. It also uses the product the way the PRD's user would, and files non-blocking findings under `## Follow-ups` in RFCS.md instead of leaving them in the review
 - `/implement-rfc` in a non-interactive run writes its plan into the RFC's Implementation Notes and proceeds only if no open High conflict touches the RFC, recording that nobody approved the plan. Checks that need a person or another machine go into a release checklist and no longer keep an RFC In progress forever
 - Cold reads are capped at the five guesses most likely to produce a wrong implementation, and an RFC passes when one cold read of its changed text finds no behavior-changing guess. The result is recorded in RFCS.md. Round one of the todo-cli run reported 135 items
@@ -24,9 +24,12 @@ A second gauntlet round. Fable 5.2 critics attacked the prompts, the README and 
 - Earlier assumptions are cited, not copied into every later file
 
 ### Added
-- A **Size** (Small, Medium, Large) in the PRD's `## Product Type`, which every later command scales its output to
+- A **Size** (Small, Medium, Large) in the PRD's `## Product Type`, which the commands that write documents scale their output to. No example run demonstrates it yet
+- `trace-check.py` fails an RFC marked Reviewed whose last review round's `**Overall verdict**` is not PASS, or that an open High conflict names. Open conflicts have a fixed line format (`**C1** (High, open): ...`) so the check can read them, and `/review-rfc` writes the verdict line. It no longer reports `SHA-256` on a Rules line or a planned RFC named in RFCS.md prose as a broken reference
+- Acceptance criteria are numbered and never renumbered once an RFC has started, because tests, reviews and notes cite them by number
+- A bug found in a Reviewed RFC is filed as a follow-up marked **(blocking)**, which `/review-rfc` treats as blocking, and the fix round closes the follow-ups it fixes. `/review-rfc` may review a Reviewed RFC again when asked
 - `examples/url-shortener/workflow-status-reruns/`: the six `/workflow-status` runs behind the numbers above and the blind grading
-- todo-cli: a third review round, a change request that adds a lock for concurrent runs (decided by the person running the example, not by its user, and recorded as such), and the lock itself as RFC-006
+- todo-cli part 2: more review rounds, a change request that adds a lock for concurrent runs (decided by the person running the example, not by its user, and recorded as such), the lock itself as RFC-006, and an outside critic's bug report taken through `/manage-changes`: two bugs fixed and re-reviewed, four changes waiting for the user, and RFC-002 back In progress until they decide. A reviewer caught a fix round claiming 0 tracebacks in 60 tries; the real count was 29
 
 ### Changed
 - README: the `/workflow-status` number is now the repeatable 11 of 13 instead of a single run's 12, the quick start separates installing from running, and a short paragraph says which steps a small project can skip
