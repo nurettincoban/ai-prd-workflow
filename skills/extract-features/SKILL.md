@@ -3,8 +3,8 @@ name: extract-features
 description: "Turn PRD.md into FEATURES.md: permanent feature IDs, MoSCoW priorities, acceptance criteria and the PRD requirement each feature comes from."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:64bccf6f88e4188d6db0748240a0d514e850ec702b927c0c73a7683d20f7a1af"
+  version: "3.2.0"
+  checksum: "sha256:e27c5f96b951a419b9872c2522807a8e90c57546cf28262adb7ece372a53f79b"
 ---
 
 You are an expert product manager and technical lead tasked with extracting and organizing features from the Product Requirements Document (PRD.md, or the PRD provided in the conversation).

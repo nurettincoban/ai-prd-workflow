@@ -4,8 +4,6 @@
 
 # 📋 AI PRD Workflow
 
-### 에이전트가 만들기 전에 무엇을 만들지 먼저 정하세요.
-
 **아이디어 또는 기존 코드 → 검증된 PRD → 기능 → 규칙 → 순서가 정해진 RFC → 리뷰와 테스트를 거친 코드**
 
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
@@ -17,8 +15,6 @@
 **[🌐 웹사이트](https://nurettincoban.github.io/ai-prd-workflow/)** · **[실제 실행 보기](#한-번의-실행이-만들어-낸-것)** · **[빠른 시작](#빠른-시작)** · **[작동 방식](#작동-방식)** · **[왜](#왜-이-워크플로인가)** · **[근거](#근거)** · **[설치 옵션](#설치-옵션)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · 한국어 · [Español](README.es.md)
-
-<sub><a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>2025년 3월</b></a>부터 RFC 주도 —— Claude Code나 Cursor에 플랜 모드가 생기기 전, Kiro나 Spec Kit이 나오기 전부터.</sub>
 
 </div>
 
@@ -33,24 +29,33 @@ AI 코딩 에이전트는 코드를 잘 작성합니다. 하지만 무엇을 만
 
 ## 한 번의 실행이 만들어 낸 것
 
-완성된 것처럼 보이는 작은 URL 단축 서비스의 명세를 주고 명령어를 실행했습니다. 코드가 존재하기도 전에 잡아낸 세 가지:
+우리 자신의 v2.0 프롬프트가 만들어 낸 작은 URL 단축 서비스의 명세를 가져왔습니다. 완성된 것처럼 보입니다. 여기에 현재의 명령어를 실행했고, 코드가 존재하기도 전에 잡아낸 것 중 세 가지는 다음과 같습니다:
 
-| 명세에 적힌 내용 | 워크플로가 한 일 |
+| 있던 내용 | 워크플로가 한 일 |
 |---|---|
 | "짧은 URL을 HTTP 301로 원래 URL에 리디렉션한다" | `/verify-prd`: 브라우저는 301을 캐시하므로, 반복 클릭은 절대 집계되지 않고 삭제된 링크도 계속 리디렉션된다. 수정된 명세는 302로 리디렉션하며, [RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md)은 "절대 301이 아님"을 테스트한다. |
 | 사용자 계정이 없는데, 누구나 "짧은 URL을 삭제"할 수 있다 | `/verify-prd`: 누구나 다른 사람의 링크를 삭제할 수 있다. 결정할 사람이 없었기 때문에, 제안한 수정안을 결정이 아니라 **(assumption)**(가정)으로 표시한 미해결 질문으로 적었다. |
-| RFC-002는 기능 F5, F6, F11을 담당한다고 주장한다 | `/workflow-status`: 그 인수 기준은 API만 테스트하므로, 이 기능들이 요구하는 분석 페이지와 차트를 누군가 만들게 할 장치가 없었다. 모든 ID가 인용되어 있었기 때문에 스크립트로는 알아낼 수 없었다. |
+| [RFC-002](examples/url-shortener/before/RFCs/RFC-002-Click-Analytics.md)는 기능 F5, F6, F11을 담당한다고 주장한다 | `/workflow-status`: 그 인수 기준은 API만 테스트하므로, 이 기능들이 요구하는 분석 페이지와 차트를 누군가 만들게 할 장치가 없었다. 모든 ID가 인용되어 있었기 때문에 스크립트로는 알아낼 수 없었다. |
 
-우리가 직접 정리한 문제 **10개 중 10개**를 `/verify-prd`가 그 목록을 보지 않고 찾아냈습니다. 문서 간 문제는 **13개 중 12개**를 `/workflow-status`가 찾아냈습니다. **12개의 RFC**와 **203개의 계획된 테스트**가 생성되었고, 각 RFC는 먼저 두 번째 모델이 사전 맥락 없이 읽었습니다(콜드 리드). Claude Opus 5.5에서 에이전트 시간 약 1시간, 사람의 입력은 없었습니다. **[전체 실행 둘러보기 →](examples/url-shortener/)**
+우리가 직접 정리한 문제 **10개 중 10개**를 `/verify-prd`가 그 목록을 보지 않고 찾아냈습니다. 문서 간 문제는 **13개 중 11개**를 `/workflow-status`가 세 번의 실행 모두에서 찾아냈고, 채점은 블라인드로 했습니다([3.1.0 프롬프트는 8개, 9개, 8개를 찾았고](examples/url-shortener/workflow-status-reruns/GRADING.md), 그래서 프롬프트를 바꿨습니다). **12개의 RFC**와 **203개의 계획된 테스트**가 생성되었고, 각 RFC는 두 번째 모델이 사전 맥락 없이 읽었습니다(콜드 리드). 이 리더들은 직접 시작했습니다. Claude Opus 5.5에서 에이전트 시간 약 1시간이 걸렸고, 명령어의 질문에 답한 사람은 없었습니다. **[전체 실행 둘러보기 →](examples/url-shortener/)**
 
 ## 빠른 시작
 
-Claude Code에서 플러그인을 설치하고, Claude Code를 재시작한 다음, 인터뷰를 시작합니다:
+Claude Code에서 플러그인을 설치합니다:
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
-/prd-workflow:create-prd          # 그다음 /prd-workflow:verify-prd
+```
+
+> [!IMPORTANT]
+> 지금 Claude Code를 재시작하세요. 실행 중인 세션은 새 스킬을 인식하지 못해서 첫 명령이 `Unknown skill`로 실패합니다. 설치가 잘못된 것처럼 보이지만, 세션이 오래되었을 뿐입니다.
+
+그다음 인터뷰를 시작합니다. 약 10분이 걸리고, 몇 분만 더 지나면 `/verify-prd`가 이 워크플로가 맞는지 알려 줍니다:
+
+```
+/prd-workflow:create-prd
+/prd-workflow:verify-prd
 ```
 
 <details>
@@ -63,14 +68,11 @@ cd your-project
 curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-Codex에서는 `/create-prd` 대신 `$create-prd`를 입력합니다. 채팅 어시스턴트(ChatGPT, Claude.ai 등)에서는 [명령어 표](#작동-방식)에서 프롬프트를 복사해 붙여넣으세요.
+같은 이유로 설치한 뒤에는 도구를 재시작하세요. Codex에서는 `/create-prd` 대신 `$create-prd`를 입력합니다. 채팅 어시스턴트(ChatGPT, Claude.ai 등)에서는 [명령어 표](#작동-방식)에서 프롬프트를 복사해 붙여넣으세요.
 
 </details>
 
-> [!IMPORTANT]
-> 설치한 뒤에는 AI 도구를 재시작하세요. 실행 중인 세션은 새 스킬을 인식하지 못해서 첫 명령이 `Unknown skill`로 실패합니다. 설치가 잘못된 것처럼 보이지만, 세션이 오래되었을 뿐입니다.
-
-그다음 명령어를 순서대로 실행합니다(플러그인에서는 각 명령어에 플러그인 이름이 붙습니다: `/prd-workflow:verify-prd`):
+전체 순서이며, `install.sh`가 명령어에 붙여 주는 짧은 이름으로 표시했습니다. 플러그인에서는 각 명령어에 접두사가 붙습니다: `/prd-workflow:extract-features`.
 
 ```
 /create-prd          # 인터뷰 → PRD.md   (기존 코드가 있다면 대신 /document-existing)
@@ -83,7 +85,9 @@ Codex에서는 `/create-prd` 대신 `$create-prd`를 입력합니다. 채팅 어
 /review-rfc 001      # 새 컨텍스트에서 리뷰 → reviews/REVIEW-RFC-001.md
 ```
 
-다음에 무엇을 해야 할지 모르겠다면 `/workflow-status`를, 요구사항이 바뀌면 `/manage-changes`를 실행하세요. 처음 두 개부터 시작하세요. 인터뷰는 10분 정도 걸리고, 몇 분만 더 지나면 `/verify-prd`가 이 워크플로가 맞는지 알려 줄 것입니다.
+다음에 무엇을 해야 할지 모르겠다면 `/workflow-status`를, 요구사항이 바뀌면 `/manage-changes`를 실행하세요.
+
+**모든 프로젝트에 모든 단계가 필요한 것은 아닙니다.** 인터뷰에서 프로젝트의 규모를 기록하고, 모든 명령어는 그 규모에 맞춰 조정됩니다. 주말에 만드는 도구라면 규칙 몇 개와 한두 개의 RFC면 충분합니다. 이미 가진 코드베이스에 기능 하나를 추가하려면 `/document-existing`을 한 번 실행한 뒤, 그 기능에 대해 `/manage-changes`, `/generate-rfcs`(기존 계획을 확장합니다), `/implement-rfc`를 실행하세요. RFC의 기준이 이미 테스트 방법을 설명하고 있다면 `/test-strategy`는 선택 사항입니다.
 
 **아니면 예제로 시험해 보세요.** `before/` 폴더는 완성된 것처럼 보이지만, 그렇지 않습니다. 원본은 비교용으로 남겨 두도록 복사해서 사용하세요:
 
@@ -93,7 +97,7 @@ cp -r ai-prd-workflow/examples/url-shortener/before linksnip
 ai-prd-workflow/install.sh linksnip
 ```
 
-AI 도구에서 `linksnip`을 열고 `/workflow-status` 또는 `/verify-prd`를 실행한 뒤, 그 결과를 [우리가 직접 찾은 문제들](examples/url-shortener/README.md), 그리고 [우리의 실행](examples/url-shortener/after/)이 만들어 낸 결과와 비교해 보세요.
+AI 도구에서 `linksnip`을 열고 `/workflow-status` 또는 `/verify-prd`(`install.sh`는 프로젝트 스킬을 설치하므로 접두사가 없습니다)를 실행한 뒤, 그 결과를 [우리가 직접 찾은 문제들](examples/url-shortener/README.md), 그리고 [우리의 실행](examples/url-shortener/after/)이 만들어 낸 결과와 비교해 보세요.
 
 ## 작동 방식
 
@@ -157,14 +161,14 @@ flowchart TB
 
 **이럴 때 쓰세요:** 몇 주에 걸친 개발, 그리고 AI로 진지하게 만드는 모든 것 —— 코드 품질보다 범위가 불어나는 것과 잊힌 결정이 더 큰 타격이 되는 경우입니다. **이럴 때는 필요 없습니다:** 한 줄짜리 수정.
 
-스펙 주도 개발(spec-driven development. GitHub Spec Kit, Amazon Kiro 등)을 알고 있다면, 같은 아이디어입니다. 작업 단위는 RFC이고, 도입해야 할 CLI나 프레임워크가 없으며, 문서들을 서로 대조하는 스크립트가 있습니다.
+스펙 주도 개발(spec-driven development. GitHub Spec Kit, Amazon Kiro 등)을 알고 있다면, 같은 아이디어입니다. 작업 단위는 RFC이고, 도입해야 할 CLI나 프레임워크가 없으며, 문서들을 서로 대조하는 스크립트가 있습니다. [2025년 3월](https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28)부터 RFC 주도로 진행해 왔습니다.
 
 ## 근거
 
 이 절에서 확인할 수 있는 것은 모두 여기에서 확인할 수 있습니다:
 
-- **[url-shortener 예제](examples/url-shortener/)** —— v2.0 명세, 우리가 그 안에서 직접 찾은 문제들, 그리고 현재 명령어로 그 명세를 끝까지 실행한 전체 기록입니다. 우리 목록을 한 번도 보지 않은 새 컨텍스트에서의 실행이 PRD 문제 10개 중 10개(`/verify-prd`)와 문서 간 문제 13개 중 12개(`/workflow-status`)를 찾아냈고, 우리가 놓친 문제도 몇 가지 더 찾았습니다. 이 예제에서 수동으로 실행한 두 번째 모델의 콜드 리드는, 생성된 RFC 때문에 구현자가 추측해야 했을 곳을 150군데 넘게 찾아냈습니다. 그 [보고서](examples/url-shortener/cold-reads/)도 함께 있습니다. 모두 한 모델의 단일 실행입니다.
-- **[todo-cli 예제](examples/todo-cli/)** —— 터미널용 할 일 목록에 대한 열 줄짜리 아이디어를 리뷰를 마친 386줄의 코드와 통과하는 테스트 66개까지 진행한 실행입니다. 모든 단계를 Claude Sonnet 5.5로 진행했고 질문에 답한 사람은 없었습니다. 각 명령이 찾아낸 것(기능이 고장 나도 통과했을 테스트 포함)과 이 실행이 여러분에게 남긴 단 하나의 결정을 보여줍니다.
+- **[url-shortener 예제](examples/url-shortener/)** —— v2.0 명세, 우리가 그 안에서 직접 찾은 문제들, 그리고 3.1.0 명령어로 그 명세를 끝까지 실행한 전체 기록입니다(그 뒤 프롬프트가 바뀌었으며, 예제에 그 내용이 적혀 있습니다). 우리 목록을 한 번도 보지 않은 새 컨텍스트에서의 실행이 PRD 문제 10개 중 10개(`/verify-prd`)를 찾아냈고, 문서 간 문제는 13개 중 11개를 `/workflow-status` 세 번의 실행 모두에서 찾아냈으며, 우리가 놓친 문제도 몇 가지 더 찾았습니다. 이 예제에서 수동으로 실행한 두 번째 모델의 콜드 리드는, 생성된 RFC 때문에 구현자가 추측해야 했을 곳을 150군데 넘게 찾아냈습니다. 그 [보고서](examples/url-shortener/cold-reads/)도 함께 있습니다. `/workflow-status`의 세 번의 실행을 제외하면, 모두 한 모델의 단일 실행입니다.
+- **[todo-cli 예제](examples/todo-cli/)** —— 터미널용 할 일 목록에 대한 열 줄짜리 아이디어를 리뷰를 마친 478줄의 코드와 통과하는 테스트 85개까지 진행한 실행입니다. 모든 단계를 Claude Sonnet 5.5로 진행했고 질문에 답한 사람은 없었습니다. 리뷰가 무엇을 왜 되돌려 보냈는지, 실행이 사용자를 대신해 내리고 그렇다고 밝힌 결정, 그리고 모든 리뷰가 놓쳤지만 외부 비평가가 찾아낸 버그 세 가지를 보여줍니다.
 - **[평가 스위트](evals/)** —— 같은 검사를 워크플로가 있을 때와 없을 때 모두, 여러분 자신의 계정으로 실행하므로 차이를 직접 측정할 수 있습니다. PRD 문제 10개와 문서 간 문제 13개 중 7개, 즉 정규 표현식으로 안정적으로 알아볼 수 있는 것들을 채점합니다.
 
 <p align="center">
@@ -194,7 +198,7 @@ ID도 지켜졌습니다. 프로젝트 도중에 PRD가 바뀌었을 때, 새 �
 
 | 도구 | 폴더 | 명령어 실행 |
 |---|---|---|
-| Claude Code | `.claude/skills/` 또는 플러그인 | `/create-prd` |
+| Claude Code | `.claude/skills/` 또는 플러그인 | `/create-prd` (플러그인: `/prd-workflow:create-prd`) |
 | GitHub Copilot (VS Code, CLI) | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd` (`/` 메뉴에서) |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |
@@ -211,8 +215,9 @@ ID도 지켜졌습니다. 프로젝트 도중에 PRD가 바뀌었을 때, 새 �
 ```
 
 - `install.sh`는 사용자가 수정한 스킬을 절대 덮어쓰지 않습니다. `--force`는 백업을 저장한 뒤 교체합니다.
-- `--ref v3.0.0`으로 특정 릴리스를 설치합니다. curl URL에도 같은 태그를 사용하세요.
+- `--ref <tag>`로 특정 [태그된 릴리스](https://github.com/nurettincoban/ai-prd-workflow/tags)를 설치합니다. curl 명령에서는 `main`을 같은 태그로 바꾸세요: `…/ai-prd-workflow/<tag>/install.sh | bash -s -- . --ref <tag>`.
 - v2에서 업그레이드하나요? `--remove-legacy`를 붙이면 이전 명령어 파일을 백업 폴더로 옮깁니다.
+- `bash`가 필요하고, 추적성 검사에는 `python3`가 필요합니다. 명령어는 프로젝트 루트에 `PRD.md`, `FEATURES.md`, `RULES.md`, `RFCS.md`, `RFCs/`, `reviews/`를 작성하므로, 코드와 함께 커밋하세요. 제거하려면 `install.sh`가 만든 스킬 폴더를 삭제하세요.
 - 복사해서 붙여넣는 방식이 좋나요? `./copy-prompt.sh --list`로 프롬프트 목록을 보고, `./copy-prompt.sh <file>`로 하나를 클립보드에 복사합니다.
 
 ## 팁

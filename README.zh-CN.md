@@ -4,8 +4,6 @@
 
 # 📋 AI PRD Workflow
 
-### 在代理动手之前，先决定要构建什么。
-
 **想法或现有代码 → 经过验证的 PRD → 功能 → 规则 → 有序的 RFC → 经过评审和测试的代码**
 
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
@@ -17,8 +15,6 @@
 **[🌐 网站](https://nurettincoban.github.io/ai-prd-workflow/)** · **[看一次真实运行](#一次运行的产出)** · **[快速开始](#快速开始)** · **[工作原理](#工作原理)** · **[为什么](#为什么选择这个工作流)** · **[实证](#实证)** · **[安装选项](#安装选项)**
 
 [English](README.md) · 简体中文 · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
-
-<sub>自 <a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>2025 年 3 月</b></a>起采用 RFC 驱动 —— 早于 Claude Code 和 Cursor 推出计划模式（plan mode），也早于 Kiro 和 Spec Kit 的出现。</sub>
 
 </div>
 
@@ -33,24 +29,33 @@ AI 编程代理很擅长写代码，却不太擅长决定该做什么、记住�
 
 ## 一次运行的产出
 
-我们拿一个看起来已经完成的小型短链接服务的规格，运行了这些命令。在任何代码出现之前，它就发现了这三件事：
+我们拿了一个小型短链接服务的规格，它是由我们自己的 v2.0 提示词生成的，看起来已经完成。我们对它运行了当前的命令，在任何代码出现之前，它们发现的问题中有这三件：
 
-| 规格里写的 | 工作流做了什么 |
+| 原来的内容 | 工作流做了什么 |
 |---|---|
 | "通过 HTTP 301 将短链接重定向到原始 URL" | `/verify-prd`：浏览器会缓存 301，所以重复点击永远不会被统计，已删除的链接也会继续重定向。修正后的规格改用 302 重定向，[RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) 会测试"绝不返回 301"。 |
 | 没有用户账户，而任何人都可以"删除短链接" | `/verify-prd`：任何人都能删除任何人的链接。当时没有人可以拍板，所以它把建议的修复写成一个标注为 **(assumption)**（假设）的开放问题，而不是一项决定。 |
-| RFC-002 声称覆盖功能 F5、F6 和 F11 | `/workflow-status`：它的验收标准只测试了 API，所以这些功能所要求的分析页面和图表，没有任何东西促使人去构建。每个 ID 都被引用了，所以脚本发现不了这个问题。 |
+| [RFC-002](examples/url-shortener/before/RFCs/RFC-002-Click-Analytics.md) 声称覆盖功能 F5、F6 和 F11 | `/workflow-status`：它的验收标准只测试了 API，所以这些功能所要求的分析页面和图表，没有任何东西促使人去构建。每个 ID 都被引用了，所以脚本发现不了这个问题。 |
 
-我们人工列出的问题，**10 个中的 10 个**都被 `/verify-prd` 找到，而它从未看过这份清单。跨文档问题中，`/workflow-status` 找到了 **13 个中的 12 个**。共生成 **12 个 RFC** 和 **203 个计划测试**，每个 RFC 都先由第二个模型在没有任何背景的情况下通读一遍（冷读）。在 Claude Opus 5.5 上大约花了一小时的代理时间，全程无需人工输入。**[浏览完整的运行记录 →](examples/url-shortener/)**
+我们人工列出的问题，**10 个中的 10 个**都被 `/verify-prd` 找到，而它从未看过这份清单。跨文档问题中，`/workflow-status` 在三次运行中每次都找到了 **13 个中的 11 个**，并经过盲评（[3.1.0 版提示词分别找到 8、9 和 8 个](examples/url-shortener/workflow-status-reruns/GRADING.md)，这正是它被修改的原因）。共生成 **12 个 RFC** 和 **203 个计划测试**，每个 RFC 都由第二个模型在没有任何背景的情况下通读一遍（冷读），这些读者是手动启动的。在 Claude Opus 5.5 上大约花了一小时的代理时间，没有人回答这些命令提出的问题。**[浏览完整的运行记录 →](examples/url-shortener/)**
 
 ## 快速开始
 
-在 Claude Code 中，安装插件，重启 Claude Code，然后开始访谈：
+在 Claude Code 中，安装插件：
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
-/prd-workflow:create-prd          # 然后运行 /prd-workflow:verify-prd
+```
+
+> [!IMPORTANT]
+> 现在请重启 Claude Code。正在运行的会话看不到新安装的技能，第一个命令会报 `Unknown skill`——看起来像是安装失败，其实只是会话过期了。
+
+然后开始访谈。它大约需要十分钟，再过几分钟，`/verify-prd` 就会告诉你这个工作流是否适合你：
+
+```
+/prd-workflow:create-prd
+/prd-workflow:verify-prd
 ```
 
 <details>
@@ -63,14 +68,11 @@ cd your-project
 curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-在 Codex 中，用 `$create-prd` 代替 `/create-prd`。在聊天助手（ChatGPT、Claude.ai 等）中，从[命令表](#工作原理)中复制一个提示词，粘贴进去即可。
+出于同样的原因，安装后请重启你的工具。在 Codex 中，用 `$create-prd` 代替 `/create-prd`。在聊天助手（ChatGPT、Claude.ai 等）中，从[命令表](#工作原理)中复制一个提示词，粘贴进去即可。
 
 </details>
 
-> [!IMPORTANT]
-> 安装后请重启你的 AI 工具。正在运行的会话看不到新安装的技能，第一个命令会报 `Unknown skill`——看起来像是安装失败，其实只是会话过期了。
-
-然后按顺序运行这些命令（使用插件时，每个命令都带有插件名前缀：`/prd-workflow:verify-prd`）：
+完整的流程如下，使用的是 `install.sh` 给命令起的短名称。使用插件时，每个命令都带有前缀：`/prd-workflow:extract-features`。
 
 ```
 /create-prd          # 访谈 → PRD.md（已有代码？改用 /document-existing）
@@ -83,7 +85,9 @@ curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/
 /review-rfc 001      # 在全新上下文中评审 → reviews/REVIEW-RFC-001.md
 ```
 
-不确定下一步做什么时，运行 `/workflow-status`；需求变更时，运行 `/manage-changes`。先从前两个开始：访谈大约需要十分钟，再过几分钟，`/verify-prd` 就会告诉你这个工作流是否适合你。
+不确定下一步做什么时，运行 `/workflow-status`；需求变更时，运行 `/manage-changes`。
+
+**并非每个项目都需要每一步。** 访谈会记录项目的规模，每个命令都会按这个规模调整：周末小工具只会得到几条规则和一两个 RFC。如果只是要给已有的代码库添加一个功能，先运行一次 `/document-existing`，然后用 `/manage-changes` 处理这个功能，再运行 `/generate-rfcs`（它会扩展现有计划）和 `/implement-rfc`。如果 RFC 的验收标准已经说明了如何测试，`/test-strategy` 可以省略。
 
 **或者在示例上试试。** `before/` 文件夹看起来很完整，其实并不。先复制一份，让原件留作对照：
 
@@ -93,7 +97,7 @@ cp -r ai-prd-workflow/examples/url-shortener/before linksnip
 ai-prd-workflow/install.sh linksnip
 ```
 
-在你的 AI 工具中打开 `linksnip`，运行 `/workflow-status` 或 `/verify-prd`，再把结果和[我们人工找到的问题](examples/url-shortener/README.md)以及[我们的运行](examples/url-shortener/after/)产出的内容对比一下。
+在你的 AI 工具中打开 `linksnip`，运行 `/workflow-status` 或 `/verify-prd`（`install.sh` 安装的是项目级技能，所以没有前缀），再把结果和[我们人工找到的问题](examples/url-shortener/README.md)以及[我们的运行](examples/url-shortener/after/)产出的内容对比一下。
 
 ## 工作原理
 
@@ -157,14 +161,14 @@ flowchart TB
 
 **适合**：持续数周的项目，以及任何你用 AI 认真构建的东西——在这些场景里，范围蔓延和被遗忘的决策比代码质量更伤人。**不适合**：一行代码的修复。
 
-如果你了解规范驱动开发（spec-driven development，例如 GitHub Spec Kit、Amazon Kiro），这里是同样的理念：以 RFC 为工作单元，不需要引入任何 CLI 或框架，还有一个脚本会把各文档相互核对。
+如果你了解规范驱动开发（spec-driven development，例如 GitHub Spec Kit、Amazon Kiro），这里是同样的理念：以 RFC 为工作单元，不需要引入任何 CLI 或框架，还有一个脚本会把各文档相互核对。它自 [2025 年 3 月](https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28)起就采用 RFC 驱动。
 
 ## 实证
 
 本节中凡是你能核实的内容，都可以在这里核实：
 
-- **[url-shortener 示例](examples/url-shortener/)**：v2.0 规格、我们人工在其中找到的问题，以及用当前命令对它完整运行的一次结果。在全新上下文中运行、从未看过我们清单的命令，找出了 10 个 PRD 问题中的全部 10 个（`/verify-prd`）和 13 个跨文档问题中的 12 个（`/workflow-status`），还发现了好几个我们漏掉的问题。由第二个模型进行的冷读（在本示例中是手动运行的）找出了 150 多处生成的 RFC 会让实现者不得不靠猜的地方；[报告](examples/url-shortener/cold-reads/)也在那里。这些都是单个模型的单次运行。
-- **[todo-cli 示例](examples/todo-cli/)**：一个十行的终端待办清单想法，一路做到 386 行经过评审的代码和 66 个通过的测试，每一步都在 Claude Sonnet 5.5 上运行，过程中没有人回答问题。它展示了每个命令发现了什么（包括功能坏了也会通过的测试），以及这次运行留给你的唯一一个决定。
+- **[url-shortener 示例](examples/url-shortener/)**：v2.0 规格、我们人工在其中找到的问题，以及用 3.1.0 版命令对它完整运行的一次结果（此后提示词已有变化，示例中有说明）。在全新上下文中运行、从未看过我们清单的命令，找出了 10 个 PRD 问题中的全部 10 个（`/verify-prd`），以及在三次 `/workflow-status` 运行中每次都找出 13 个跨文档问题中的 11 个，还发现了好几个我们漏掉的问题。由第二个模型进行的冷读（在本示例中是手动运行的）找出了 150 多处生成的 RFC 会让实现者不得不靠猜的地方；[报告](examples/url-shortener/cold-reads/)也在那里。除了那三次 `/workflow-status` 运行，这些都是单个模型的单次运行。
+- **[todo-cli 示例](examples/todo-cli/)**：一个十行的终端待办清单想法，一路做到 478 行经过评审的代码和 85 个通过的测试，每一步都在 Claude Sonnet 5.5 上运行，过程中没有人回答问题。它展示了评审打回了什么以及原因、这次运行替用户做出的决定（并明确说明了这一点），以及外部批评者发现的、每次评审都漏掉的三个 bug。
 - **[评测套件](evals/)**：在启用和不启用该工作流的两种情况下运行同样的检查，用的是你自己的账户，所以你可以亲自测量差异。它评分的是那 10 个 PRD 问题，以及 13 个跨文档问题中的 7 个，也就是正则表达式能够可靠识别的那些。
 
 <p align="center">
@@ -194,7 +198,7 @@ ID 也守住了。项目进行到一半 PRD 发生变化时，一个全新的代
 
 | 工具 | 目录 | 运行命令 |
 |---|---|---|
-| Claude Code | `.claude/skills/`，或插件 | `/create-prd` |
+| Claude Code | `.claude/skills/`，或插件 | `/create-prd`（插件：`/prd-workflow:create-prd`） |
 | GitHub Copilot（VS Code、CLI） | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd`，从 `/` 菜单中选择 |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |
@@ -211,8 +215,9 @@ ID 也守住了。项目进行到一半 PRD 发生变化时，一个全新的代
 ```
 
 - `install.sh` 永远不会覆盖你修改过的技能；`--force` 会先保存备份再替换。
-- `--ref v3.0.0` 安装指定版本，curl 的 URL 中也请使用同一个标签。
+- `--ref <tag>` 安装指定的[标签版本](https://github.com/nurettincoban/ai-prd-workflow/tags)；在 curl 那一行中，把 `main` 替换为同一个标签：`…/ai-prd-workflow/<tag>/install.sh | bash -s -- . --ref <tag>`。
 - 从 v2 升级？加上 `--remove-legacy`，旧的命令文件会被移到备份目录。
+- 需要 `bash`，以及用于可追溯性检查的 `python3`。这些命令会在项目根目录写入 `PRD.md`、`FEATURES.md`、`RULES.md`、`RFCS.md`、`RFCs/` 和 `reviews/`；请把它们和代码一起提交。要卸载，删除 `install.sh` 创建的技能文件夹即可。
 - 更喜欢复制粘贴？`./copy-prompt.sh --list` 列出所有提示词，`./copy-prompt.sh <file>` 把其中一个复制到剪贴板。
 
 ## 使用技巧

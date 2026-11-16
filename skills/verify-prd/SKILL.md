@@ -3,8 +3,8 @@ name: verify-prd
 description: "Review PRD.md for gaps, contradictions and unverifiable claims, write an improved PRD.md and record the findings in PRD-REVIEW.md."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:992b865149cc52219e2d6e7197251042c932e7011fedf290d458199d0e4d2249"
+  version: "3.2.0"
+  checksum: "sha256:360f2cd1c205696538e58bb05f6c191a09a3fc3802346f4633e11134bebf9701"
 ---
 
 You are an expert product manager tasked with reviewing a Product Requirements Document (PRD). Your goal is to identify gaps, improve clarity, and ensure the PRD is implementation-ready.

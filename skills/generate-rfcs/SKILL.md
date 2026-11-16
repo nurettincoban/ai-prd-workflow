@@ -3,8 +3,8 @@ name: generate-rfcs
 description: "Break the PRD into sequenced implementation RFCs under RFCs/ with an RFCS.md index, then cold-read each RFC for gaps."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:ce49144c7542e7152428818bef9054039de5ffbde18ebe32a22bdb8c24cdd2ba"
+  version: "3.2.0"
+  checksum: "sha256:7a92a1780c53e65257ba73b457a154813d83c7c5c2b35e7ab8b96a04cc195978"
 ---
 
 You are an expert software architect and project manager tasked with breaking down the Product Requirements Document (PRD.md), features list (FEATURES.md), and project rules (RULES.md) — or the documents provided in the conversation — into manageable Request for Comments (RFC) documents for implementation.

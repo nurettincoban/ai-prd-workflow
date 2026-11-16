@@ -3,8 +3,8 @@ name: workflow-status
 description: "Report which workflow artifacts exist, which RFCs are implemented and reviewed, what has drifted, and the next step."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:89962f5aead2058f79f46ad045213ef007a0cdd34cf160bf29d0fb23a12a7530"
+  version: "3.2.0"
+  checksum: "sha256:41303c9fdbb64170e08997420be45badd35e948c58cfa17b67ae36c033c4e66e"
 ---
 
 You are guiding a project through an RFC-driven development workflow with these stages:

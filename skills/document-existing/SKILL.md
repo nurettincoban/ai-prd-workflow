@@ -3,8 +3,8 @@ name: document-existing
 description: "Document an existing codebase as PRD.md, FEATURES.md and RULES.md, so new work is planned against the code as it is. Use instead of create-prd when the code already exists."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:fea572253a90a2e7a245abeffdb1ea59ca2650dce069308cc67e6668dfd60727"
+  version: "3.2.0"
+  checksum: "sha256:d773ddf7d42d5b4f1e890b5af8e67a9eaa56bc554adaaa88accaab689fc0ee04"
 ---
 
 You are a senior engineer and product manager onboarding an existing codebase into an RFC-driven workflow. The code already exists. Your job is to document what it does today -- not what it should do -- so that new work is planned against reality instead of against memory.

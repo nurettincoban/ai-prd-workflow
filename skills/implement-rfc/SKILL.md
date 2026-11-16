@@ -4,8 +4,8 @@ description: "Implement one RFC: check its predecessors, present a plan for appr
 argument-hint: "<rfc-id>"
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:327dc31c7d9279b2bdd4918548817c2eac836209aa268e7806691e5937bd6b0c"
+  version: "3.2.0"
+  checksum: "sha256:68a6e286854f5ab7d1f60c15d292bdf13a707ac6107547277dafb100dd2b06f7"
 ---
 
 Target RFC ID: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the RFC ID from my message instead. Substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.

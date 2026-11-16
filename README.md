@@ -4,8 +4,6 @@
 
 # 📋 AI PRD Workflow
 
-### Decide what to build before your agent builds it.
-
 **Idea or existing code → verified PRD → features → rules → sequenced RFCs → reviewed, tested code**
 
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
@@ -18,8 +16,6 @@
 
 English · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
 
-<sub>RFC-driven since <a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>March 2025</b></a> — before Claude Code or Cursor had a plan mode, and before Kiro or Spec Kit existed.</sub>
-
 </div>
 
 ---
@@ -30,24 +26,33 @@ Every step writes a markdown file that the next step reads, so decisions outlive
 
 ## What one run produced
 
-We gave it the spec of a small URL shortener that looks finished, and ran the commands. Three things it caught before any code existed:
+We took the spec of a small URL shortener that our own v2.0 prompts had produced. It looks finished. We ran the current commands on it, and three of the things they caught before any code existed were:
 
-| The spec said | What the workflow did |
+| What was there | What the workflow did |
 |---|---|
 | "Redirect short URL to original URL via HTTP 301" | `/verify-prd`: browsers cache a 301, so repeat clicks are never counted and deleted links keep redirecting. The fixed spec redirects with 302, and [RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) tests "never 301". |
 | No user accounts, and anyone can "delete a short URL" | `/verify-prd`: anyone can delete anyone's link. Nobody was there to decide, so it wrote a proposed fix as an open question marked **(assumption)**, not as a decision. |
-| RFC-002 claims features F5, F6 and F11 | `/workflow-status`: its acceptance criteria only test the API, so the analytics page and chart those features require had nothing to make anyone build them. Every ID was cited, so a script could not see it. |
+| [RFC-002](examples/url-shortener/before/RFCs/RFC-002-Click-Analytics.md) claims features F5, F6 and F11 | `/workflow-status`: its acceptance criteria only test the API, so the analytics page and chart those features require had nothing to make anyone build them. Every ID was cited, so a script could not see it. |
 
-**10 of 10** problems we had listed by hand, found by `/verify-prd` without seeing the list. **12 of 13** cross-document problems, found by `/workflow-status`. **12 RFCs** and **203 planned tests** generated, each RFC read cold by a second model first. About an hour of agent time on Claude Opus 5.5, no human input. **[Browse the whole run →](examples/url-shortener/)**
+**10 of 10** problems we had listed by hand, found by `/verify-prd` without seeing the list. **11 of 13** cross-document problems, found by `/workflow-status` in each of three runs, graded blind ([the 3.1.0 prompt found 8, 9 and 8](examples/url-shortener/workflow-status-reruns/GRADING.md), which is why it changed). **12 RFCs** and **203 planned tests** generated, each RFC read cold by a second model, with the readers started by hand. About an hour of agent time on Claude Opus 5.5, and nobody answered the commands' questions. **[Browse the whole run →](examples/url-shortener/)**
 
 ## Quick start
 
-In Claude Code, install the plugin, restart Claude Code, and start the interview:
+In Claude Code, install the plugin:
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
-/prd-workflow:create-prd          # then /prd-workflow:verify-prd
+```
+
+> [!IMPORTANT]
+> Restart Claude Code now. A running session does not see new skills, so the first command fails with `Unknown skill` — which looks like a broken install but is only a stale session.
+
+Then start the interview. It takes about ten minutes, and `/verify-prd` tells you within a few more whether this is for you:
+
+```
+/prd-workflow:create-prd
+/prd-workflow:verify-prd
 ```
 
 <details>
@@ -60,14 +65,11 @@ cd your-project
 curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-In Codex, type `$create-prd` instead of `/create-prd`. In a chat assistant (ChatGPT, Claude.ai, …), copy a prompt from the [command table](#how-it-works) and paste it in.
+Restart your tool after installing, for the same reason. In Codex, type `$create-prd` instead of `/create-prd`. In a chat assistant (ChatGPT, Claude.ai, …), copy a prompt from the [command table](#how-it-works) and paste it in.
 
 </details>
 
-> [!IMPORTANT]
-> Restart your AI tool after installing. A running session does not see new skills, so the first command fails with `Unknown skill` — which looks like a broken install but is only a stale session.
-
-Then run the commands in order (with the plugin, each one carries its name: `/prd-workflow:verify-prd`):
+The full sequence, shown with the short names that `install.sh` gives the commands. With the plugin, each one carries the prefix: `/prd-workflow:extract-features`.
 
 ```
 /create-prd          # interview → PRD.md   (existing code? use /document-existing instead)
@@ -80,7 +82,9 @@ Then run the commands in order (with the plugin, each one carries its name: `/pr
 /review-rfc 001      # review in a fresh context → reviews/REVIEW-RFC-001.md
 ```
 
-Run `/workflow-status` whenever you are unsure what comes next, and `/manage-changes` when requirements change. Start with the first two: the interview takes about ten minutes, and `/verify-prd` will tell you within a few more whether this is for you.
+Run `/workflow-status` whenever you are unsure what comes next, and `/manage-changes` when requirements change.
+
+**Not every project needs every step.** The interview records the project's size, and every command scales to it: a weekend tool gets a handful of rules and one or two RFCs. To add one feature to a codebase you already have, run `/document-existing` once, then `/manage-changes` for the feature, `/generate-rfcs` (it extends the existing plan) and `/implement-rfc`. `/test-strategy` is optional when the RFC's criteria already say how to test them.
 
 **Or try it on the example.** The `before/` folder looks complete, and it is not. Copy it, so the original stays for comparison:
 
@@ -90,7 +94,7 @@ cp -r ai-prd-workflow/examples/url-shortener/before linksnip
 ai-prd-workflow/install.sh linksnip
 ```
 
-Open `linksnip` in your AI tool, run `/workflow-status` or `/verify-prd`, and compare the result with [the problems we found by hand](examples/url-shortener/README.md) and with what [our run](examples/url-shortener/after/) produced.
+Open `linksnip` in your AI tool, run `/workflow-status` or `/verify-prd` (`install.sh` installs project skills, so there is no prefix), and compare the result with [the problems we found by hand](examples/url-shortener/README.md) and with what [our run](examples/url-shortener/after/) produced.
 
 ## How it works
 
@@ -154,14 +158,14 @@ The two work together: `/generate-rfcs` decides what the next piece of work is, 
 
 **Use it for** multi-week builds, and anything real you build with AI, where scope creep and forgotten decisions hurt more than code quality. **Skip it for** a one-line fix.
 
-If you know spec-driven development (GitHub Spec Kit, Amazon Kiro), this is the same idea, with RFCs as the unit of work, no CLI or framework to adopt, and a script that checks the documents against each other.
+If you know spec-driven development (GitHub Spec Kit, Amazon Kiro), this is the same idea, with RFCs as the unit of work, no CLI or framework to adopt, and a script that checks the documents against each other. It has been RFC-driven since [March 2025](https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28).
 
 ## Evidence
 
 Everything in this section that you can check, you can check here:
 
-- **[The url-shortener example](examples/url-shortener/)** — the v2.0 spec, the problems we found in it by hand, and a full run of the current commands on it. Fresh-context runs that never saw our list found 10 of 10 PRD problems (`/verify-prd`) and 12 of 13 cross-document problems (`/workflow-status`), plus several we had missed. Cold reads by a second model, run by hand in this example, found over 150 places where the generated RFCs would have made an implementer guess; the [reports](examples/url-shortener/cold-reads/) are there too. These are single runs of one model.
-- **[The todo-cli example](examples/todo-cli/)** — a ten-line idea for a terminal to-do list, taken all the way to 386 lines of reviewed code and 66 passing tests, every step on Claude Sonnet 5.5 with nobody answering questions. It shows what each command caught, including tests that would have passed with the feature broken, and the one decision the run left open for you.
+- **[The url-shortener example](examples/url-shortener/)** — the v2.0 spec, the problems we found in it by hand, and a full run of the 3.1.0 commands on it (the prompts have changed since; the example says how). Fresh-context runs that never saw our list found 10 of 10 PRD problems (`/verify-prd`) and 11 of 13 cross-document problems in three of three `/workflow-status` runs, plus several we had missed. Cold reads by a second model, run by hand in this example, found over 150 places where the generated RFCs would have made an implementer guess; the [reports](examples/url-shortener/cold-reads/) are there too. Apart from the three `/workflow-status` runs, these are single runs of one model.
+- **[The todo-cli example](examples/todo-cli/)** — a ten-line idea for a terminal to-do list, taken all the way to 478 lines of reviewed code and 85 passing tests, every step on Claude Sonnet 5.5 with nobody answering questions. It shows what the reviews sent back and why, the decision the run made on the user's behalf and says so, and three bugs an outside critic found that every review missed.
 - **[The eval suite](evals/)** — runs the same checks with and without the workflow, on your own account, so you can measure the difference yourself. It grades the ten PRD problems and seven of the thirteen cross-document ones, the ones a regular expression can recognize reliably.
 
 <p align="center">
@@ -191,7 +195,7 @@ IDs held, too. When the PRD changed mid-project, a fresh agent re-ran `/extract-
 
 | Tool | Folder | Run a command |
 |---|---|---|
-| Claude Code | `.claude/skills/`, or the plugin | `/create-prd` |
+| Claude Code | `.claude/skills/`, or the plugin | `/create-prd` (plugin: `/prd-workflow:create-prd`) |
 | GitHub Copilot (VS Code, CLI) | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd`, from the `/` menu |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |
@@ -208,8 +212,9 @@ From a clone of this repository:
 ```
 
 - `install.sh` never overwrites a skill you have edited. `--force` replaces it after saving a backup.
-- `--ref v3.0.0` installs a specific release. Use the same tag in the curl URL.
+- `--ref <tag>` installs a specific [tagged release](https://github.com/nurettincoban/ai-prd-workflow/tags); in the curl line, replace `main` with the same tag: `…/ai-prd-workflow/<tag>/install.sh | bash -s -- . --ref <tag>`.
 - Upgrading from v2? Add `--remove-legacy` to move the old command files into a backup folder.
+- Needs `bash`, and `python3` for the traceability check. The commands write `PRD.md`, `FEATURES.md`, `RULES.md`, `RFCS.md`, `RFCs/` and `reviews/` in the project root; commit them with your code. To uninstall, delete the skill folders `install.sh` created.
 - Prefer copy-paste? `./copy-prompt.sh --list` shows the prompts, and `./copy-prompt.sh <file>` copies one to your clipboard.
 
 ## Tips

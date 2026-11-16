@@ -3,8 +3,8 @@ name: generate-rules
 description: "Write RULES.md, the project standards the AI must follow, with registry-verified dependency versions and permanent rule IDs."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:13575f03e2d65111f0aa8f96157e8705fd9de63be992d241ce2bdc5507d6aced"
+  version: "3.2.0"
+  checksum: "sha256:10e7bed7f2b79fe005d1255f7161d4716a98eddfe5e38ac4e465e1110307ee0a"
 ---
 
 You are an expert software architect and technical lead tasked with writing RULES.md based on the Product Requirements Document (PRD.md) and features list (FEATURES.md), or the documents provided in the conversation. If PRD-REVIEW.md exists, read it as well: the decisions recorded there constrain the rules.

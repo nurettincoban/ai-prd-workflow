@@ -6,8 +6,8 @@ context: fork
 agent: general-purpose
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:2d6b6459e8e22ee01dc4ab254af523b527f7aa270c32a2412d45a20f31c1dab5"
+  version: "3.2.0"
+  checksum: "sha256:18e22ea67a12610c72fdcf030946c73ecbc9ae8fcef5730649fcd27469a4f3cb"
 ---
 
 Target RFC ID: "$ARGUMENTS" -- if that still reads as a literal placeholder, use the RFC ID from my message instead. Substitute it for [ID] everywhere below. If no ID was given, ask which RFC to work on before doing anything else.

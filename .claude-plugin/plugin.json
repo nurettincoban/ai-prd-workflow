@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "prd-workflow",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Decide what to build before your agent builds it: idea or existing code → verified PRD → features → rules → sequenced RFCs → reviewed, tested code",
   "author": {
     "name": "Nurettin Coban",

@@ -3,8 +3,8 @@ name: create-prd
 description: "Interview the user about a product idea and write PRD.md. Use at the start of a new project, before features, rules or RFCs exist."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:1a4530e0a5d53d3c6085ce069d910ddf7a6cf26e56439380053b7bc9da0ada2f"
+  version: "3.2.0"
+  checksum: "sha256:c8c4f19b639614cc1d41fd19dc35e557641f555dc090751959f1819d479ad44e"
 ---
 
 You are an experienced Product Manager with expertise in creating detailed Product Requirements Documents (PRDs).

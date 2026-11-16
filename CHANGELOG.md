@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [3.2.0] - 2026-11-15
+
+A second gauntlet round. Fable 5.2 critics attacked the prompts, the README and the todo-cli example on main, and scored them 6, 6 and 5 out of 10. The fixes below answer what they found; the todo-cli example was then carried further with the new prompts on Sonnet 5.5.
+
+### Fixed
+- Assumptions no longer pass review. An assumption may fill a gap but never contradict a requirement or goal; when the only way forward contradicts one, it is recorded as a High conflict in RFCS.md, nothing is built on it until the user accepts it in writing, and `/review-rfc` blocks on it. In the first todo-cli run, "never lose my tasks" was recorded as contradicted in six files and the code that loses tasks still passed four reviews
+- `/workflow-status` reads the RFCs against each other: undeclared predecessors, an RFC whose approach contradicts its own criteria, and features claimed but never tested. On the url-shortener `before/` plan, three runs of the 3.1.0 prompt found 8, 9 and 8 of 13 known problems; three runs of this one found 11 each, graded blind
+- `/review-rfc` breaks the code on purpose for each criterion and property and lists what it broke; a test that still passes with the behavior broken is blocking. It also uses the product the way the PRD's user would, and files non-blocking findings under `## Follow-ups` in RFCS.md instead of leaving them in the review
+- `/implement-rfc` in a non-interactive run writes its plan into the RFC's Implementation Notes and proceeds only if no open High conflict touches the RFC, recording that nobody approved the plan. Checks that need a person or another machine go into a release checklist and no longer keep an RFC In progress forever
+- Cold reads are capped at the five guesses most likely to produce a wrong implementation, and an RFC passes when one cold read of its changed text finds no behavior-changing guess. The result is recorded in RFCS.md. Round one of the todo-cli run reported 135 items
+- Acceptance criteria describe behavior observable from outside the code: never code structure, call counts or a scan of the source. One criterion is one behavior
+- `/generate-rules` writes conventions every RFC follows, not behaviors or test cases, never writes a rule from an assumption, and scales the number of rules to the product (about ten for a small one). The todo-cli run had 55 rules for 386 lines of code
+- `/extract-features` gives stack-wide NFRs no feature row; they are handed to RULES.md in one line, which `trace-check.py` accepts
+- Open conflicts are numbered (C1, C2, ...) with a status, and only conflicts that block something or need a decision are listed
+- `/test-strategy` writes `| Criterion | Test | Level |` and plans one test per property a user relies on, not only per criterion
+- `/verify-prd` scales its gap analysis to the product, numbers findings, maps every goal to a requirement and drops the self-awarded quality scores
+- `/manage-changes` scales to the change, never edits code, and sends a bug in a Reviewed RFC to Follow-ups
+- Earlier assumptions are cited, not copied into every later file
+
+### Added
+- A **Size** (Small, Medium, Large) in the PRD's `## Product Type`, which every later command scales its output to
+- `examples/url-shortener/workflow-status-reruns/`: the six `/workflow-status` runs behind the numbers above and the blind grading
+- todo-cli: a third review round, a change request that adds a lock for concurrent runs (decided by the person running the example, not by its user, and recorded as such), and the lock itself as RFC-006
+
+### Changed
+- README: the `/workflow-status` number is now the repeatable 11 of 13 instead of a single run's 12, the quick start separates installing from running, and a short paragraph says which steps a small project can skip
+- `/implement-rfc` lost its role-play and SOLID boilerplate
+
 ## [3.1.0] - 2026-11-15
 
 This release came out of a review gauntlet: critics attacked the prompts, the README and the install path, and a second model (Fable 5.2) did the cold reads. Every finding below was reported by a critic and checked before it was fixed.

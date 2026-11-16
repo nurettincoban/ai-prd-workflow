@@ -314,7 +314,7 @@ curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/
           </tbody>
         </table>
       </div>
-      <p class="section-lede" style="margin-top:20px"><strong>10 of 10</strong> problems we had listed by hand, found by <code>/verify-prd</code> without seeing the list. <strong>12 RFCs</strong> and <strong>203 planned tests</strong>, each RFC read cold by a second model first. About an hour of agent time, no human input. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener">Browse the whole run →</a></p>
+      <p class="section-lede" style="margin-top:20px"><strong>10 of 10</strong> problems we had listed by hand, found by <code>/verify-prd</code> without seeing the list. <strong>11 of 13</strong> cross-document problems, found by <code>/workflow-status</code> in each of three runs, graded blind. <strong>12 RFCs</strong> and <strong>203 planned tests</strong>, each RFC read cold by a second model. About an hour of agent time on Claude Opus 5.5, and nobody answered the commands' questions. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener">Browse the whole run →</a></p>
     </div>
   </section>
 
@@ -388,7 +388,7 @@ curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/
       <div class="use-skip">
         <div><strong>Use it for</strong>multi-week builds, and anything real you build with AI, where scope creep and forgotten decisions hurt more than code quality.</div>
         <div><strong>Skip it for</strong>a one-line fix.</div>
-        <div><strong>Know Spec Kit or Kiro?</strong>Same idea — spec-driven development — with RFCs as the unit of work and no CLI or framework to adopt. It predates both.</div>
+        <div><strong>Know Spec Kit or Kiro?</strong>Same idea — spec-driven development — with RFCs as the unit of work and no CLI or framework to adopt.</div>
       </div>
     </div>
   </section>
@@ -403,9 +403,10 @@ curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/
       </figure>
 
       <div class="stats">
-        <div class="stat"><div class="big">12 / 13</div><p>cross-document problems found by <code>/workflow-status</code> in a fresh context that never saw our list. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener">See the example</a></p></div>
+        <div class="stat"><div class="big">11 / 13</div><p>cross-document problems found by <code>/workflow-status</code> in each of three fresh runs that never saw our list, graded blind. <a href="https://github.com/nurettincoban/ai-prd-workflow/blob/main/examples/url-shortener/workflow-status-reruns/GRADING.md">See the grading</a></p></div>
         <div class="stat"><div class="big">10 / 10</div><p>PRD problems found by <code>/verify-prd</code> on the same example — plus several we had missed.</p></div>
         <div class="stat"><div class="big">150+</div><p>places where the generated RFCs would have made an implementer guess, found by cold reads on a second model and fixed before any code. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/url-shortener/cold-reads">Read the reports</a></p></div>
+        <div class="stat"><div class="big">idea → code</div><p>A ten-line idea for a terminal to-do list, taken through every command to working code and tests, with the reviews that sent it back. <a href="https://github.com/nurettincoban/ai-prd-workflow/tree/main/examples/todo-cli">See the todo-cli run</a></p></div>
       </div>
 
       <div class="catches">
