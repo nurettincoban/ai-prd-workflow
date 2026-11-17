@@ -20,7 +20,7 @@
 
 set -euo pipefail
 
-VERSION="3.1.0"
+VERSION="3.2.0"
 REPO_URL="https://github.com/nurettincoban/ai-prd-workflow"
 # Overridable so the curl path can be tested without the network (file:// works).
 RAW_BASE="${AI_PRD_WORKFLOW_RAW:-https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow}"

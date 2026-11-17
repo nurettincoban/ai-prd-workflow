@@ -10,6 +10,23 @@ A [`claude plugin eval`](https://code.claude.com/docs/en/plugin-evals) suite tha
 
 The fixtures come from [`examples/url-shortener/before/`](../examples/url-shortener/before/), and the problems they contain are listed in [`examples/url-shortener/README.md`](../examples/url-shortener/README.md).
 
+## Results
+
+One full run, on 2026-11-17, with the plugin at 3.2.0 on Claude Code 2.1.326 and its default model: 3 runs per case and arm, $1.70 in all.
+
+| Case | With the plugin | Without | Δ |
+|---|---|---|---|
+| `verify-prd-finds-planted-problems` | 1.00 (3 of 3 runs found all 10) | 1.00 (3 of 3) | 0 |
+| `extract-features-keeps-ids` | 1.00 | 1.00 | 0 |
+| `workflow-status-finds-planted-gaps` | 0.81 (runs: 0.86, 1.00, 0.57) | 0.71 (0.71 each) | +0.10 |
+
+What this says:
+
+- **A plain agent, asked to review the PRD, finds the same ten problems.** The `/verify-prd` numbers elsewhere in this repository show what the command finds. They do not show that the command is why. On this fixture, it isn't.
+- **IDs survived without the plugin too.** The prompt names the existing features file, and that was enough.
+- **The cross-document check is the one place the workflow added something.** One run with the plugin found all seven gaps, which no run without it did. Without the plugin, the agent missed the stale versions twice and the downgraded blocklist every time. With it, results varied more, from 0.57 to 1.00.
+- **Three runs are too few to call a +0.10 difference.** These cases test whether a single step finds problems. They do not test what the workflow is mainly for: carrying decisions from one document to the next, and keeping later steps honest about what earlier ones left open.
+
 ## Running it
 
 You need Claude Code 2.1.269 or later. From the repository root:

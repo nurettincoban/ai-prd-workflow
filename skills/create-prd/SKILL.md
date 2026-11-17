@@ -3,8 +3,8 @@ name: create-prd
 description: "Interview the user about a product idea and write PRD.md. Use at the start of a new project, before features, rules or RFCs exist."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:15fad08a1a406234995327d1ced8a9013c1bcd4985cf4ab4e26cb4645267291f"
+  version: "3.2.0"
+  checksum: "sha256:c8c4f19b639614cc1d41fd19dc35e557641f555dc090751959f1819d479ad44e"
 ---
 
 You are an experienced Product Manager with expertise in creating detailed Product Requirements Documents (PRDs).
@@ -27,29 +27,31 @@ Then apply only the checks that fit. What each type needs probed, and what usual
 | data pipeline | schemas and schema evolution, data-quality checks, idempotent re-runs and backfills, late or duplicate data, lineage, PII handling, cost and scheduling | UI, sessions, responsive design |
 | game | core loop, frame budget and target hardware, input devices, save/load and save versioning, progression and difficulty, platform certification | SEO, CRUD business logic, responsive design |
 
-Record the result in PRD.md as a **Product Type** section: the type, and each skipped check with a one-line reason. Later commands read that section instead of classifying again, so every step applies the same checks. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
+Also record a **Size**: Small (one person, days to a couple of weeks), Medium (a small team or a few weeks to a few months), or Large (several teams, or months and more), from the timeline and team the user gave. Ask if they gave neither. Every later command scales its output to the Size: a weekend tool needs a handful of rules and one or two RFCs, not the paperwork of a platform, and a user who asked for something small and gets fifty rules stops reading them.
+
+Record the result in PRD.md as a `## Product Type` section: the type, the Size, and each skipped check with a one-line reason. Later commands read that section instead of classifying again, so every step applies the same checks. Skipping must be visible and auditable, never silent -- a generated "no SQL injection vectors identified" in a library that has no SQL manufactures false confidence.
 
 ## PRD Sections to Include
 
 Once you feel you have gathered sufficient details, create a structured PRD that includes (but is not limited to):
 
 - **Overview** - A concise summary of the product, its purpose, and its value proposition
-- **Product Type** - The classification and the checks that do not apply, as described above
-- **Goals and Objectives** - Clear, measurable goals the product aims to achieve
+- **Product Type** - The classification, the Size, and the checks that do not apply, as described above
+- **Goals and Objectives** - Clear, measurable goals the product aims to achieve. Each goal must be carried by at least one requirement below, or nothing later checks it
 - **Scope** - What's included and explicitly what's excluded from the initial release
 - **User Personas or Target Audience** - Detailed descriptions of the intended users
 - **Functional Requirements** - Specific features and capabilities, organized by priority, one per line as `- **FR-1**: requirement text`
 - **Non-Functional Requirements** - Performance, security, scalability, and other quality attributes, written the same way: `- **NFR-1**: requirement text`. Features and RFCs cite these IDs and `trace-check.py` reads that exact form, so later edits add new numbers and never renumber
 - **User Journeys** - Key workflows and interactions from the user's perspective
 - **Success Metrics** - How we'll measure if the product is successful
-- **Timeline** - High-level implementation schedule with key milestones
-- **Decisions** - Choices made during this interview, each with its reason and the alternatives rejected. `/manage-changes` checks future changes against this list, so a decision recorded here cannot be reversed by accident
-- **Open Questions/Assumptions** - Everything you asked about and did not get an answer to, and every assumption you made, each labelled **(assumption)**. Never write a guess into Timeline, Success Metrics or Decisions as if I had said it -- every later command treats PRD.md as the highest authority, so a guess recorded there becomes a requirement
+- **Timeline** - High-level implementation schedule with key milestones; for a Small product, one line is enough
+- **Decisions** - Choices made during this interview, each with its reason and the alternatives the user actually weighed -- do not invent rejected alternatives to fill the field. `/manage-changes` checks future changes against this list, so a decision recorded here cannot be reversed by accident
+- **Open Questions** (heading `## Open Questions`) - Everything you asked about and did not get an answer to, and every assumption you made, each labelled **(assumption)**. Never write a guess into Timeline, Success Metrics or Decisions as if I had said it -- every later command treats PRD.md as the highest authority, so a guess recorded there becomes a requirement
 
 ## Guidelines for the Questioning Process
 
 - Classify the product type as soon as the first batch of answers tells you what is being built -- not before. Ask rather than guess
-- Ask questions in batches of 3-5 related questions at a time
+- Ask questions in batches of 3-5 related questions at a time. Include, early, how much process the user wants: the Size decides how many rules, RFCs and tests every later command writes
 - Start with broad, foundational questions before diving into specifics
 - Group related questions together in a logical sequence
 - Adapt your questions based on my previous answers

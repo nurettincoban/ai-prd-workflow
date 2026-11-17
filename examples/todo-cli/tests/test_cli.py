@@ -93,7 +93,8 @@ class Basics(unittest.TestCase):
 
 class Usage(unittest.TestCase):
     def test_c6_usage_errors(self):  # criterion 6
-        cases = [["frob"], ["li"], ["list", "--bogus"], ["--bogus"], ["5"], ["list", "x"], ["a\nb"]]
+        cases = [["frob"], ["li"], ["list", "--bogus"], ["--bogus"], ["5"], ["list", "x"], ["a\nb"],
+                 ["--he"], ["--hel"], ["list", "--he"], ["list", "a\nb"]]
         with helpers.temp_env():
             write_store(THREE)
             for argv in cases:
@@ -108,12 +109,103 @@ class Usage(unittest.TestCase):
             self.assertEqual((code, err), (0, ""))
             self.assertIn("list", out)
 
+    def test_c6_help_text_says_what_commands_do(self):  # RFC-002 round 2 follow-up F1
+        with helpers.temp_env():
+            code, out, err = run(["--help"])
+            self.assertEqual(code, 0)
+            for bad in ("done tasks", "rm tasks", "add tasks", "list tasks", "clear tasks"):
+                self.assertNotIn(bad, out)
+            self.assertIn("mark a task done", out)
+
+    def test_c15_keyboard_interrupt(self):  # follow-up F2: pinned by the RFC, assumption in RFCS.md conflict 5
+        with helpers.temp_env():
+            write_store(THREE)
+            with mock.patch.dict(td.COMMANDS, {"list": mock.Mock(side_effect=KeyboardInterrupt)}):
+                self.assertEqual(run(["list"]), (1, "", "td: interrupted\n"))
+
+    def test_c16_interrupt_during_imports(self):  # BUG-REPORT-001 item 5: interrupt before main runs
+        # A stand-in `argparse` on PYTHONPATH interrupts the run while td is still importing, which is
+        # what a Ctrl-C in the first milliseconds does, but at a fixed point instead of by timing.
+        with helpers.temp_env() as tmp:
+            shim = os.path.join(tmp, "shim")
+            os.mkdir(shim)
+            with open(os.path.join(shim, "argparse.py"), "w") as f:
+                f.write("import os, signal, time\nos.kill(os.getpid(), signal.SIGINT)\ntime.sleep(5)\n")
+            env = dict(os.environ, PYTHONPATH=shim)
+            proc = subprocess.run([sys.executable, str(helpers.TD_PATH), "list"], env=env,
+                                  capture_output=True, text=True, timeout=30)
+            self.assertEqual((proc.returncode, proc.stdout, proc.stderr), (1, "", "td: interrupted\n"))
+
+    def test_c16_handler_installed_before_heavy_imports(self):  # reviewer B1 (round 4): `import signal` ran first
+        # Only built-in or already-loaded modules may be imported before the SIGINT handler is installed:
+        # `signal` pulls in enum, functools and collections, and a Ctrl-C during that import printed a traceback.
+        tree = ast.parse(TD_SOURCE)
+        before = []
+        for node in tree.body:
+            if isinstance(node, ast.If) and "_on_sigint" in ast.dump(node):
+                break
+            if isinstance(node, ast.Import):
+                before += [a.name for a in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                before.append(node.module)
+        else:
+            self.fail("no SIGINT install found")
+        self.assertEqual(sorted(before), ["_signal", "os", "sys"])
+
+    def test_c16_interrupt_during_import_of_signal(self):  # reviewer B1 (round 4)
+        # A stand-in `signal` on PYTHONPATH interrupts the run when it is imported. td must not import it
+        # before its handler exists (the old `import signal` at the top printed a traceback here); if some
+        # later import pulls it in, the interrupt must still end as `td: interrupted`.
+        with helpers.temp_env() as tmp:
+            shim = os.path.join(tmp, "shim")
+            os.mkdir(shim)
+            with open(os.path.join(shim, "signal.py"), "w") as f:
+                f.write("import os\nos.kill(os.getpid(), 2)\n")
+            env = dict(os.environ, PYTHONPATH=shim)
+            proc = subprocess.run([sys.executable, str(helpers.TD_PATH), "list"], env=env,
+                                  capture_output=True, text=True, timeout=30)
+            self.assertNotIn("Traceback", proc.stderr)
+            self.assertIn((proc.returncode, proc.stderr), [(0, ""), (1, "td: interrupted\n")])
+
+    def test_c16_interrupt_after_main_returns(self):  # found by a timing sweep: late Ctrl-C printed a traceback
+        # sitecustomize sends SIGINT from an atexit callback, which runs after `td` has returned from main.
+        with helpers.temp_env() as tmp:
+            shim = os.path.join(tmp, "shim")
+            os.mkdir(shim)
+            with open(os.path.join(shim, "sitecustomize.py"), "w") as f:
+                f.write("import atexit, os\natexit.register(lambda: os.kill(os.getpid(), 2))\n")
+            env = dict(os.environ, PYTHONPATH=shim)
+            proc = subprocess.run([sys.executable, str(helpers.TD_PATH), "list"], env=env,
+                                  capture_output=True, text=True, timeout=30)
+            self.assertEqual((proc.returncode, proc.stderr), (0, ""))
+
+    def test_c16_sigint_handler_after_main_starts(self):  # the handler must not hide Ctrl-C from main's own handling
+        with mock.patch.object(td, "_STARTED", True), mock.patch.object(td.os, "_exit") as ex:
+            with self.assertRaises(KeyboardInterrupt):
+                td._on_sigint(2, None)
+            ex.assert_not_called()
+        with mock.patch.object(td, "_STARTED", False), mock.patch.object(td.os, "_exit") as ex, \
+                mock.patch.object(td.os, "write") as wr:
+            td._on_sigint(2, None)
+            wr.assert_called_once_with(2, b"td: interrupted\n")
+            ex.assert_called_once_with(1)
+
+    def test_c16_main_marks_started(self):  # from then on Ctrl-C raises KeyboardInterrupt, so main cleans up (lock, temp file)
+        seen = []
+        with helpers.temp_env():
+            write_store(THREE)
+            with mock.patch.object(td, "_STARTED", False), \
+                    mock.patch.dict(td.COMMANDS, {"list": lambda a, s, p: seen.append(td._STARTED) or []}):
+                run(["list"])
+        self.assertEqual(seen, [True])
+
     def test_c7_corrupt(self):  # criterion 7
         corrupt = [
             b"{not json",
             json.dumps({"version": 1, "next_id": 2, "tasks": [{"id": 1, "text": 5, "done": False}]}).encode(),
             json.dumps({"version": 1, "tasks": []}).encode(),
             json.dumps({"version": 2, "next_id": 1, "tasks": []}).encode(),
+            b"[" * 200000,
         ]
         with helpers.temp_env():
             for data in corrupt:
@@ -191,6 +283,38 @@ class Output(unittest.TestCase):
             code = proc.wait(timeout=30)
             self.assertTrue(first.startswith(b"1 [ ] "))
             self.assertEqual((code, err), (0, b""))
+
+    def test_c11_reader_closed_first(self):  # criterion 11, deterministic: nobody reads at all
+        # why: the test above can finish its write before the reader closes, so it never sees a
+        # broken pipe; here the pipe is closed before td starts to write, so one always happens.
+        with helpers.temp_env():
+            write_store([(i, "x" * 60, False) for i in range(1, 20001)])
+            proc = subprocess.Popen([sys.executable, str(helpers.TD_PATH), "list"],
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ.copy())
+            proc.stdout.close()
+            err = proc.stderr.read()
+            proc.stderr.close()
+            self.assertEqual((proc.wait(timeout=30), err), (0, b""))
+
+    def test_c11_write_lines_redirects_to_devnull(self):  # criterion 11: guards the dup2 on any Python version
+        class Broken:
+            def write(self, _):
+                raise BrokenPipeError
+
+            def flush(self):
+                pass
+
+            def fileno(self):
+                return 97
+
+        with mock.patch.object(td.sys, "stdout", Broken()), \
+                mock.patch.object(td.os, "open", return_value=96) as opened, \
+                mock.patch.object(td.os, "dup2") as dup2, \
+                mock.patch.object(td.os, "close") as close:
+            td._write_lines(["1 [ ] a"])
+        opened.assert_called_once_with(os.devnull, os.O_WRONLY)
+        dup2.assert_called_once_with(96, 97)
+        close.assert_called_once_with(96)
 
     def test_c12_ascii_stdout(self):  # criterion 12
         with helpers.temp_env():

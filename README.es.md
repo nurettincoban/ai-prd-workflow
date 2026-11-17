@@ -4,8 +4,6 @@
 
 # 📋 AI PRD Workflow
 
-### Decide qué construir antes de que tu agente lo construya.
-
 **Idea o código existente → PRD verificado → funcionalidades → reglas → RFC ordenados → código revisado y probado**
 
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
@@ -17,8 +15,6 @@
 **[🌐 Sitio web](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Ver una ejecución real](#lo-que-produjo-una-ejecución)** · **[Inicio rápido](#inicio-rápido)** · **[Cómo funciona](#cómo-funciona)** · **[Por qué](#por-qué-este-flujo-de-trabajo)** · **[Evidencia](#evidencia)** · **[Opciones de instalación](#opciones-de-instalación)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Türkçe](README.tr.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · Español
-
-<sub>Guiado por RFC desde <a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>marzo de 2025</b></a>: antes de que Claude Code o Cursor tuvieran un modo de planificación, y antes de que existieran Kiro o Spec Kit.</sub>
 
 </div>
 
@@ -33,24 +29,33 @@ Cada paso escribe un archivo markdown que lee el siguiente, así que las decisio
 
 ## Lo que produjo una ejecución
 
-Le dimos la especificación de un pequeño acortador de URL que parece terminada y ejecutamos los comandos. Tres cosas que detectó antes de que existiera código:
+Tomamos la especificación de un pequeño acortador de URL que habían producido nuestros propios prompts de la v2.0. Parece terminada. Ejecutamos sobre ella los comandos, y tres de las cosas que detectaron antes de que existiera código fueron:
 
-| Lo que decía la especificación | Lo que hizo el flujo de trabajo |
+| Lo que había | Lo que hizo el flujo de trabajo |
 |---|---|
 | «Redirigir la URL corta a la URL original mediante HTTP 301» | `/verify-prd`: los navegadores guardan en caché un 301, así que los clics repetidos nunca se cuentan y los enlaces borrados siguen redirigiendo. La especificación corregida redirige con 302, y [RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) prueba «nunca 301». |
 | Sin cuentas de usuario, y cualquiera puede «borrar una URL corta» | `/verify-prd`: cualquiera puede borrar el enlace de cualquiera. No había nadie para decidir, así que escribió la solución que proponía como una pregunta abierta marcada **(assumption)** (supuesto), no como una decisión. |
-| RFC-002 afirma cubrir las funcionalidades F5, F6 y F11 | `/workflow-status`: sus criterios de aceptación solo prueban la API, así que nada obligaba a nadie a construir la página de analítica y el gráfico que esas funcionalidades exigen. Todos los ID estaban citados, así que un script no podía verlo. |
+| [RFC-002](examples/url-shortener/before/RFCs/RFC-002-Click-Analytics.md) afirma cubrir las funcionalidades F5, F6 y F11 | `/workflow-status`: sus criterios de aceptación solo prueban la API, así que nada obligaba a nadie a construir la página de analítica y el gráfico que esas funcionalidades exigen. Todos los ID estaban citados, así que un script no podía verlo. |
 
-**10 de 10** problemas que habíamos listado a mano, encontrados por `/verify-prd` sin ver la lista. **12 de 13** problemas entre documentos, encontrados por `/workflow-status`. **12 RFC** y **203 pruebas planificadas** generados, y cada RFC leído primero en frío por un segundo modelo. Alrededor de una hora de tiempo de agente con Claude Opus 5.5, sin intervención humana. **[Explora la ejecución completa →](examples/url-shortener/)**
+**10 de 10** problemas que habíamos listado a mano, encontrados por `/verify-prd` sin ver la lista. (Un agente normal al que se pidió revisar el mismo PRD también los encontró: [resultados de la evaluación](evals/README.md#results).) **11 de 13** problemas entre documentos, encontrados por el `/workflow-status` actual en cada una de tres ejecuciones, calificadas a ciegas. El prompt de la 3.1.0 encontró 8, 9 y 8, y las nuevas comprobaciones se escribieron a partir de lo que se le escapó en este mismo plan, así que [léelo como una comprobación de regresión](examples/url-shortener/workflow-status-reruns/GRADING.md), no como una puntuación sobre datos no vistos. **12 RFC** y **203 pruebas planificadas**, generados por los comandos de la 3.1.0, y cada RFC leído en frío por un segundo modelo, con los lectores lanzados a mano. Alrededor de una hora de tiempo de agente con Claude Opus 5.5, y nadie respondió a las preguntas de los comandos. **[Explora la ejecución completa →](examples/url-shortener/)**
 
 ## Inicio rápido
 
-En Claude Code, instala el plugin, reinicia Claude Code y empieza la entrevista:
+En Claude Code, instala el plugin:
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
-/prd-workflow:create-prd          # después, /prd-workflow:verify-prd
+```
+
+> [!IMPORTANT]
+> Reinicia Claude Code ahora. Una sesión que ya está en marcha no ve las skills nuevas, así que el primer comando falla con `Unknown skill`: parece una instalación rota, pero solo es una sesión antigua.
+
+Después, empieza la entrevista. Dura unos diez minutos, y en unos pocos más `/verify-prd` te dirá si esto es para ti:
+
+```
+/prd-workflow:create-prd
+/prd-workflow:verify-prd
 ```
 
 <details>
@@ -63,14 +68,11 @@ cd your-project
 curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-En Codex, escribe `$create-prd` en lugar de `/create-prd`. En un asistente de chat (ChatGPT, Claude.ai, …), copia un prompt de la [tabla de comandos](#cómo-funciona) y pégalo.
+Reinicia tu herramienta después de instalar, por la misma razón. En Codex, escribe `$create-prd` en lugar de `/create-prd`. En un asistente de chat (ChatGPT, Claude.ai, …), copia un prompt de la [tabla de comandos](#cómo-funciona) y pégalo.
 
 </details>
 
-> [!IMPORTANT]
-> Reinicia tu herramienta de IA después de instalar. Una sesión que ya está en marcha no ve las skills nuevas, así que el primer comando falla con `Unknown skill`: parece una instalación rota, pero solo es una sesión antigua.
-
-Después, ejecuta los comandos en orden (con el plugin, cada uno lleva su nombre: `/prd-workflow:verify-prd`):
+La secuencia completa, con los nombres cortos que `install.sh` da a los comandos. Con el plugin, cada uno lleva el prefijo: `/prd-workflow:extract-features`.
 
 ```
 /create-prd          # entrevista → PRD.md   (¿ya hay código? usa /document-existing)
@@ -83,7 +85,9 @@ Después, ejecuta los comandos en orden (con el plugin, cada uno lleva su nombre
 /review-rfc 001      # revisión en un contexto nuevo → reviews/REVIEW-RFC-001.md
 ```
 
-Ejecuta `/workflow-status` cuando no sepas qué viene después, y `/manage-changes` cuando cambien los requisitos. Empieza por los dos primeros: la entrevista dura unos diez minutos, y en unos pocos más `/verify-prd` te dirá si esto es para ti.
+Ejecuta `/workflow-status` cuando no sepas qué viene después, y `/manage-changes` cuando cambien los requisitos.
+
+**No todos los proyectos necesitan todos los pasos.** La entrevista registra el tamaño del proyecto, y los comandos que escriben documentos tienen instrucciones de ajustarse a él: unas diez reglas y de uno a tres RFC para una herramienta de fin de semana. Todavía ningún ejemplo lo muestra: las reglas y los RFC de la ejecución de todo-cli se escribieron antes de este cambio, y muestra lo que pasa sin él (56 reglas para 478 líneas). Para añadir una funcionalidad a una base de código que ya tienes, ejecuta `/document-existing` una vez, después `/manage-changes` para la funcionalidad, `/generate-rfcs` (amplía el plan existente) e `/implement-rfc`. `/test-strategy` es opcional cuando los criterios del RFC ya dicen cómo probarlos.
 
 **O pruébalo con el ejemplo.** La carpeta `before/` parece completa, y no lo está. Cópiala, para que el original quede para comparar:
 
@@ -93,7 +97,7 @@ cp -r ai-prd-workflow/examples/url-shortener/before linksnip
 ai-prd-workflow/install.sh linksnip
 ```
 
-Abre `linksnip` en tu herramienta de IA, ejecuta `/workflow-status` o `/verify-prd` y compara el resultado con [los problemas que encontramos a mano](examples/url-shortener/README.md) y con lo que produjo [nuestra ejecución](examples/url-shortener/after/).
+Abre `linksnip` en tu herramienta de IA, ejecuta `/workflow-status` o `/verify-prd` (`install.sh` instala skills de proyecto, así que no hay prefijo) y compara el resultado con [los problemas que encontramos a mano](examples/url-shortener/README.md) y con lo que produjo [nuestra ejecución](examples/url-shortener/after/).
 
 ## Cómo funciona
 
@@ -157,15 +161,15 @@ Ambos se complementan: `/generate-rfcs` decide cuál es la siguiente pieza de tr
 
 **Úsalo para** proyectos de varias semanas y cualquier cosa seria que construyas con IA, donde el crecimiento descontrolado del alcance y las decisiones olvidadas hacen más daño que la calidad del código. **No hace falta para** un arreglo de una línea.
 
-Si conoces el desarrollo guiado por especificaciones (spec-driven development: GitHub Spec Kit, Amazon Kiro), esta es la misma idea, con los RFC como unidad de trabajo, sin CLI ni framework que adoptar, y con un script que contrasta los documentos entre sí.
+Si conoces el desarrollo guiado por especificaciones (spec-driven development: GitHub Spec Kit, Amazon Kiro), esta es la misma idea, con los RFC como unidad de trabajo, sin CLI ni framework que adoptar, y con un script que contrasta los documentos entre sí. Está guiado por RFC desde [marzo de 2025](https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28).
 
 ## Evidencia
 
 Todo lo que en esta sección se puede comprobar, lo puedes comprobar aquí:
 
-- **[El ejemplo url-shortener](examples/url-shortener/)**: la especificación v2.0, los problemas que encontramos en ella a mano y una ejecución completa de los comandos actuales sobre ella. Ejecuciones en un contexto nuevo, que nunca vieron nuestra lista, encontraron 10 de 10 problemas del PRD (`/verify-prd`) y 12 de 13 problemas entre documentos (`/workflow-status`), además de varios que se nos habían escapado. Las lecturas en frío de un segundo modelo, lanzadas a mano en este ejemplo, encontraron más de 150 puntos en los que los RFC generados habrían obligado a quien los implementara a adivinar; los [informes](examples/url-shortener/cold-reads/) también están ahí. Son ejecuciones únicas de un solo modelo.
-- **[El ejemplo todo-cli](examples/todo-cli/)**: una idea de diez líneas para una lista de tareas en la terminal, llevada hasta 386 líneas de código revisado y 66 pruebas que pasan, con cada paso en Claude Sonnet 5.5 y sin nadie que respondiera preguntas. Muestra lo que encontró cada comando, incluidas pruebas que habrían pasado con la función rota, y la única decisión que la ejecución dejó abierta para ti.
-- **[La batería de evaluaciones](evals/)**: ejecuta las mismas comprobaciones con y sin el flujo de trabajo, con tu propia cuenta, para que puedas medir la diferencia tú mismo. Califica los diez problemas del PRD y siete de los trece entre documentos: los que una expresión regular puede reconocer de forma fiable.
+- **[El ejemplo url-shortener](examples/url-shortener/)**: la especificación v2.0, los problemas que encontramos en ella a mano y una ejecución completa de los comandos de la 3.1.0 sobre ella (los prompts han cambiado desde entonces; el ejemplo explica cómo). Ejecuciones en un contexto nuevo, que nunca vieron nuestra lista, encontraron 10 de 10 problemas del PRD (`/verify-prd`) y 11 de 13 problemas entre documentos en tres de tres ejecuciones de `/workflow-status`, además de varios que se nos habían escapado. Las lecturas en frío de un segundo modelo, lanzadas a mano en este ejemplo, encontraron más de 150 puntos en los que los RFC generados habrían obligado a quien los implementara a adivinar; los [informes](examples/url-shortener/cold-reads/) también están ahí. Salvo las tres ejecuciones de `/workflow-status`, son ejecuciones únicas de un solo modelo.
+- **[El ejemplo todo-cli](examples/todo-cli/)**: una idea de diez líneas para una lista de tareas en la terminal, llevada hasta código revisado y 91 pruebas que pasan, con cada paso en Claude Sonnet 5.5 y sin nadie que respondiera preguntas. Muestra qué devolvieron las revisiones y por qué, la única decisión que la ejecución tomó en nombre del usuario, y el informe de errores de un crítico externo llevado a través de `/manage-changes`: los errores volvieron a sus RFC, y los cuatro cambios sobre lo que debería hacer `td` esperan al usuario.
+- **[La batería de evaluaciones](evals/)**: ejecuta las mismas comprobaciones con y sin el flujo de trabajo, con tu propia cuenta, para que puedas medir la diferencia tú mismo. Califica los diez problemas del PRD y siete de los trece entre documentos: los que una expresión regular puede reconocer de forma fiable. [Nuestra ejecución](evals/README.md#results) no encontró diferencia en la revisión del PRD ni en la conservación de los ID, porque un agente normal lo hizo igual de bien. Sí encontró una pequeña en la comprobación entre documentos, 0.81 frente a 0.71 en tres ejecuciones cada una.
 
 <p align="center">
   <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status auditando el ejemplo v2.0: la comprobación de trazabilidad falla porque F7 no tiene RFC y falta RFCS.md; después, al contrastar los documentos entre sí, encuentra 20 incoherencias, como que ningún RFC construye la interfaz o que la caché de HTTP 301 estropea el conteo de clics">
@@ -194,7 +198,7 @@ Los ID también se mantuvieron. Cuando el PRD cambió a mitad del proyecto, un a
 
 | Herramienta | Carpeta | Ejecutar un comando |
 |---|---|---|
-| Claude Code | `.claude/skills/` o el plugin | `/create-prd` |
+| Claude Code | `.claude/skills/` o el plugin | `/create-prd` (plugin: `/prd-workflow:create-prd`) |
 | GitHub Copilot (VS Code, CLI) | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd`, desde el menú `/` |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |
@@ -211,8 +215,9 @@ Desde un clon de este repositorio:
 ```
 
 - `install.sh` nunca sobrescribe una skill que hayas editado. `--force` la reemplaza tras guardar una copia de seguridad.
-- `--ref v3.0.0` instala una versión concreta. Usa la misma etiqueta en la URL de curl.
+- `--ref <tag>` instala una [versión etiquetada](https://github.com/nurettincoban/ai-prd-workflow/tags) concreta; en la línea de curl, sustituye `main` por la misma etiqueta: `…/ai-prd-workflow/<tag>/install.sh | bash -s -- . --ref <tag>`.
 - ¿Actualizas desde la v2? Añade `--remove-legacy` para mover los archivos de comandos antiguos a una carpeta de copia de seguridad.
+- Necesita `bash`, y `python3` para la comprobación de trazabilidad. Los comandos escriben `PRD.md`, `FEATURES.md`, `RULES.md`, `RFCS.md`, `RFCs/` y `reviews/` en la raíz del proyecto; súbelos al repositorio junto con tu código. Para desinstalar, borra las carpetas de skills que creó `install.sh`.
 - ¿Prefieres copiar y pegar? `./copy-prompt.sh --list` muestra los prompts y `./copy-prompt.sh <file>` copia uno al portapapeles.
 
 ## Consejos

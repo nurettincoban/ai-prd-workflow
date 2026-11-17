@@ -4,8 +4,6 @@
 
 # 📋 AI PRD Workflow
 
-### Ajanınız inşa etmeden önce neyin inşa edileceğine karar verin.
-
 **Fikir veya mevcut kod → doğrulanmış PRD → özellikler → kurallar → sıralı RFC'ler → incelenmiş, test edilmiş kod**
 
 [![CI](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/nurettincoban/ai-prd-workflow/actions/workflows/ci.yml)
@@ -17,8 +15,6 @@
 **[🌐 Web sitesi](https://nurettincoban.github.io/ai-prd-workflow/)** · **[Gerçek bir çalıştırmayı görün](#bir-çalıştırmanın-ürettikleri)** · **[Hızlı başlangıç](#hızlı-başlangıç)** · **[Nasıl çalışır](#nasıl-çalışır)** · **[Neden](#neden-bu-iş-akışı)** · **[Kanıtlar](#kanıtlar)** · **[Kurulum seçenekleri](#kurulum-seçenekleri)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · Türkçe · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md)
-
-<sub><a href="https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28"><b>Mart 2025</b></a>'ten beri RFC odaklı — Claude Code ve Cursor'da henüz plan modu yokken, Kiro ve Spec Kit daha ortada yokken.</sub>
 
 </div>
 
@@ -33,24 +29,33 @@ Her adım, bir sonraki adımın okuyacağı bir markdown dosyası yazar; böylec
 
 ## Bir çalıştırmanın ürettikleri
 
-Küçük bir URL kısaltıcının bitmiş görünen spesifikasyonunu verdik ve komutları çalıştırdık. Daha hiç kod yokken yakaladığı üç şey:
+Kendi v2.0 prompt'larımızın ürettiği küçük bir URL kısaltıcının spesifikasyonunu aldık. Bitmiş görünüyor. Komutları onun üzerinde çalıştırdık; daha hiç kod yokken yakaladıklarından üçü şunlar:
 
-| Spesifikasyonda yazan | İş akışının yaptığı |
+| Orada ne vardı | İş akışının yaptığı |
 |---|---|
 | "Kısa URL'yi HTTP 301 ile orijinal URL'ye yönlendir" | `/verify-prd`: tarayıcılar 301'i önbelleğe alır; bu yüzden tekrarlanan tıklamalar hiç sayılmaz ve silinen bağlantılar yönlendirmeye devam eder. Düzeltilmiş spesifikasyon 302 ile yönlendirir ve [RFC-003](examples/url-shortener/after/RFCs/RFC-003-Redirect-and-Click-Recording.md) "asla 301 değil" diye test eder. |
 | Kullanıcı hesabı yok ve herkes "kısa bir URL'yi silebilir" | `/verify-prd`: herkes herkesin bağlantısını silebilir. Karar verecek kimse yoktu; bu yüzden önerdiği çözümü bir karar olarak değil, **(assumption)** (varsayım) işaretli açık bir soru olarak yazdı. |
-| RFC-002, F5, F6 ve F11 özelliklerini karşıladığını iddia ediyor | `/workflow-status`: kabul kriterleri yalnızca API'yi test ediyor; bu yüzden o özelliklerin gerektirdiği analiz sayfasını ve grafiği kimseye yaptıracak hiçbir şey yoktu. Her ID'ye atıf yapılmıştı, bu yüzden bir betik bunu göremezdi. |
+| [RFC-002](examples/url-shortener/before/RFCs/RFC-002-Click-Analytics.md), F5, F6 ve F11 özelliklerini karşıladığını iddia ediyor | `/workflow-status`: kabul kriterleri yalnızca API'yi test ediyor; bu yüzden o özelliklerin gerektirdiği analiz sayfasını ve grafiği kimseye yaptıracak hiçbir şey yoktu. Her ID'ye atıf yapılmıştı, bu yüzden bir betik bunu göremezdi. |
 
-Elle listelediğimiz **10 problemin 10'u**, listeyi hiç görmeyen `/verify-prd` tarafından bulundu. Dokümanlar arası **13 problemin 12'si** `/workflow-status` tarafından bulundu. **12 RFC** ve **203 planlanmış test** üretildi; her RFC önce ikinci bir model tarafından bağlamsız olarak (cold read) okundu. Claude Opus 5.5 üzerinde yaklaşık bir saatlik ajan süresi, hiç insan girdisi olmadan. **[Çalıştırmanın tamamına göz atın →](examples/url-shortener/)**
+Elle listelediğimiz **10 problemin 10'u**, listeyi hiç görmeyen `/verify-prd` tarafından bulundu. (Aynı PRD'yi incelemesi istenen sade bir ajan da bunları buldu: [değerlendirme sonuçları](evals/README.md#results).) Dokümanlar arası **13 problemin 11'i**, üç çalıştırmanın her birinde güncel `/workflow-status` tarafından bulundu; körlemesine puanlandı. 3.1.0 prompt'u 8, 9 ve 8 buldu; yeni kontroller onun aynı plan üzerinde kaçırdıklarına göre yazıldı, bu yüzden bunu [bir gerileme kontrolü olarak okuyun](examples/url-shortener/workflow-status-reruns/GRADING.md), bağımsız bir test skoru olarak değil. **12 RFC** ve **203 planlanmış test**, 3.1.0 komutlarıyla üretildi; her RFC ikinci bir model tarafından bağlamsız olarak (cold read) okundu, okuyucular elle başlatıldı. Claude Opus 5.5 üzerinde yaklaşık bir saatlik ajan süresi ve komutların sorularını kimse yanıtlamadı. **[Çalıştırmanın tamamına göz atın →](examples/url-shortener/)**
 
 ## Hızlı başlangıç
 
-Claude Code'da eklentiyi kurun, Claude Code'u yeniden başlatın ve mülakatı başlatın:
+Claude Code'da eklentiyi kurun:
 
 ```
 /plugin marketplace add nurettincoban/ai-prd-workflow
 /plugin install prd-workflow@ai-prd-workflow
-/prd-workflow:create-prd          # ardından /prd-workflow:verify-prd
+```
+
+> [!IMPORTANT]
+> Claude Code'u şimdi yeniden başlatın. Çalışan bir oturum yeni skill'leri görmez; ilk komut `Unknown skill` hatası verir. Bu, kurulum bozukmuş gibi görünür ama oturum yalnızca eskimiştir.
+
+Ardından mülakatı başlatın. Yaklaşık on dakika sürer ve `/verify-prd` birkaç dakika içinde bunun size göre olup olmadığını söyler:
+
+```
+/prd-workflow:create-prd
+/prd-workflow:verify-prd
 ```
 
 <details>
@@ -63,14 +68,11 @@ cd your-project
 curl -fsSL https://raw.githubusercontent.com/nurettincoban/ai-prd-workflow/main/install.sh | bash -s -- .
 ```
 
-Codex'te `/create-prd` yerine `$create-prd` yazın. Bir sohbet asistanında (ChatGPT, Claude.ai, …) [komut tablosundan](#nasıl-çalışır) bir prompt kopyalayıp yapıştırın.
+Aynı nedenle kurulumdan sonra aracınızı yeniden başlatın. Codex'te `/create-prd` yerine `$create-prd` yazın. Bir sohbet asistanında (ChatGPT, Claude.ai, …) [komut tablosundan](#nasıl-çalışır) bir prompt kopyalayıp yapıştırın.
 
 </details>
 
-> [!IMPORTANT]
-> Kurulumdan sonra AI aracınızı yeniden başlatın. Çalışan bir oturum yeni skill'leri görmez; ilk komut `Unknown skill` hatası verir. Bu, kurulum bozukmuş gibi görünür ama oturum yalnızca eskimiştir.
-
-Ardından komutları sırayla çalıştırın (eklentiyle her komut eklentinin adını taşır: `/prd-workflow:verify-prd`):
+Tam sıra, `install.sh`'nin komutlara verdiği kısa adlarla gösteriliyor. Eklentiyle her komut ön eki taşır: `/prd-workflow:extract-features`.
 
 ```
 /create-prd          # mülakat → PRD.md   (kod zaten var mı? bunun yerine /document-existing)
@@ -83,7 +85,9 @@ Ardından komutları sırayla çalıştırın (eklentiyle her komut eklentinin a
 /review-rfc 001      # temiz bir bağlamda inceleme → reviews/REVIEW-RFC-001.md
 ```
 
-Sıradaki adımdan emin olmadığınızda `/workflow-status`, gereksinimler değiştiğinde `/manage-changes` çalıştırın. İlk ikisiyle başlayın: mülakat yaklaşık on dakika sürer ve `/verify-prd` birkaç dakika içinde bunun size göre olup olmadığını söyler.
+Sıradaki adımdan emin olmadığınızda `/workflow-status`, gereksinimler değiştiğinde `/manage-changes` çalıştırın.
+
+**Her projenin her adıma ihtiyacı yok.** Mülakat projenin boyutunu kaydeder ve doküman yazan komutlara buna göre ölçeklenmeleri söylenir: bir hafta sonu aracı için yaklaşık on kural ve bir ila üç RFC. Bunu gösteren bir örnek henüz yok: todo-cli çalıştırmasının kuralları ve RFC'leri bu değişiklikten önce yazıldı ve o olmadan ne olduğunu gösteriyor (478 satır için 56 kural). Elinizdeki bir kod tabanına tek bir özellik eklemek için `/document-existing`'i bir kez çalıştırın, ardından özellik için `/manage-changes`, `/generate-rfcs` (mevcut planı genişletir) ve `/implement-rfc` çalıştırın. RFC'nin kriterleri nasıl test edileceklerini zaten söylüyorsa `/test-strategy` isteğe bağlıdır.
 
 **Ya da örnek üzerinde deneyin.** `before/` klasörü eksiksiz görünüyor, ama değil. Orijinali karşılaştırma için kalsın diye onu kopyalayın:
 
@@ -93,7 +97,7 @@ cp -r ai-prd-workflow/examples/url-shortener/before linksnip
 ai-prd-workflow/install.sh linksnip
 ```
 
-`linksnip` klasörünü AI aracınızda açın, `/workflow-status` veya `/verify-prd` çalıştırın ve sonucu [elle bulduğumuz problemlerle](examples/url-shortener/README.md) ve [bizim çalıştırmamızın](examples/url-shortener/after/) ürettikleriyle karşılaştırın.
+`linksnip` klasörünü AI aracınızda açın, `/workflow-status` veya `/verify-prd` çalıştırın (`install.sh` proje skill'leri kurar, bu yüzden ön ek yoktur) ve sonucu [elle bulduğumuz problemlerle](examples/url-shortener/README.md) ve [bizim çalıştırmamızın](examples/url-shortener/after/) ürettikleriyle karşılaştırın.
 
 ## Nasıl çalışır
 
@@ -157,15 +161,15 @@ Kodlama ajanınızın muhtemelen bir plan modu var. Plan modu tek bir görevi pl
 
 **Şunlar için kullanın:** haftalar süren projeler ve AI ile ciddi olarak geliştirdiğiniz her şey — kapsam kaymasının ve unutulan kararların kod kalitesinden daha çok zarar verdiği işler. **Şunda gerek yok:** tek satırlık bir düzeltme.
 
-Spesifikasyon odaklı geliştirmeyi (spec-driven development; GitHub Spec Kit, Amazon Kiro) biliyorsanız, bu da aynı fikir: iş birimi olarak RFC'ler var, benimsenecek bir CLI ya da framework yok ve dokümanları birbiriyle karşılaştıran bir betik var.
+Spesifikasyon odaklı geliştirmeyi (spec-driven development; GitHub Spec Kit, Amazon Kiro) biliyorsanız, bu da aynı fikir: iş birimi olarak RFC'ler var, benimsenecek bir CLI ya da framework yok ve dokümanları birbiriyle karşılaştıran bir betik var. [Mart 2025](https://github.com/nurettincoban/ai-prd-workflow/commit/0993e28)'ten beri RFC odaklı.
 
 ## Kanıtlar
 
 Bu bölümde doğrulanabilecek her şeyi burada doğrulayabilirsiniz:
 
-- **[url-shortener örneği](examples/url-shortener/)** — v2.0 spesifikasyonu, içinde elle bulduğumuz problemler ve güncel komutların onun üzerinde tam bir çalıştırması. Listemizi hiç görmeden temiz bir bağlamda çalışan komutlar PRD'deki 10 problemin 10'unu (`/verify-prd`) ve dokümanlar arası 13 problemin 12'sini (`/workflow-status`) buldu; üstüne bizim kaçırdığımız birkaç problemi de. Bu örnekte elle çalıştırılan, ikinci bir modelin bağlamsız okumaları, üretilen RFC'lerin uygulayıcıyı tahmin yürütmeye zorlayacağı 150'den fazla yer buldu; [raporlar](examples/url-shortener/cold-reads/) da orada. Bunlar tek bir modelin tekil çalıştırmalarıdır.
-- **[todo-cli örneği](examples/todo-cli/)** — terminal için bir yapılacaklar listesinin on satırlık fikri, incelenmiş 386 satır koda ve geçen 66 teste kadar götürüldü. Her adım Claude Sonnet 5.5 ile çalıştı ve soruları yanıtlayan kimse yoktu. Her komutun neyi yakaladığını, özellik bozukken bile geçecek testler dahil, ve çalıştırmanın sana bıraktığı tek kararı gösterir.
-- **[Değerlendirme seti](evals/)** — aynı kontrolleri iş akışıyla ve iş akışı olmadan, kendi hesabınızda çalıştırır; böylece farkı kendiniz ölçebilirsiniz. On PRD problemini ve dokümanlar arası on üç problemin yedisini, yani bir düzenli ifadenin güvenilir biçimde tanıyabildiklerini puanlar.
+- **[url-shortener örneği](examples/url-shortener/)** — v2.0 spesifikasyonu, içinde elle bulduğumuz problemler ve 3.1.0 komutlarının onun üzerinde tam bir çalıştırması (prompt'lar o zamandan beri değişti; örnek nasıl değiştiğini anlatıyor). Listemizi hiç görmeden temiz bir bağlamda çalışan komutlar PRD'deki 10 problemin 10'unu (`/verify-prd`) ve dokümanlar arası 13 problemin 11'ini, üç `/workflow-status` çalıştırmasının üçünde de buldu; üstüne bizim kaçırdığımız birkaç problemi de. Bu örnekte elle çalıştırılan, ikinci bir modelin bağlamsız okumaları, üretilen RFC'lerin uygulayıcıyı tahmin yürütmeye zorlayacağı 150'den fazla yer buldu; [raporlar](examples/url-shortener/cold-reads/) da orada. Üç `/workflow-status` çalıştırması dışında, bunlar tek bir modelin tekil çalıştırmalarıdır.
+- **[todo-cli örneği](examples/todo-cli/)** — terminal için bir yapılacaklar listesinin on satırlık fikri, incelenmiş koda ve geçen 91 teste kadar götürüldü. Her adım Claude Sonnet 5.5 ile çalıştı ve soruları yanıtlayan kimse yoktu. İncelemelerin neyi geri gönderdiğini ve nedenini, çalıştırmanın kullanıcı adına verdiği tek kararı ve dışarıdan bir eleştirmenin hata raporunun `/manage-changes` üzerinden geçişini gösterir: hatalar kendi RFC'lerine geri gitti, `td`'nin ne yapması gerektiğine dair dört değişiklik ise kullanıcıyı bekliyor.
+- **[Değerlendirme seti](evals/)** — aynı kontrolleri iş akışıyla ve iş akışı olmadan, kendi hesabınızda çalıştırır; böylece farkı kendiniz ölçebilirsiniz. On PRD problemini ve dokümanlar arası on üç problemin yedisini, yani bir düzenli ifadenin güvenilir biçimde tanıyabildiklerini puanlar. [Bizim çalıştırmamız](evals/README.md#results) PRD incelemesinde ve ID'leri korumada fark bulmadı, çünkü sade bir ajan da aynı başarıyı gösterdi. Dokümanlar arası kontrolde küçük bir fark buldu: her biri üç çalıştırmada 0,81'e karşı 0,71.
 
 <p align="center">
   <img src=".github/demo-workflow-status.svg" width="860" alt="/workflow-status v2.0 örneğini denetliyor: izlenebilirlik kontrolü başarısız oluyor, çünkü F7'nin RFC'si yok ve RFCS.md eksik; ardından dokümanlar birbiriyle karşılaştırılıyor ve 20 tutarsızlık bulunuyor, örneğin arayüzü hiçbir RFC'nin yapmaması ve HTTP 301 önbelleğinin tıklama sayımını bozması">
@@ -194,7 +198,7 @@ ID'ler de korundu. Proje ortasında PRD değiştiğinde, taze bir ajan `/extract
 
 | Araç | Klasör | Komut çalıştırma |
 |---|---|---|
-| Claude Code | `.claude/skills/` ya da eklenti | `/create-prd` |
+| Claude Code | `.claude/skills/` ya da eklenti | `/create-prd` (eklenti: `/prd-workflow:create-prd`) |
 | GitHub Copilot (VS Code, CLI) | `.agents/skills/` | `/create-prd` |
 | Cursor | `.agents/skills/` | `/create-prd`, `/` menüsünden |
 | Gemini CLI | `.agents/skills/` | `/create-prd` |
@@ -211,8 +215,9 @@ Bu deponun bir klonundan:
 ```
 
 - `install.sh`, düzenlediğiniz bir skill'in üzerine asla yazmaz; `--force` önce yedek alır, sonra değiştirir.
-- `--ref v3.0.0` belirli bir sürümü kurar; curl adresinde de aynı etiketi kullanın.
+- `--ref <tag>` belirli bir [etiketli sürümü](https://github.com/nurettincoban/ai-prd-workflow/tags) kurar; curl satırında `main` yerine aynı etiketi yazın: `…/ai-prd-workflow/<tag>/install.sh | bash -s -- . --ref <tag>`.
 - v2'den mi yükseltiyorsunuz? Eski komut dosyalarını bir yedek klasörüne taşımak için `--remove-legacy` ekleyin.
+- `bash` ve izlenebilirlik kontrolü için `python3` gerekir. Komutlar proje kök dizinine `PRD.md`, `FEATURES.md`, `RULES.md`, `RFCS.md`, `RFCs/` ve `reviews/` yazar; bunları kodunuzla birlikte commit edin. Kaldırmak için `install.sh`'nin oluşturduğu skill klasörlerini silin.
 - Kopyala-yapıştırı mı tercih ediyorsunuz? `./copy-prompt.sh --list` prompt'ları listeler, `./copy-prompt.sh <dosya>` birini panoya kopyalar.
 
 ## Öneriler

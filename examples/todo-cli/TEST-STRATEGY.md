@@ -118,6 +118,24 @@ Test file: `tests/test_release.py`. Prerequisites: RFC-001, RFC-002, RFC-003 com
 | 8 | Manual: full suite on Python 3.10, on a newer Python, on Linux and on macOS, recorded in the RFC's Implementation Notes (see Manual gaps) | manual | proposed | Must (F13, F15) |
 | 9 | `ast` scan of `td` string constants (f-string pieces included) for `/` or `\` other than `DEFAULT_FILE` and docstrings; no `os.sep`, `os.path.sep`, `os.altsep`, `os.path.altsep` | unit (static scan) | proposed | Must (F15) |
 
+## RFC-006: Lock for concurrent runs (CR-001)
+
+Test file: `tests/test_lock.py`. Prerequisites: RFC-001 to RFC-004 Reviewed. A holder is a separate subprocess that enters `data_lock(path)`, prints `ready` and waits for a line on stdin; tests read `ready` before starting the run under test, so no row depends on winning a race. Priority is Must (F17) for every row.
+
+| Criterion | Test | Level | Exists? | Priority |
+|---|---|---|---|---|
+| 1 | `MUTATING` is the four names, `LOCK_WAIT_SECONDS` is 10, `data_lock` exists; `ast` scan: `fcntl` imported inside `try`/`except ImportError`, no other new import except `time` | unit (static scan) | proposed | Must (F17) |
+| 2 | Holder held: `add x`, `done 1`, `rm 2`, `clear` each still running after 0.5 s with no output; after release each exits 0 within 10 s with its result in the file | integration (real subprocesses) | proposed | Must (F17) |
+| 3 | Holder held: `list` and bare `td` exit 0 within 5 s with correct stdout, file unchanged | integration | proposed | Must (F17) |
+| 4 | `LOCK_WAIT_SECONDS` patched to 0.3, holder held: each of the four returns 1, one `td:` line with `str(path)`, empty stdout, file bytes unchanged, no extra file, under 3 s | unit with subprocess holder | proposed | Must (F17) |
+| 5 | 8 parallel `add` subprocesses on a missing file, 5 rounds: 8 tasks, ids 1 to 8 once each, `next_id` 9 | stress (real subprocesses) | proposed | Must (F17, G2) |
+| 6 | `clear`, `done 3`, `rm 4`, `add y` in parallel on a 4-task store, 5 rounds: task 2 open, 1 and 4 absent, 3 done or absent, one `y` with id 5, `next_id` 6 | stress | proposed | Must (F17, G2) |
+| 7 | Holder killed with SIGKILL; later `add z` exits 0 within 5 s (posix only) | integration | proposed | Must (F17) |
+| 8 | Directory listing after `add` on a missing file, failed commands, an argparse error, a no-op `clear` and a timeout: exactly `["tasks.json"]` or `[]` as stated; missing parent directory exits 1 with the path and creates nothing | unit | proposed | Must (F17, DATA-7) |
+| 9 | Recording wrappers: `add` gives enter, `load_store`, `save_store`, exit; unknown id gives enter, `load_store`, exit; corrupt file likewise; argparse error no lock; `list` no lock | unit (mocks of own code only) | proposed | Must (F17) |
+| 10 | `sys.modules["fcntl"] = None` before loading: `td` loads, `add x` returns 0 and stores | unit | proposed | Must (F17; Windows assumption) |
+| 11 | Whole suite passes: RFC-002 criterion 14, RFC-003 criterion 13, RFC-004 criterion 4, RFC-005 criteria 1, 2, 9 | regression (existing tests) | proposed | Must (F17) |
+
 ## Totals
 
 Counted from the tables above (rows, not criteria; RFC-001 criterion 9 has two rows).
@@ -129,7 +147,8 @@ Counted from the tables above (rows, not criteria; RFC-001 criterion 9 has two r
 | RFC-003 | 13 | 13 | 0 | 0 | 13 |
 | RFC-004 | 6 | 6 | 0 | 0 | 6 |
 | RFC-005 | 9 | 8 | 1 | 0 | 9 |
-| **Total** | **57** | **57** | **1** | **0** | **58** |
+| RFC-006 | 11 | 11 | 0 | 0 | 11 |
+| **Total** | **68** | **68** | **1** | **0** | **69** |
 
 Every criterion of every RFC has at least one row; the manual row is RFC-005 criterion 8.
 
@@ -138,7 +157,7 @@ Every criterion of every RFC has at least one row; the manual row is RFC-005 cri
 1. **Python 3.10 run** (RFC-005 criterion 8). Cannot be automated from one machine; no 3.10 interpreter has been used here, so the floor is unverified. Static checks (RFC-005 criterion 7) only catch part of it.
 2. **macOS run** of the full suite (same row). Linux only is available here.
 3. **Real power loss.** Kill tests (RFC-001 criterion 9) prove the file stays parseable when the process dies; they cannot prove that `fsync` really reached the disk after a power cut. This is not testable in an automated suite; the design (fsync file and directory) is the only guard.
-4. **Concurrent runs.** F17 (locking) is Won't Have, so no test exists, and a test would only demonstrate the known loss of one task. Open conflict in RFCS.md.
+4. **Concurrent runs.** No longer a gap: F17 is a Must (CR-001) and RFC-006 has automated rows. Two things stay manual or unverified: `flock` on a directory on macOS (covered only by the RFC-005 criterion 8 macOS run), and a lock on a network filesystem (out of scope, PRD D-6).
 5. **Windows.** Untested by decision (PRD D-8); only the separator scan and the directory-fsync skip are checked.
 6. **Success metric** ("use it daily for a month and never open the JSON file by hand"): can only be judged by the user.
 

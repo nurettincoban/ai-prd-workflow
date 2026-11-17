@@ -92,7 +92,8 @@ class Clear(unittest.TestCase):
         bad = ["{not json",
                json.dumps({**base, "tasks": [{"id": 1, "text": "a", "done": 1}]}),
                json.dumps({"version": 1, "tasks": []}),
-               json.dumps({**base, "version": 2})]
+               json.dumps({**base, "version": 2}),
+               "[" * 200000]
         for text in bad:
             with helpers.temp_env():
                 with open(os.environ["TD_FILE"], "w") as f:

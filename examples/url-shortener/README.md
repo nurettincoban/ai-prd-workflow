@@ -3,8 +3,11 @@
 This folder shows the workflow on one small product, twice.
 
 - **[before/](before/)** — what the v2.0 prompts produced: a PRD, features, rules and three RFCs. It looks complete. It is not.
-- **[after/](after/)** — the same product run through the 3.1.0 commands, starting from the same `before/PRD.md`.
+- **[after/](after/)** — the same product run through a pre-release state of the 3.1.0 commands (see below), starting from the same `before/PRD.md`.
 - **[cold-reads/](cold-reads/)** — what a second model found when it read each generated RFC cold.
+- **[workflow-status-reruns/](workflow-status-reruns/)** — six more `/workflow-status` runs on `before/`, graded blind.
+
+This example stops before code. [todo-cli](../todo-cli/) is a smaller one that goes all the way to reviewed code.
 
 Nothing in `before/` or `after/` is hand-edited. Each command ran in a fresh context with only its own instructions and the project files — no notes, no memory, and no list of known problems — and wrote what you see. The runs were non-interactive, so wherever a command would normally ask you a question, it recorded an assumption instead; the documents mark them **(assumption)**.
 
@@ -21,7 +24,7 @@ On 2026-11-15, with the skills built from this repository at 3.1.0, each command
 | cold reads | The RFC agent could not start clean-context readers itself, so we ran them as its instructions describe: Fable 5.2 (`claude-fable-5-2`), given only PRD.md, FEATURES.md, RULES.md and one RFC at a time, answering "what would you have to guess to implement this?" They listed over 150 guesses, contradictions and untestable criteria (158 by the fixing agent's count). The same RFC agent then fixed them in the RFCs, deciding the ones the documents could not settle as marked assumptions flagged in RFCS.md for correction |
 | `/test-strategy` | [TEST-STRATEGY.md](after/TEST-STRATEGY.md) — 203 planned tests, one row per acceptance criterion, 188 of them automated |
 
-`trace-check.py` on `after/` reports 0 failures; its 3 warnings are deferrals that RFCS.md records. The [cold-read reports](cold-reads/) are condensed from the readers' output, keeping every finding. No code was written: the run stops where `/implement-rfc` would start. The whole run took about an hour of agent time.
+`trace-check.py` on `after/` reports 0 failures; its 3 warnings are two deferrals that RFCS.md records and one feature split across two RFCs. The [cold-read reports](cold-reads/) are condensed from the readers' output, keeping every finding. No code was written: the run stops where `/implement-rfc` would start. The whole run took about an hour of agent time.
 
 The run committed after each step, and some files mention those commits (`git diff`, commit hashes); that history is not part of this repository. The commits, in order: start from `before/PRD.md`, `/verify-prd`, `/extract-features`, `/generate-rules`, `/generate-rfcs`, two cold-read fix commits, `/test-strategy`.
 
@@ -66,9 +69,13 @@ Before running anything, we read `before/` closely and listed every problem we c
 
 The `/verify-prd` step of the after/ run started from `before/PRD.md`. Its [PRD-REVIEW.md](after/PRD-REVIEW.md) names all ten PRD problems above; the [eval suite's](../../evals/) graders for those ten match it, and match none of them in the fixture itself.
 
-## /workflow-status on before/: 12 of 13
+## /workflow-status on before/: 12 of 13 once, then 8 of 13, then 11 of 13
 
-[workflow-status-on-before.md](workflow-status-on-before.md) is the report a fresh `/workflow-status` wrote. It found every cross-document problem above except the stale versions (9), and recommended `/verify-prd` as the next step.
+[workflow-status-on-before.md](workflow-status-on-before.md) is the report a fresh `/workflow-status` wrote with the v3.0.0 prompt on 2026-10-01. It found every cross-document problem above except the stale versions (9), and recommended `/verify-prd` as the next step.
+
+That was one run. When a critic pointed out that the README's headline number came from it, we ran the command three more times with the 3.1.0 prompt, on Claude Opus 5.5, and had a fresh agent grade all the reports blind against the list above. The three runs found **8, 9 and 8**. The misses were consistent: an RFC that uses a table another RFC builds without declaring it as a predecessor (3 and 13), and an RFC that contradicts itself (6). The prompt never asked for either check. One run had found them anyway.
+
+3.2.0 adds those checks, and versions stated from memory, to the prompt. Three new runs found **11, 11 and 11**. Problem 8, RFC-003 answering the retention question without a decision, is now the one most often missed. The reports and the blind grading are in [workflow-status-reruns/](workflow-status-reruns/).
 
 It also found problems we had missed:
 

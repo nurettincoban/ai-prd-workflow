@@ -60,7 +60,7 @@ Resting on assumptions nobody confirmed (all taken as written in the RFC):
 - `add` text is stripped after the newline check; text starting with `-` needs `--` (Open Question 2).
 - Rules for `add` input and ids (PRD Open Questions 10 and 15); `done` is idempotent and does not rewrite the file (Open Question 3).
 - Bad arguments beat a corrupt file, a corrupt file beats handler-level checks (Open Question 4; RFC-002 Open Question 5).
-- From earlier RFCs, unchanged: `TD_FILE`, `~/.td.json`, key names, exit codes 0, 1, 2, no lock (RFCS.md Open conflicts 1, 2, 5). RFCS.md Open conflict 8 does not touch RFC-003.
+- From earlier RFCs, unchanged: `TD_FILE`, `~/.td.json`, key names, exit codes 0, 1, 2 (RFCS.md Open conflicts 1, 2, 5; the lock came later, in RFC-006). RFCS.md Open conflict 8 does not touch RFC-003.
 
 ### Deviations
 
@@ -76,6 +76,18 @@ Modified: `td` (handlers, registration), `RFCs/RFC-003-Add-Done-Remove.md` (this
 
 `python3 -m unittest discover tests`: `Ran 52 tests ... OK` (39 before, 13 new). Criteria 1 to 13 each have a test. Also run by hand against the real `td` file with a temporary `TD_FILE`: `add buy milk`, `add -- -x`, `done 1`, `rm 2`, `list` printed `1 [x] buy milk`, and `done 9` exited 1 with `td: no task with id 9`. There is no separate build artifact, since `td` is the shipped file. Not verified: Python 3.10 (only 3.13 here), macOS (RFC-005).
 
+### Fix round after review round 2 (Changes requested)
+
+No plan was approved (non-interactive run); no open High conflict touches the work: RFCS.md Open conflict 1 is CLOSED by CR-001, so the plan went ahead. Plan: tests only, `td` unchanged.
+
+- **B1 (G2 against no lock): not fixable here.** Open conflict 1 is closed in RFCS.md by CR-001 (accepted by the person running the example, not by the user in IDEA.md). The lock itself is RFC-006, since implemented: overlapping `add`, `done` and `rm` runs now take turns, so no write is lost. The reviewer's condition (a written decision on PRD.md) is met by CR-001; a re-review should cite it.
+- **B2 fixed (tests only):** `test_c10_unknown_id` now covers `9`*4301 and `9`*5000 (past Python's 4300-digit `int` limit, so a missing cut-off reports `unexpected error`) and `0`*5001; new `test_c10_leading_zeros_dropped_before_length_check` marks and removes a real task 99 with `0`*5000+`99`, and marks a real 4000-digit id (so the limit cannot be lowered).
+- **B3 fixed (tests only):** `test_c11_bad_id` adds Arabic-Indic `\u0663`, full-width `\uff11`, Devanagari `\u0969` and `1\u0663` for `done` and `rm`.
+- Deliberate breaks, each restored (suite 74 tests, failures=2 each time; `td` is byte-identical to before): regex widened to Unicode digits; cut-off removed (`if False:`); `lstrip("0")` removed; `MAX_ID_DIGITS` 5000; `MAX_ID_DIGITS` 3000.
+- Deviation: none from the RFC text; the criteria 10 and 11 inputs in the RFC are a subset of what the tests now run. Follow-up RFC-003 (round 2, F1) (echo of a long id) stays open: the RFC and criterion 10 require the id as typed, so truncating is an RFC change, not a cheap fix.
+- Verification: `python3 -m unittest discover tests` went from `Ran 73 tests ... OK` before to `Ran 74 tests ... OK` after (RFC-003 file: 13 tests before the round, 14 after).
+- FILES CHANGED this round: `tests/test_commands.py`, `RFCs/RFC-003-Add-Done-Remove.md`, `RFCS.md`. `td` unchanged. Commit: `/implement-rfc RFC-003 (fix round)`.
+
 ### Future
 
-`done` and `rm` share `_find`; RFC-004 (`clear`) needs no id parsing. A lock for concurrent runs is still open (RFCS.md Open conflict 1).
+`done` and `rm` share `_find`; RFC-004 (`clear`) needs no id parsing. The lock for concurrent runs is RFC-006's: `main` now holds `data_lock` around the load and the handler for `add`, `done` and `rm`, and these handlers are unchanged (RFCS.md Open conflict 1 is closed).

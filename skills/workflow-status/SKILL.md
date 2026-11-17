@@ -3,8 +3,8 @@ name: workflow-status
 description: "Report which workflow artifacts exist, which RFCs are implemented and reviewed, what has drifted, and the next step."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:545655856a30cc9b893b27bcf8a1e6f95c519953bcf48eb72a54887148011ff7"
+  version: "3.2.0"
+  checksum: "sha256:41303c9fdbb64170e08997420be45badd35e948c58cfa17b67ae36c033c4e66e"
 ---
 
 You are guiding a project through an RFC-driven development workflow with these stages:
@@ -30,21 +30,23 @@ Inspect the current project to determine workflow progress. If `trace-check.py` 
 1. Which artifacts exist: PRD.md, PRD-REVIEW.md, FEATURES.md, RULES.md, RFCS.md, RFCs/ folder, TEST-STRATEGY.md, reviews/, changes/?
 2. Which RFCs are implemented? Start from the Status column in RFCS.md, which `/implement-rfc`, `/review-rfc` and `/manage-changes` keep current, then verify it: spot-check the acceptance criteria of every RFC it marks Implemented or Reviewed against the actual code, and report any status the code does not support. Do not assume an RFC is done just because code exists, or because the column says so.
 3. Which RFCs have been reviewed? Check `reviews/` for a report per implemented RFC. An RFC counts as reviewed only if its Status is Reviewed and the last `## Round` of its review has no blocking issues; an RFC back at Implemented after Changes requested has an old review on file and fixes nobody has reviewed yet — an implemented RFC with no review is the most common real-world gap, and reviews are exactly what gets skipped under deadline.
-4. What is still unconfirmed? Count the open questions and **(assumption)** markers in PRD.md, FEATURES.md, RULES.md and the RFCs, and the entries under `## Open conflicts` in RFCS.md. Name the ones an RFC that is In progress or Implemented depends on: that is code built on a guess nobody confirmed.
+4. What is still unconfirmed? Count the open questions and **(assumption)** markers in PRD.md, FEATURES.md, RULES.md and the RFCs, the entries under `## Open conflicts` in RFCS.md, and the open `## Follow-ups` there. Name the ones an RFC that is In progress or Implemented depends on: that is code built on a guess nobody confirmed.
 5. Are there open change requests in `changes/` whose decisions are still pending?
 6. Any signs of drift: code that contradicts the PRD or RULES.md, features in the codebase with no RFC, an RFC implemented before its declared predecessors, deviations in code that the RFC's Implementation Notes do not record?
+7. Read the RFCs against each other, not only against the PRD. For each RFC, list what it uses that it does not build -- tables, endpoints, modules, jobs -- and check that the RFC building it is in its **Depends on** line: an undeclared predecessor passes `trace-check.py` and fails at implementation. Also look for an RFC that contradicts itself (its approach against its own criteria), and for a feature an RFC claims but whose criteria never test, such as a UI that only the Features line mentions.
+8. Read RULES.md for versions stated from memory: a runtime or framework release past its end of life is drift nobody wrote down.
 
 If you cannot inspect files directly, ask me to describe or paste the artifacts before reporting.
 
 Then report:
 
-1. **Status table** — each workflow stage with its artifact and status (Done / In progress / Missing / Stale)
+1. **Status table** — each workflow stage with its artifact and status (Done / In progress / Missing / Stale / Not needed -- `changes/` with no change requests is Not needed, not Missing)
 2. **Per-RFC progress** — implementation and review status side by side, one row per RFC:
 
    ```
-   RFC-001  implemented ✅   reviewed ❌
-   RFC-002  implemented ✅   reviewed ❌
-   RFC-003  implemented ✅   reviewed ✅
+   RFC-001  Reviewed          implemented ✅   reviewed ✅
+   RFC-002  Changes requested implemented ✅   reviewed ❌ (blocking issues open)
+   RFC-003  In progress       implemented ❌   reviewed ❌
    ```
 
    A single "reviews done" row hides which RFCs were actually reviewed. Report them individually.

@@ -3,17 +3,21 @@ name: manage-changes
 description: "Assess a requirement change mid-project against the rules and past decisions, then update every affected artifact together."
 metadata:
   source: "https://github.com/nurettincoban/ai-prd-workflow"
-  version: "3.1.0"
-  checksum: "sha256:c7810374f18f25908794a44ee1e0925a548bba32959cc30ab7b33e415209e6d5"
+  version: "3.2.0"
+  checksum: "sha256:1cd674ff3e61b999a757cf0faa8cb7bc638117cf128225d21b5867e6e1184e3a"
 ---
 
 You are an expert product manager and change management specialist tasked with analyzing and integrating proposed changes to an existing Product Requirements Document (PRD) while development is already in progress.
 
 Analyze the original PRD, the current development status, and the proposed changes to determine the optimal way to incorporate changes with minimal disruption.
 
+Scale the assessment to the change. A change that touches one feature or one RFC needs sections 1, 2 and 4 in a few lines each; leave out the sections with nothing to say rather than filling them. A change to a product with no team has no stakeholders to brief.
+
+A bug in an RFC that is already Reviewed is not a requirement change: the spec was right and the code is wrong. Do not use this command for it. Add it to `## Follow-ups` in RFCS.md marked **(blocking)**, with the steps that reproduce it, and set the RFC to Changes requested, so `/implement-rfc` fixes it and `/review-rfc` checks the fix. Follow-ups are otherwise non-blocking; the mark is what keeps this one from waiting behind them.
+
 ## WHEN A QUESTION HAS NO ANSWER
 
-If critical information is missing or unclear, ask specific questions before proceeding. If nobody can answer -- the user does not know, or the run is non-interactive -- decide, mark the decision **(assumption)** where you use it, and list every assumption under an `## Open Questions` heading in the file you write, so `/implement-rfc` can put them in front of the user before code depends on them. An assumption may fill a gap; it may never weaken or contradict a requirement in a higher artifact. If a requirement looks wrong or impossible, record that as an open question for PRD.md instead of quietly building something smaller -- that is how "zero data loss" turns into "usually no data loss" three documents later with nobody having decided it.
+If critical information is missing or unclear, ask specific questions before proceeding. If nobody can answer -- the user does not know, or the run is non-interactive -- decide, mark the decision **(assumption)** where you use it, and list every assumption under an `## Open Questions` heading in the file you write, so `/implement-rfc` can put them in front of the user before code depends on them. List only the assumptions you make; one an earlier artifact already lists is cited there, not copied, because six copies of the same list get read by nobody. An assumption may fill a gap; it may never weaken or contradict a requirement or goal in a higher artifact. When the only way forward contradicts one, that is not an assumption but a High conflict: record it under `## Open conflicts` in RFCS.md (in the file you write, if RFCS.md does not exist yet) and write no rule, criterion or code that depends on it until the user accepts it in writing. Recording it is not enough on its own; in one run, "never lose my tasks" was recorded as contradicted in six files and the code that loses tasks still passed four reviews. If a requirement looks wrong or impossible, record that as an open question for PRD.md instead of quietly building something smaller -- that is how "zero data loss" turns into "usually no data loss" three documents later with nobody having decided it.
 
 ## ASSESS THE CHANGES
 
@@ -43,20 +47,19 @@ Assess and integrate the proposed changes by:
 
 3. IMPLEMENTATION STRATEGY:
    - Recommend whether each change should be:
-     * Implemented immediately (current sprint)
-     * Scheduled for a future sprint
+     * Implemented now
+     * Scheduled for later in this release
      * Implemented as a separate phase or release
      * Deferred to a future version
    - Suggest refactoring needs for already implemented components
    - Propose testing strategy for validating changes
 
 4. DOCUMENTATION UPDATES:
-   - For each change, list the edits it needs in each artifact: PRD.md, FEATURES.md, RULES.md, RFCS.md, the affected RFC files, TEST-STRATEGY.md, and code
+   - For each change, list the edits it needs in each artifact: PRD.md, FEATURES.md, RULES.md, RFCS.md, the affected RFC files and TEST-STRATEGY.md. Code is not edited here: name the code the change affects, and `/implement-rfc` changes it once the RFC says what to build
    - Feature and rule IDs are append-only. Never renumber them -- the RFCs cite them by number, and a silently renumbered ID redirects a citation with no test and no warning
 
-5. STAKEHOLDER IMPACT:
-   - Identify stakeholders affected by the changes
-   - Recommend how to communicate changes to the development team
+5. STAKEHOLDER IMPACT (only when there is a team):
+   - Identify who is affected and what they need to be told
 
 6. RISK ASSESSMENT:
    - Identify risks of implementing changes mid-development
@@ -82,4 +85,4 @@ Save the complete assessment to `changes/CHANGE-REQUEST-[NNN].md`, numbering seq
 - Verify every internal cross-reference -- feature IDs, rule IDs, RFC numbers, section references -- points at what the surrounding text claims it does. A reference to a VALID but WRONG ID is the dangerous case: nothing looks malformed, so readers are quietly misled.
 - Confirm no two tables in the document disagree with each other.
 - If `trace-check.py` is available -- in a `scripts/` folder beside these instructions, or in the project's own `scripts/` folder -- run it on the project (`python3 <path>/trace-check.py .`) and fix every FAIL it reports. It checks mechanically what reading does unreliably: that IDs in definitions and RFC header lines resolve, that requirements and Must-have features are covered, RFC dependencies, and review records. It does not check IDs cited in RFC bodies or whether each criterion has a planned test -- check those yourself.
-- State that you ran this check and what it turned up.
+- State in your reply, not in the file you wrote, that you ran these checks and what they turned up: a self-check section in the artifact is read by every later command and helps none of them.

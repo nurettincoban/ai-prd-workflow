@@ -93,6 +93,17 @@ class TraceCheckTest(unittest.TestCase):
         self.assertNotIn("does not define", out)
         self.assertNotIn("FR-2 is not covered", out)
 
+    def test_features_can_hand_an_nfr_to_the_rules_before_rules_exist(self):
+        # /extract-features runs before /generate-rules, so RULES.md cannot carry the NFR yet.
+        files = {k: v for k, v in CLEAN.items() if k == "PRD.md" or k == "FEATURES.md"}
+        code, out = run(project(files))
+        self.assertIn("NFR-2 (PRD.md) is not covered", out)
+        files["FEATURES.md"] += "\nNFR-2: carried by RULES.md, not a feature.\n"
+        code, out = run(project(files))
+        self.assertNotIn("NFR-2 (PRD.md) is not covered", out)
+        files["FEATURES.md"] += "| F4 | Mentions RULES.md in a row | Could | NFR-1 | Low | NFR-9 RULES.md |\n"
+        self.assertNotIn("FR-1 (PRD.md) is not covered", run(project(files))[1])
+
     def test_a_path_that_is_not_a_directory_is_a_usage_error(self):
         # A typo must not pass a CI gate as "nothing to check".
         missing = project({}) / "does-not-exist"
@@ -177,6 +188,43 @@ class TraceCheckTest(unittest.TestCase):
         code, out = run(project(files))
         self.assertEqual(code, 1, out)
         self.assertIn("FAIL  RFCS.md marks RFC-002 as Changes requested, but reviews/REVIEW-RFC-002.md does not exist", out)
+
+    def test_reviewed_needs_a_passing_last_round(self):
+        files = dict(CLEAN)
+        files["reviews/REVIEW-RFC-001.md"] = (
+            "# Review\n**Overall verdict**: PASS\n\n## Round 2\n**Overall verdict**: NEEDS WORK\n")
+        code, out = run(project(files))
+        self.assertEqual(code, 1, out)
+        self.assertIn("the last verdict in reviews/REVIEW-RFC-001.md is NEEDS WORK", out)
+        files["reviews/REVIEW-RFC-001.md"] += "\n## Round 3\n**Overall verdict**: PASS with follow-ups\n"
+        code, out = run(project(files))
+        self.assertEqual(code, 0, out)
+
+    def test_an_open_high_conflict_blocks_reviewed(self):
+        files = dict(CLEAN)
+        files["RFCS.md"] = CLEAN["RFCS.md"] + textwrap.dedent("""
+            ## Open conflicts
+            - **C1** (High, open): RFC-001 drops writes under concurrent runs, against the PRD's goal.
+            - **C2** (Note, open): RFC-002 names a config file nobody confirmed.
+            """)
+        code, out = run(project(files))
+        self.assertEqual(code, 1, out)
+        self.assertIn("RFC-001 as Reviewed while High conflict C1", out)
+        self.assertNotIn("C2", out)
+        files["RFCS.md"] = files["RFCS.md"].replace("(High, open)", "(High, resolved: user accepted in PRD D-4)")
+        code, out = run(project(files))
+        self.assertEqual(code, 0, out)
+
+    def test_prose_on_rules_lines_and_planned_rfcs_are_not_citations(self):
+        files = dict(CLEAN)
+        files["RFCs/RFC-002-Redirect.md"] = CLEAN["RFCs/RFC-002-Redirect.md"].replace(
+            "**Rules**: SEC-1", "**Rules**: SEC-1 (hash with SHA-256, store UTF-8)")
+        files["RFCS.md"] = CLEAN["RFCS.md"] + "\nRFC-003 (rate limits) is planned once RFC-002 ships.\n"
+        code, out = run(project(files))
+        self.assertEqual(code, 0, out)
+        files["RFCs/RFC-002-Redirect.md"] = files["RFCs/RFC-002-Redirect.md"].replace("SEC-1 (", "SEC-9 (")
+        code, out = run(project(files))
+        self.assertIn("cites rule SEC-9", out)
 
     def test_scripts_parse_on_the_oldest_supported_python(self):
         import ast

@@ -61,6 +61,7 @@ The PRD fixes a single-file install (F14). It fixes nothing else about code layo
 - **SAFE-5**: The temporary file is removed on failure of the save (in a `finally` or `except` block), so a failed save leaves no stray temp file beside the data file. A temp file left by a killed process is never read as data. (NFR-1, F3; assumption)
 - **SAFE-6**: A failed command never modifies the data file. Validation (id parsing, text checks, id lookup) happens before the save function is called. (F11)
 - **SAFE-7**: No code path deletes, truncates or renames the data file other than the atomic replace in SAFE-1. (D-4, NFR-2)
+- **SAFE-8**: A command that changes data (`add`, `done`, `rm`, `clear`) holds an exclusive lock on the data file's directory from before it reads the file until after it has saved, so overlapping runs take turns and none reads a file that another is about to replace. The lock is taken through one function, uses only the standard library, is released by the operating system if the process dies, and is waited for at most 10 seconds (assumption), after which the run exits 1 with one `td:` line and changes nothing. `list` takes no lock. Where the platform has no `fcntl` the lock is skipped (assumption; Windows is best effort, D-8). It is the directory, not the data file and not a `.lock` file, because every save replaces the data file and a lock file would be left beside it. (G2, NFR-10, F17, D-9)
 
 ### Commands and arguments
 
@@ -111,7 +112,7 @@ The PRD fixes a single-file install (F14). It fixes nothing else about code layo
 
 - **DEV-1**: No `TODO`, `FIXME`, `pass`-only function bodies, `NotImplementedError` stubs or commented-out code in a finished change. (completeness)
 - **DEV-2**: Behavior the PRD or FEATURES.md leaves open is implemented as the assumption written there, and the code cites it with a short comment naming the open question (for example `# assumption: PRD Open Question 6, exit codes`). The implementer does not pick a different behavior silently. (PRD Open Questions)
-- **DEV-3**: Nothing in v1 adds a feature listed as Won't Have: due dates, priorities, tags, colors, multiple lists, accounts, sync, server, or locking. A change that adds one needs a PRD change first. (D-7, F17 to F23)
+- **DEV-3**: Nothing in v1 adds a feature listed as Won't Have: due dates, priorities, tags, colors, multiple lists, accounts, sync or server. A change that adds one needs a PRD change first. Locking was on this list until CR-001 (D-9, F17) and is now required by SAFE-8. (D-7, F18 to F23)
 - **DEV-4**: Public functions and `main` have a one-line docstring saying what they do and what they return or raise. Code comments explain why, not what. (assumption: single file, one maintainer, so the habit is cheap and keeps the single file navigable)
 
 ## Agent configuration
@@ -122,7 +123,7 @@ If the project uses an AI coding agent, wire RULES.md into its config so the rul
 
 Every item here is an assumption made because nobody could be asked (non-interactive run). `/implement-rfc` should put them in front of the user before code depends on them. None of them weakens a requirement.
 
-1. **Concurrent runs vs goal G2 (High, for PRD.md).** These rules implement atomic replace only (SAFE-1) and no lock (DEV-3, F17). Two overlapping `td add` runs can drop one task, which contradicts G2 "never lose tasks". PRD.md must either add a locking requirement (then add a LOCK rule category here, and note the dependency on `fcntl`/`msvcrt`) or reword G2 to "never lose tasks to a crash". The rules do not settle this.
+1. **Concurrent runs vs goal G2: settled by CR-001 (accepted by the person running the example, not by the user).** SAFE-8 now requires a lock and DEV-3 no longer lists locking. Still open for the user: the 10 second wait and no lock on Windows (PRD Open Questions 19 and 20).
 2. **Environment variable `TD_FILE` and default file `~/.td.json`** (NAME-3, CLI-7).
 3. **Exit codes 0 / 1 / 2** (OUT-2). Only zero vs non-zero was specified.
 4. **List line format.** Rules fix one task per line, ascending id order, and the `[ ]` / `[x]` marker (CLI-5); the exact column layout and the line printed by `add` are open (PRD Open Question 5, review F-12). The RFC must give one worked example per command.
@@ -143,11 +144,11 @@ Every item here is an assumption made because nobody could be asked (non-interac
 | ARCH | 2 | ARCH-1 to ARCH-2 |
 | NAME | 3 | NAME-1 to NAME-3 |
 | DATA | 7 | DATA-1 to DATA-7 |
-| SAFE | 7 | SAFE-1 to SAFE-7 |
+| SAFE | 8 | SAFE-1 to SAFE-8 |
 | CLI | 7 | CLI-1 to CLI-7 |
 | OUT | 7 | OUT-1 to OUT-7 |
 | SEC | 3 | SEC-1 to SEC-3 |
 | PERF | 2 | PERF-1 to PERF-2 |
 | TEST | 9 | TEST-1 to TEST-9 |
 | DEV | 4 | DEV-1 to DEV-4 |
-| **Total** | **55** | |
+| **Total** | **56** | |

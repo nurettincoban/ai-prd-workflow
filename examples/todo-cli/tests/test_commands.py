@@ -149,7 +149,10 @@ class Rm(unittest.TestCase):
 
 class Errors(unittest.TestCase):
     def test_c10_unknown_id(self):  # criterion 10
-        ids = ["99", "0", "99999999999999999999", "007", "0" * 5000 + "99", "9" * 4001]
+        # 4301 and 5000 digits are past Python's int() limit (4300): without the cut-off
+        # in _parse_id, int() raises ValueError and main reports "unexpected error"
+        ids = ["99", "0", "99999999999999999999", "007", "9" * 4001, "9" * 4301, "9" * 5000,
+               "0" * 5000 + "0"]
         for cmd in ("done", "rm"):
             for raw in ids:
                 with helpers.temp_env():
@@ -162,8 +165,30 @@ class Errors(unittest.TestCase):
                     self.assertEqual(run([cmd, raw])[0], 1)
                     self.assertFalse(exists())
 
+    def test_c10_leading_zeros_dropped_before_length_check(self):  # criterion 10
+        # 5000 zeros then 99 is well-formed and means task 99; without lstrip("0") before
+        # the 4000-digit cut-off it would be reported as an unknown id
+        for cmd in ("done", "rm"):
+            with helpers.temp_env():
+                write_store(THREE + [(99, "ninety-nine", False)])
+                self.assertEqual(run([cmd, "0" * 5000 + "99"]), (0, "", ""), cmd)
+                tasks = read_store()["tasks"]
+                if cmd == "done":
+                    self.assertTrue([t for t in tasks if t["id"] == 99][0]["done"])
+                else:
+                    self.assertNotIn(99, [t["id"] for t in tasks])
+        # a real 4000-digit id is still an id (the cut-off is not lower than the RFC says)
+        big = 10 ** 3999
+        with helpers.temp_env():
+            write_store([(big, "huge", False)])
+            self.assertEqual(run(["done", str(big)]), (0, "", ""))
+            self.assertTrue(read_store()["tasks"][0]["done"])
+
     def test_c11_bad_id(self):  # criterion 11
-        bad = [["abc"], ["-1"], ["1.5"], ["+1"], [" 1"], [""], [], ["1", "2"]]
+        # the last four are non-ASCII digits (Arabic-Indic, full-width, Devanagari, and a mixed id):
+        # int() accepts most of them, so only the ASCII-only check keeps them out
+        bad = [["abc"], ["-1"], ["1.5"], ["+1"], [" 1"], [""], [], ["1", "2"],
+               ["\u0663"], ["\uff11"], ["\u0969"], ["1\u0663"]]
         for cmd in ("done", "rm"):
             for rest in bad:
                 with helpers.temp_env():
@@ -177,7 +202,8 @@ class Errors(unittest.TestCase):
     def test_c12_corrupt(self):  # criterion 12
         corrupt = ["{not json", json.dumps({"version": 1, "next_id": "x", "tasks": []}),
                    json.dumps({"version": 1, "tasks": []}),
-                   json.dumps({"version": 2, "next_id": 1, "tasks": []})]
+                   json.dumps({"version": 2, "next_id": 1, "tasks": []}),
+                   "[" * 200000]
         for text in corrupt:
             for argv, code in ((["add", "x"], 1), (["done", "1"], 1), (["rm", "1"], 1),
                                (["add"], 1), (["add", ""], 1), (["done", "abc"], 1),
